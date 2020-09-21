@@ -6,7 +6,7 @@ namespace OpenTabletDriver.Plugin.Output
 {
     public interface IOutputMode
     {
-        void Read(ITabletReport report);
+        void Read(IDeviceReport report);
         IEnumerable<IFilter> Filters { set; get; }
         TabletProperties TabletProperties { set; get; }
         IVirtualPointer Pointer { get; }

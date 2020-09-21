@@ -84,14 +84,12 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                             ActiveInterpolator.NewReport(interpolatorArgs);
                             SynthReport.Position = interpolatorArgs.Position;
                             SynthReport.Pressure = interpolatorArgs.Pressure;
-                        }
-                        else
-                        {
-                            SendReport(tabletReport);
+                            return;
                         }
                     }
                 }
             }
+            SendReport(report);
         }
 
         private static void Interpolate(object sender, MicroTimerEventArgs _)
@@ -115,7 +113,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
             }
         }
 
-        private static void SendReport(ITabletReport report)
+        private static void SendReport(IDeviceReport report)
         {
             DriverState.OutputMode.Read(report);
             if (DriverState.OutputMode is IBindingHandler<IBinding> handler)
