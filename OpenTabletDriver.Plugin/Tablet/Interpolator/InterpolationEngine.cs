@@ -73,13 +73,14 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 
                         InterpTime = 0;
                         var now = DateTime.UtcNow;
-                        NextReport += ((now - LastTime).TotalMilliseconds - NextReport) / 10;
+                        var delta = (now - LastTime).TotalMilliseconds;
+                        NextReport += (delta - NextReport) / 10;
                         LastTime = now;
                         SynthReport = tabletReport;
 
                         if (Enabled)
                         {
-                            var interpolatorArgs = new InterpolatorArgs(tabletReport.Position, tabletReport.Pressure);
+                            var interpolatorArgs = new InterpolatorArgs(tabletReport.Position, tabletReport.Pressure, delta);
                             ActiveInterpolator.NewReport(interpolatorArgs);
                             SynthReport.Position = interpolatorArgs.Position;
                             SynthReport.Pressure = interpolatorArgs.Pressure;
@@ -101,7 +102,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                 var InterpState = InterpTime / NextReport;
                 if (InterpState < 8)
                 {
-                    var interpolatorArgs = new InterpolatorArgs(SynthReport.Position, SynthReport.Pressure);
+                    var interpolatorArgs = new InterpolatorArgs(SynthReport.Position, SynthReport.Pressure, InterpTime);
                     ActiveInterpolator.Interpolate(interpolatorArgs);
 
                     SendReport(SynthReport);
