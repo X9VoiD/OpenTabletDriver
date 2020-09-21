@@ -7,6 +7,7 @@ using OpenTabletDriver.Native;
 using OpenTabletDriver.Plugin;
 using OpenTabletDriver.Plugin.Output;
 using OpenTabletDriver.Plugin.Tablet;
+using OpenTabletDriver.Plugin.Tablet.Interpolator;
 using OpenTabletDriver.Reflection;
 using OpenTabletDriver.Tablet;
 using OpenTabletDriver.Vendors;
@@ -171,7 +172,9 @@ namespace OpenTabletDriver
                     TabletDevice.GetDeviceString(index);
                 }
             }
-            
+
+            InterpolationEngine.Initialize();
+
             TabletReader = new DeviceReader<IDeviceReport>(TabletDevice, reportParser);
             TabletReader.Start();
             TabletReader.Report += HandleReport;
@@ -267,9 +270,7 @@ namespace OpenTabletDriver
         {
             if (EnableInput && OutputMode?.TabletProperties != null)
             {
-                OutputMode?.Read(report);
-                if (OutputMode is IBindingHandler<IBinding> handler)
-                    handler.HandleBinding(report);
+                InterpolationEngine.HandleReport(report);
             }
 
             DriverState.PostReport(sender, report);

@@ -115,20 +115,13 @@ namespace OpenTabletDriver.Plugin.Output
             return res;
         }
 
-        public virtual void Read(IDeviceReport report)
+        public virtual void Read(ITabletReport tabletReport)
         {
-            if (report is ITabletReport tabletReport)
-            {
-                if (TabletProperties.ActiveReportID.IsInRange(tabletReport.ReportID))
-                {
-                    if (VirtualTablet is IPressureHandler pressureHandler)
-                        pressureHandler.SetPressure((float)tabletReport.Pressure / (float)TabletProperties.MaxPressure);
-                    
-                    var pos = Transpose(tabletReport);
-                    VirtualTablet.SetPosition(pos);
-                }
-            }
-            HandleBinding(report);
+            if (VirtualTablet is IPressureHandler pressureHandler)
+                pressureHandler.SetPressure((float)tabletReport.Pressure / (float)TabletProperties.MaxPressure);
+
+            var pos = Transpose(tabletReport);
+            VirtualTablet.SetPosition(pos);
         }
 
         internal Vector2 Transpose(ITabletReport report)

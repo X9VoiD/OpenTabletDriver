@@ -14,6 +14,7 @@ using OpenTabletDriver.Plugin.Attributes;
 using OpenTabletDriver.Plugin.Logging;
 using OpenTabletDriver.Plugin.Output;
 using OpenTabletDriver.Plugin.Tablet;
+using OpenTabletDriver.Plugin.Tablet.Interpolator;
 using OpenTabletDriver.Reflection;
 
 namespace OpenTabletDriver.Daemon
@@ -131,6 +132,7 @@ namespace OpenTabletDriver.Daemon
             }
 
             SetToolSettings();
+            SetInterpolatorSettings();
         }
 
         private void SetOutputModeSettings(IOutputMode outputMode)
@@ -260,6 +262,36 @@ namespace OpenTabletDriver.Daemon
                     Tools.Add(tool);
                 else
                     Log.Write("Tool", $"Failed to initialize {plugin.Name} tool.", LogLevel.Error);
+            }
+        }
+
+        private void SetInterpolatorSettings()
+        {
+            if (Settings.ActiveInterpolator != null)
+            {
+                var plugin = new PluginReference(Settings.ActiveInterpolator);
+                var type = plugin.GetTypeReference<Interpolator>();
+
+                var interpolator = plugin.Construct<Interpolator>();
+                foreach (var property in type.GetProperties())
+                {
+                    if (property.GetCustomAttribute<PropertyAttribute>(false) != null &&
+                        Settings.PluginSettings.TryGetValue(type.FullName + "." + property.Name, out var strValue))
+                    {
+                        var value = Convert.ChangeType(strValue, property.PropertyType);
+                        property.SetValue(interpolator, value);
+                    }
+                }
+
+                InterpolationEngine.ActiveInterpolator = interpolator;
+                InterpolationEngine.Enabled = true;
+
+                Log.Write("Settings", $"Interpolator: {interpolator}");
+            }
+            else
+            {
+                InterpolationEngine.Enabled = false;
+                InterpolationEngine.Scheduler.Stop();
             }
         }
 

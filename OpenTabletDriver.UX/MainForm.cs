@@ -10,6 +10,7 @@ using OpenTabletDriver.Plugin;
 using OpenTabletDriver.Plugin.Output;
 using OpenTabletDriver.Plugin.Platform.Display;
 using OpenTabletDriver.Plugin.Tablet;
+using OpenTabletDriver.Plugin.Tablet.Interpolator;
 using OpenTabletDriver.Reflection;
 using OpenTabletDriver.UX.Controls;
 using OpenTabletDriver.UX.Windows;
@@ -106,6 +107,25 @@ namespace OpenTabletDriver.UX
                 }
             );
 
+            interpolatorEditor = ConstructPluginSettingsEditor<Interpolator>(
+                "Interpolator",
+                () =>
+                {
+                    if (App.Settings.ActiveInterpolator != null)
+                        return App.Settings.ActiveInterpolator.Equals(interpolatorEditor.SelectedPlugin.Path);
+                    else
+                        return false;
+                },
+                (sender, enabled) =>
+                {
+                    var path = interpolatorEditor.SelectedPlugin.Path;
+                    if (enabled)
+                        App.Settings.ActiveInterpolator = path;
+                    else
+                        App.Settings.ActiveInterpolator = null;
+                }
+            );
+
             // Main Content
             var tabControl = new TabControl
             {
@@ -132,6 +152,12 @@ namespace OpenTabletDriver.UX
                         Text = "Tools",
                         Padding = 5,
                         Content = toolEditor
+                    },
+                    new TabPage
+                    {
+                        Text = "Interpolators",
+                        Padding = 5,
+                        Content = interpolatorEditor
                     },
                     new TabPage
                     {
@@ -686,6 +712,7 @@ namespace OpenTabletDriver.UX
         private AreaEditor displayAreaEditor, tabletAreaEditor;
         private PluginSettingsEditor<IFilter> filterEditor;
         private PluginSettingsEditor<ITool> toolEditor;
+        private PluginSettingsEditor<Interpolator> interpolatorEditor;
 
         public event Action<Settings> SettingsChanged;
         public Settings Settings

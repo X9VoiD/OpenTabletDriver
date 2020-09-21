@@ -54,22 +54,15 @@ namespace OpenTabletDriver.Plugin.Output
         private ITabletReport _lastReport;
         private DateTime _lastReceived;
 
-        public virtual void Read(IDeviceReport report)
+        public virtual void Read(ITabletReport tabletReport)
         {
-            if (report is ITabletReport tabletReport)
+            if (Transpose(tabletReport) is Vector2 pos)
             {
-                if (TabletProperties.ActiveReportID.IsInRange(tabletReport.ReportID))
-                {
-                    if (Transpose(tabletReport) is Vector2 pos)
-                    {
-                        if (VirtualMouse is IPressureHandler pressureHandler)
-                            pressureHandler.SetPressure((float)tabletReport.Pressure / (float)TabletProperties.MaxPressure);
-                        
-                        VirtualMouse.Move(pos.X, pos.Y);
-                    }
-                }
+                if (VirtualMouse is IPressureHandler pressureHandler)
+                    pressureHandler.SetPressure((float)tabletReport.Pressure / (float)TabletProperties.MaxPressure);
+
+                VirtualMouse.Move(pos.X, pos.Y);
             }
-            HandleBinding(report);
         }
         
         protected Vector2? Transpose(ITabletReport report)

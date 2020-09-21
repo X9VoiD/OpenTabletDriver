@@ -34,8 +34,8 @@ namespace OpenTabletDriver.Vendors.Wacom
         
         public byte[] Raw { private set; get; }
         public uint ReportID { private set; get; }
-        public Vector2 Position { private set; get; }
-        public uint Pressure { private set; get; }
+        public Vector2 Position { set; get; }
+        public uint Pressure { set; get; }
         public bool[] PenButtons { private set; get; }
     }
 }
