@@ -26,6 +26,7 @@ namespace OpenTabletDriver.Plugin
             }
             get => _penInRange;
         }
+        public static double ReportRate { internal set; get; }
 
         public static void PostReport(object sender, IDeviceReport report)
         {

@@ -27,7 +27,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 
         private static DateTime LastTime;
         private static ITabletReport SynthReport;
-        private static double NextReport, InterpTime;
+        private static double InterpTime;
         private static readonly object StateLock = new object();
 
         public static void Initialize()
@@ -74,7 +74,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                         InterpTime = 0;
                         var now = DateTime.UtcNow;
                         var delta = (now - LastTime).TotalMilliseconds;
-                        NextReport += (delta - NextReport) / 10;
+                        DriverState.ReportRate += (delta - DriverState.ReportRate) / 10;
                         LastTime = now;
                         SynthReport = tabletReport;
 
@@ -97,7 +97,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
             lock (StateLock)
             {
                 InterpTime = (DateTime.UtcNow - LastTime).TotalMilliseconds;
-                var InterpState = InterpTime / NextReport;
+                var InterpState = InterpTime / DriverState.ReportRate;
                 if (InterpState < 8)
                 {
                     var interpolatorArgs = new InterpolatorArgs(SynthReport.Position, SynthReport.Pressure, InterpTime);
