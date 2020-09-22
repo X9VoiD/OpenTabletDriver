@@ -103,6 +103,9 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                     var interpolatorArgs = new InterpolatorArgs(SynthReport.Position, SynthReport.Pressure, InterpTime);
                     ActiveInterpolator.Interpolate(interpolatorArgs);
 
+                    SynthReport.Position = interpolatorArgs.Position;
+                    SynthReport.Pressure = interpolatorArgs.Pressure;
+
                     SendReport(SynthReport);
                 }
                 else
