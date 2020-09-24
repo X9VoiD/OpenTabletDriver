@@ -291,7 +291,6 @@ namespace OpenTabletDriver.Daemon
             else
             {
                 InterpolationEngine.Enabled = false;
-                InterpolationEngine.Scheduler.Stop();
             }
         }
 

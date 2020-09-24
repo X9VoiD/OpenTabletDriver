@@ -107,16 +107,6 @@ namespace OpenTabletDriver.Plugin.Micro
             return _threadTimer.Join(timeoutInMilliSec);
         }
 
-        public void Abort()
-        {
-            _stopTimer = true;
-
-            if (Enabled)
-            {
-                _threadTimer.Abort();
-            }
-        }
-
         void NotificationTimer(ref long timerIntervalInMicroSec,
                                ref long ignoreEventIfLateBy,
                                ref bool stopTimer)

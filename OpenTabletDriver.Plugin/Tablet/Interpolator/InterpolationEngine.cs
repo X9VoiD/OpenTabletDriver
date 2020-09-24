@@ -21,14 +21,12 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
             }
             get => _enabled;
         }
-
         public static Interpolator ActiveInterpolator { get; set; }
-        public static MicroTimer Scheduler { get; set; }
 
+        private static MicroTimer Scheduler;
         private static DateTime LastTime;
         private static ITabletReport SynthReport;
-        private static double InterpTime;
-        private static readonly object StateLock = new object();
+        private static object StateLock = new object();
 
         public static void Initialize()
         {
@@ -42,11 +40,11 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
             }
 
             Scheduler.MicroTimerElapsed += Interpolate;
-            Scheduler.IgnoreEventIfLateBy = 1000;
+            Scheduler.IgnoreEventIfLateBy = 2000;
 
             DriverState.PenArrived += (sender, o) =>
             {
-                if (Enabled)
+                if (Enabled && !Scheduler.Enabled)
                 {
                     Scheduler.Start();
                 }
@@ -54,12 +52,12 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
             DriverState.PenLeft += (sender, o) =>
             {
                 Scheduler.Stop();
-                InterpTime = 0;
             };
         }
 
         public static void HandleReport(IDeviceReport report)
         {
+            LastTime = DateTime.UtcNow;
             if (report is ITabletReport tabletReport)
             {
                 if (DriverState.TabletProperties.ActiveReportID.IsInRange(tabletReport.ReportID))
@@ -71,19 +69,11 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                             DriverState.PenInRange = true;
                         }
 
-                        InterpTime = 0;
-                        var now = DateTime.UtcNow;
-                        var delta = (now - LastTime).TotalMilliseconds;
-                        DriverState.ReportRate += (delta - DriverState.ReportRate) / 10;
-                        LastTime = now;
                         SynthReport = tabletReport;
 
                         if (Enabled)
                         {
-                            var interpolatorArgs = new InterpolatorArgs(tabletReport.Position, tabletReport.Pressure, delta);
-                            ActiveInterpolator.NewReport(interpolatorArgs);
-                            SynthReport.Position = interpolatorArgs.Position;
-                            SynthReport.Pressure = interpolatorArgs.Pressure;
+                            ActiveInterpolator.NewReport(tabletReport.Position, tabletReport.Pressure);
                             return;
                         }
                     }
@@ -96,15 +86,15 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
         {
             lock (StateLock)
             {
-                InterpTime = (DateTime.UtcNow - LastTime).TotalMilliseconds;
-                var InterpState = InterpTime / DriverState.ReportRate;
-                if (InterpState < 8)
+                if ((DateTime.UtcNow - LastTime).TotalMilliseconds < 150)
                 {
-                    var interpolatorArgs = new InterpolatorArgs(SynthReport.Position, SynthReport.Pressure, InterpTime);
+                    var interpolatorArgs = new InterpolatorArgs();
                     ActiveInterpolator.Interpolate(interpolatorArgs);
 
-                    SynthReport.Position = interpolatorArgs.Position;
-                    SynthReport.Pressure = interpolatorArgs.Pressure;
+                    if (interpolatorArgs.Position.HasValue)
+                        SynthReport.Position = interpolatorArgs.Position.Value;
+                    if (interpolatorArgs.Pressure.HasValue)
+                        SynthReport.Pressure = interpolatorArgs.Pressure.Value;
 
                     SendReport(SynthReport);
                 }
