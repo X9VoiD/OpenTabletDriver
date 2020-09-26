@@ -16,8 +16,9 @@ namespace OpenTabletDriver
 {
     public class Driver : IDisposable
     {
-        public bool EnableInput { set; get; }
+        public event EventHandler<bool> Reading;
         
+        public bool EnableInput { set; get; }
         public HidDevice TabletDevice { private set; get; }
 
         private TabletProperties _tabletProperties;
@@ -177,7 +178,8 @@ namespace OpenTabletDriver
 
             TabletReader = new DeviceReader<IDeviceReport>(TabletDevice, reportParser);
             TabletReader.Start();
-            TabletReader.Report += HandleReport;
+            TabletReader.Report += OnReport;
+            TabletReader.ReadingChanged += (sender, e) => Reading?.Invoke(sender, e);
             
             if (identifier.FeatureInitReport is byte[] featureInitReport && featureInitReport.Length > 0)
             {
@@ -199,7 +201,7 @@ namespace OpenTabletDriver
             
             AuxReader = new DeviceReader<IDeviceReport>(auxDevice, reportParser);
             AuxReader.Start();
-            AuxReader.Report += HandleReport;
+            AuxReader.Report += OnReport;
 
             if (identifier.FeatureInitReport is byte[] featureInitReport && featureInitReport.Length > 0)
             {
@@ -258,15 +260,15 @@ namespace OpenTabletDriver
         public void Dispose()
         {
             TabletReader.Stop();
-            TabletReader.Report -= HandleReport;
+            TabletReader.Report -= OnReport;
             TabletReader = null;
             
             AuxReader.Stop();
-            AuxReader.Report -= HandleReport;
+            AuxReader.Report -= OnReport;
             AuxReader = null;
         }
 
-        private void HandleReport(object sender, IDeviceReport report)
+        private void OnReport(object sender, IDeviceReport report)
         {
             if (EnableInput && OutputMode?.TabletProperties != null)
             {
