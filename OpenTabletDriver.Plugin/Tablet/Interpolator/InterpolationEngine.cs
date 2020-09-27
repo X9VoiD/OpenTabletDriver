@@ -1,5 +1,5 @@
 using System;
-using OpenTabletDriver.Plugin.Micro;
+using OpenTabletDriver.Plugin.Timers;
 
 namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 {
@@ -24,7 +24,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 
         private static MicroTimer Scheduler;
         private static DateTime LastTime;
-        private static ITabletReport SynthReport;
+        private static InterpolatedTabletReport SynthReport;
         private static object StateLock = new object();
 
         public static void Initialize()
@@ -68,7 +68,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                             DriverState.PenInRange = true;
                         }
 
-                        SynthReport = tabletReport;
+                        SynthReport = new InterpolatedTabletReport(tabletReport);
 
                         if (Enabled)
                         {
