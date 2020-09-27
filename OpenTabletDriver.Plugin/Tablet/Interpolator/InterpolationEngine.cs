@@ -16,7 +16,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                     Scheduler.Interval = 1000 * 1000 / ActiveInterpolator.Hertz;
                 }
                 else
-                    Scheduler.Stop();
+                    Scheduler?.Stop();
             }
             get => _enabled;
         }
