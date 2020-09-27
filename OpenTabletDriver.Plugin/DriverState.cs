@@ -11,17 +11,12 @@ namespace OpenTabletDriver.Plugin
         public static IOutputMode OutputMode { set; get; }
         public static TabletProperties TabletProperties { set; get; }
         public static event EventHandler<IDeviceReport> ReportRecieved;
-        public static event EventHandler PenArrived;
-        public static event EventHandler PenLeft;
+        public static event EventHandler<bool> PenArrived;
         public static bool PenInRange
         {
             internal set
             {
-                if (value)
-                    PenArrived?.Invoke(null, null);
-                else
-                    PenLeft?.Invoke(null, null);
-
+                PenArrived?.Invoke(null, value);
                 _penInRange = value;
             }
             get => _penInRange;

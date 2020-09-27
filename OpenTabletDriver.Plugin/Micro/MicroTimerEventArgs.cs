@@ -19,10 +19,12 @@ namespace OpenTabletDriver.Plugin.Micro
         // Time it took to execute previous call to callback function (OnTimedEvent)
         public long CallbackFunctionExecutionTime { get; private set; }
 
-        public MicroTimerEventArgs(int timerCount,
-                                   long elapsedMicroseconds,
-                                   long timerLateBy,
-                                   long callbackFunctionExecutionTime)
+        public MicroTimerEventArgs(
+            int timerCount,
+            long elapsedMicroseconds,
+            long timerLateBy,
+            long callbackFunctionExecutionTime
+        )
         {
             TimerCount = timerCount;
             ElapsedMicroseconds = elapsedMicroseconds;

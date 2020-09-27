@@ -14,8 +14,10 @@ namespace OpenTabletDriver.Plugin.Micro
         {
             if (!IsHighResolution)
             {
-                throw new Exception("On this system the high-resolution " +
-                                    "performance counter is not available");
+                throw new Exception(
+                    "On this system the high-resolution " +
+                    "performance counter is not available"
+                );
             }
         }
 

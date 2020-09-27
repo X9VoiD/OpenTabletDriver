@@ -11,10 +11,9 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
             set
             {
                 _enabled = value;
-                if (value && !Scheduler.Enabled && ActiveInterpolator != null)
+                if (value && ActiveInterpolator != null)
                 {
                     Scheduler.Interval = 1000 * 1000 / ActiveInterpolator.Hertz;
-                    Scheduler.Start();
                 }
                 else
                     Scheduler.Stop();
@@ -44,14 +43,14 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 
             DriverState.PenArrived += (sender, o) =>
             {
-                if (Enabled && !Scheduler.Enabled)
+                if (o && Enabled && !Scheduler.Enabled)
                 {
                     Scheduler.Start();
                 }
-            };
-            DriverState.PenLeft += (sender, o) =>
-            {
-                Scheduler.Stop();
+                else
+                {
+                    Scheduler.Stop();
+                }
             };
         }
 
