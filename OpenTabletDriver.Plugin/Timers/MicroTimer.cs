@@ -1,16 +1,14 @@
+using System;
 using System.Threading;
 
-namespace OpenTabletDriver.Plugin.Micro
+namespace OpenTabletDriver.Plugin.Timers
 {
     /// <summary>
     /// MicroTimer class
     /// </summary>
     public class MicroTimer
     {
-        public delegate void MicroTimerElapsedEventHandler(
-                             object sender,
-                             MicroTimerEventArgs timerEventArgs);
-        public event MicroTimerElapsedEventHandler MicroTimerElapsed;
+        public event EventHandler<MicroTimerEventArgs> MicroTimerElapsed;
 
         Thread _threadTimer = null;
         long _ignoreEventIfLateBy = long.MaxValue;
@@ -107,9 +105,11 @@ namespace OpenTabletDriver.Plugin.Micro
             return _threadTimer.Join(timeoutInMilliSec);
         }
 
-        void NotificationTimer(ref long timerIntervalInMicroSec,
-                               ref long ignoreEventIfLateBy,
-                               ref bool stopTimer)
+        void NotificationTimer(
+            ref long timerIntervalInMicroSec,
+            ref long ignoreEventIfLateBy,
+            ref bool stopTimer
+        )
         {
             int timerCount = 0;
             long nextNotification = 0;

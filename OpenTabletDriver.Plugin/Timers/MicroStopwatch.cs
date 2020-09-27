@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenTabletDriver.Plugin.Micro
+namespace OpenTabletDriver.Plugin.Timers
 {
     /// <summary>
     /// MicroStopwatch class
@@ -14,7 +14,7 @@ namespace OpenTabletDriver.Plugin.Micro
         {
             if (!IsHighResolution)
             {
-                throw new Exception(
+                throw new PlatformNotSupportedException(
                     "On this system the high-resolution " +
                     "performance counter is not available"
                 );

@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenTabletDriver.Plugin.Micro
+namespace OpenTabletDriver.Plugin.Timers
 {
     /// <summary>
     /// MicroTimer Event Argument class
