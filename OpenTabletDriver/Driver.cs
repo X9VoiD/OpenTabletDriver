@@ -158,6 +158,7 @@ namespace OpenTabletDriver
 
         internal void InitializeTabletDevice(TabletProperties tablet, HidDevice tabletDevice, DeviceIdentifier identifier, IReportParser<IDeviceReport> reportParser)
         {
+            TabletReader?.Dispose();
             TabletProperties = tablet;
             TabletDevice = tabletDevice;
 
@@ -196,6 +197,7 @@ namespace OpenTabletDriver
 
         internal void InitializeAuxDevice(HidDevice auxDevice, DeviceIdentifier identifier, IReportParser<IDeviceReport> reportParser)
         {
+            AuxReader?.Dispose();
             Log.Debug("Detect", $"Found aux device with report length {auxDevice.GetMaxInputReportLength()}.");
             Log.Debug("Detect", $"Device path: {auxDevice.DevicePath}");
             
