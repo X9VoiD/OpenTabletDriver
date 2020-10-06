@@ -1,22 +1,19 @@
 using System;
 
-namespace OpenTabletDriver.Plugin.Timers
+namespace OpenTabletDriver.Plugin.Timers.Fallback
 {
-    /// <summary>
-    /// MicroStopwatch class
-    /// </summary>
     public class MicroStopwatch : System.Diagnostics.Stopwatch
     {
-        readonly double _microSecPerTick =
-            1000000D / Frequency;
+        readonly double microSecPerTick =
+            1000000.0 / Frequency;
 
         public MicroStopwatch()
         {
             if (!IsHighResolution)
             {
                 throw new PlatformNotSupportedException(
-                    "On this system the high-resolution " +
-                    "performance counter is not available"
+                    "The high-resolution performance counter " +
+                    "is not available on this system"
                 );
             }
         }
@@ -25,7 +22,7 @@ namespace OpenTabletDriver.Plugin.Timers
         {
             get
             {
-                return (long)(ElapsedTicks * _microSecPerTick);
+                return (long)(ElapsedTicks * this.microSecPerTick);
             }
         }
     }

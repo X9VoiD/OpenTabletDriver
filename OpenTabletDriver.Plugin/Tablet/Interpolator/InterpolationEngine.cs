@@ -13,7 +13,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
                 _enabled = value;
                 if (value && ActiveInterpolator != null)
                 {
-                    Scheduler.Interval = 1000 * 1000 / ActiveInterpolator.Hertz;
+                    Scheduler.Interval = 1000 / ActiveInterpolator.Hertz;
                 }
                 else
                     Scheduler?.Stop();
@@ -22,24 +22,23 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
         }
         public static Interpolator ActiveInterpolator { get; set; }
 
-        private static MicroTimer Scheduler;
+        private static ITimer Scheduler;
         private static DateTime LastTime;
         private static InterpolatedTabletReport SynthReport;
-        private static object StateLock = new object();
+        private static readonly object StateLock = new object();
 
         public static void Initialize()
         {
             try
             {
-                Scheduler = new MicroTimer();
+                Scheduler = Timer.NewTimer();
             }
             catch
             {
-                Log.Write("Interpolator", "No high resolution clock is available", LogLevel.Error);
+                Log.Write("Interpolator", "No high resolution timer is available", LogLevel.Error);
             }
 
-            Scheduler.MicroTimerElapsed += Interpolate;
-            Scheduler.IgnoreEventIfLateBy = 2000;
+            Scheduler.Elapsed += Interpolate;
 
             DriverState.PenArrived += (sender, o) =>
             {
@@ -81,7 +80,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
             SendReport(report);
         }
 
-        private static void Interpolate(object sender, MicroTimerEventArgs _)
+        private static void Interpolate(object sender, object _)
         {
             lock (StateLock)
             {
