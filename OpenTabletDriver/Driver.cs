@@ -14,9 +14,15 @@ using OpenTabletDriver.Vendors;
 
 namespace OpenTabletDriver
 {
-    public class Driver : IDisposable
+    public class Driver : IDriver, IDisposable
     {
+        public Driver()
+        {
+            Info.GetDriverInstance = () => this;
+        }
+        
         public event EventHandler<bool> Reading;
+        public event EventHandler<IDeviceReport> ReportRecieved;
         
         public bool EnableInput { set; get; }
         public HidDevice TabletDevice { private set; get; }
@@ -29,22 +35,11 @@ namespace OpenTabletDriver
                 _tabletProperties = value;
                 if (OutputMode != null)
                     OutputMode.TabletProperties = TabletProperties;
-                
-                DriverState.TabletProperties = TabletProperties;
             }
             get => _tabletProperties;
         }
 
-        private IOutputMode _outputMode;
-        public IOutputMode OutputMode
-        {
-            set
-            {
-                _outputMode = value;
-                DriverState.OutputMode = OutputMode;
-            }
-            get => _outputMode;
-        }
+        public IOutputMode OutputMode { set; get; }
         
         public DeviceReader<IDeviceReport> TabletReader { private set; get; }
         public DeviceReader<IDeviceReport> AuxReader { private set; get; }
@@ -277,7 +272,7 @@ namespace OpenTabletDriver
                 InterpolationEngine.HandleReport(report);
             }
 
-            DriverState.PostReport(sender, report);
+            this.ReportRecieved?.Invoke(this, report);
         }
     }
 }
