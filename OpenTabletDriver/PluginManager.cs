@@ -61,19 +61,37 @@ namespace OpenTabletDriver
             }
         }
 
-        public static T ConstructObject<T>(string name) where T : class
+        public static T ConstructObject<T>(string name, object[] args = null) where T : class
         {
+            args ??= new object[0];
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var type = Types.FirstOrDefault(t => t.FullName == name);
-                var ctor = type?.GetConstructors().FirstOrDefault(c => c.GetParameters().Length == 0);
-                var parameters = new object[] {};
-                return (T)ctor?.Invoke(parameters) ?? null;
+                var matchingConstructors = from ctor in type?.GetConstructors()
+                    let parameters = ctor.GetParameters()
+                    where parameters.Length == args.Length
+                    where ParametersValid(parameters, args)
+                    select ctor;
+                    
+                var constructor = matchingConstructors.FirstOrDefault();
+                return (T)constructor?.Invoke(args) ?? null;
             }
             else
             {
                 return null;
             }
+        }
+
+        private static bool ParametersValid(ParameterInfo[] parameters, object[] args)
+        {
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                var arg = args[i];
+                if (!parameter.ParameterType.IsAssignableFrom(arg.GetType()))
+                    return false;
+            }
+            return true;
         }
 
         public static IReadOnlyCollection<TypeInfo> GetChildTypes<T>()

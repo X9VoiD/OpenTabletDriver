@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace OpenTabletDriver.Plugin.Timers.Fallback
+namespace OpenTabletDriver.Interop.Timer
 {
     public class MicroStopwatch : System.Diagnostics.Stopwatch
     {

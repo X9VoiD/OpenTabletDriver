@@ -1,9 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
+using OpenTabletDriver.Native.Windows;
+using OpenTabletDriver.Native.Windows.Timers;
+using OpenTabletDriver.Plugin.Timers;
 
-namespace OpenTabletDriver.Plugin.Timers.Windows
+namespace OpenTabletDriver.Interop.Timer
 {
-    using static NativeMethods;
+    using static Windows;
+    
     internal class WindowsTimer : ITimer
     {
         private uint timerId;

@@ -10,6 +10,7 @@ using HidSharp;
 using OpenTabletDriver.Binding;
 using OpenTabletDriver.Contracts;
 using OpenTabletDriver.Debugging;
+using OpenTabletDriver.Interop;
 using OpenTabletDriver.Migration;
 using OpenTabletDriver.Plugin;
 using OpenTabletDriver.Plugin.Attributes;
@@ -287,7 +288,7 @@ namespace OpenTabletDriver.Daemon
                 var plugin = new PluginReference(Settings.Interpolators);
                 var type = plugin.GetTypeReference<Interpolator>();
 
-                var interpolator = plugin.Construct<Interpolator>();
+                var interpolator = plugin.Construct<Interpolator>(Platform.Timer);
                 foreach (var property in type.GetProperties())
                 {
                     if (property.GetCustomAttribute<PropertyAttribute>(false) != null &&

@@ -7,20 +7,12 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 {
     public abstract class Interpolator : IDisposable
     {
-        protected Interpolator()
+        protected Interpolator(ITimer scheduler)
         {
-            try
-            {
-                scheduler = Timer.NewTimer();
-            }
-            catch
-            {
-                Log.Write("Interpolator", "No high resolution timer is available", LogLevel.Fatal);
-            }
-
-            Info.Driver.ReportRecieved += HandleReport;
+            this.scheduler = scheduler;
             scheduler.Elapsed += Interpolate;
             scheduler.Start();
+            Info.Driver.ReportRecieved += HandleReport;
         }
 
         public abstract ITabletReport Interpolate();

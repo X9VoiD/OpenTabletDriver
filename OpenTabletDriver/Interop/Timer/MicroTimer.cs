@@ -1,7 +1,8 @@
 using System;
 using System.Threading;
+using OpenTabletDriver.Plugin.Timers;
 
-namespace OpenTabletDriver.Plugin.Timers.Fallback
+namespace OpenTabletDriver.Interop.Timer
 {
     public class MicroTimer : ITimer
     {
