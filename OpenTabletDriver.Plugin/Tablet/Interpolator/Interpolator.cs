@@ -7,11 +7,11 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 {
     public abstract class Interpolator : IDisposable
     {
-        protected Interpolator(ITimer scheduler)
+        public Interpolator(ITimer scheduler)
         {
             this.scheduler = scheduler;
-            scheduler.Elapsed += Interpolate;
-            scheduler.Start();
+            this.scheduler.Elapsed += Interpolate;
+            this.scheduler.Start();
             Info.Driver.ReportRecieved += HandleReport;
         }
 
