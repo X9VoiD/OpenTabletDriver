@@ -21,7 +21,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
         protected bool enabled, inRange;
         protected ITimer scheduler;
         protected DateTime lastTime;
-        protected ISyntheticTabletReport syntheticReport;
+        protected ISyntheticReport syntheticReport;
         protected readonly object stateLock = new object();
 
         
@@ -49,7 +49,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
         protected virtual void HandleReport(IDeviceReport report)
         {
             lastTime = DateTime.UtcNow;
-            if (report is ITabletReport tabletReport && !(report is ISyntheticTabletReport))
+            if (report is ITabletReport tabletReport && !(report is ISyntheticReport))
             {
                 if (Info.Driver.TabletProperties.ActiveReportID.IsInRange(tabletReport.ReportID))
                 {

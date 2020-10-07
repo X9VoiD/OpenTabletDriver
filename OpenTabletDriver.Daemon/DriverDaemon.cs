@@ -78,7 +78,6 @@ namespace OpenTabletDriver.Daemon
         private Collection<FileInfo> LoadedPlugins { set; get; } = new Collection<FileInfo>();
         private Collection<LogMessage> LogMessages { set; get; } = new Collection<LogMessage>();
         private Collection<ITool> Tools { set; get; } = new Collection<ITool>();
-        private Collection<Interpolator> Interpolators { set; get; } = new Collection<Interpolator>();
 
         public Task WriteMessage(LogMessage message)
         {
@@ -283,25 +282,33 @@ namespace OpenTabletDriver.Daemon
 
         private void SetInterpolatorSettings()
         {
+            foreach (var interpolator in Driver.Interpolators)
+                interpolator.Dispose();
+            
+            Driver.Interpolators.Clear();
             if (Settings.Interpolators != null)
             {
-                var plugin = new PluginReference(Settings.Interpolators);
-                var type = plugin.GetTypeReference<Interpolator>();
-
-                var interpolator = plugin.Construct<Interpolator>(Platform.Timer);
-                foreach (var property in type.GetProperties())
+                foreach (var interpolatorName in Settings.Interpolators)
                 {
-                    if (property.GetCustomAttribute<PropertyAttribute>(false) != null &&
-                        Settings.PluginSettings.TryGetValue(type.FullName + "." + property.Name, out var strValue))
+                    var plugin = new PluginReference(interpolatorName);
+                    var type = plugin.GetTypeReference<Interpolator>();
+
+                    var interpolator = plugin.Construct<Interpolator>(Platform.Timer);
+                    foreach (var property in type.GetProperties())
                     {
-                        var value = Convert.ChangeType(strValue, property.PropertyType);
-                        property.SetValue(interpolator, value);
+                        if (property.GetCustomAttribute<PropertyAttribute>(false) != null &&
+                            Settings.PluginSettings.TryGetValue(type.FullName + "." + property.Name, out var strValue))
+                        {
+                            var value = Convert.ChangeType(strValue, property.PropertyType);
+                            property.SetValue(interpolator, value);
+                        }
                     }
+
+                    Driver.Interpolators.Add(interpolator);
+                    interpolator.Enabled = true;
+
+                    Log.Write("Settings", $"Interpolator: {interpolator}");
                 }
-
-                interpolator.Enabled = true;
-
-                Log.Write("Settings", $"Interpolator: {interpolator}");
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 {
-    internal class SyntheticTabletReport : ISyntheticTabletReport
+    internal class SyntheticTabletReport : ITabletReport, ISyntheticReport
     {
         public byte[] Raw { get; }
         public uint ReportID { get; }

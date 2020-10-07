@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using HidSharp;
@@ -43,6 +44,8 @@ namespace OpenTabletDriver
         
         public DeviceReader<IDeviceReport> TabletReader { private set; get; }
         public DeviceReader<IDeviceReport> AuxReader { private set; get; }
+
+        public Collection<Interpolator> Interpolators { set; get; } = new Collection<Interpolator>();
 
         public bool TryMatch(TabletProperties tablet)
         {
@@ -266,9 +269,11 @@ namespace OpenTabletDriver
         public void OnReport(IDeviceReport report)
         {
             this.ReportRecieved?.Invoke(report);
+
             if (EnableInput && OutputMode?.TabletProperties != null)
             {
-                OutputMode.Read(report);
+                if (Interpolators.Count == 0 || (Interpolators.Count > 1 && report is ISyntheticReport || report is IAuxReport))
+                    OutputMode.Read(report);
                 if (OutputMode is IBindingHandler<IBinding> bindingHandler)
                     bindingHandler.HandleBinding(report);
             }
