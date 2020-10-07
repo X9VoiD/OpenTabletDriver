@@ -6,13 +6,14 @@ namespace OpenTabletDriver.Plugin
 {
     public interface IDriver
     {
-        event EventHandler<bool> Reading;
-        event EventHandler<IDeviceReport> ReportRecieved;
+        event Action<bool> Reading;
+        event Action<IDeviceReport> ReportRecieved;
 
         bool EnableInput { set; get; }
         TabletProperties TabletProperties { get; }
         IOutputMode OutputMode { set; get; }
 
         bool TryMatch(TabletProperties tablet);
+        void OnReport(IDeviceReport report);
     }
 }

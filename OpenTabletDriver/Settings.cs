@@ -26,9 +26,8 @@ namespace OpenTabletDriver
         private ObservableCollection<string> _filters = new ObservableCollection<string>(),
             _penButtons = new ObservableCollection<string>(),
             _auxButtons = new ObservableCollection<string>(),
-            _tools = new ObservableCollection<string>();
-
-        private string _activeInterpolator;
+            _tools = new ObservableCollection<string>(),
+            _interpolators = new ObservableCollection<string>();
 
         private Dictionary<string, string> _pluginSettings = new Dictionary<string, string>();
 
@@ -46,13 +45,6 @@ namespace OpenTabletDriver
         {
             set => this.RaiseAndSetIfChanged(ref _filters, value);
             get => _filters;
-        }
-
-        [JsonProperty("Interpolators")]
-        public string ActiveInterpolator
-        {
-            set => RaiseAndSetIfChanged(ref _activeInterpolator, value);
-            get => _activeInterpolator;
         }
 
         [JsonProperty("AutoHook")]
@@ -245,6 +237,13 @@ namespace OpenTabletDriver
         {
             set => this.RaiseAndSetIfChanged(ref _tools, value);
             get => _tools;
+        }
+
+        [JsonProperty("Interpolators")]
+        public ObservableCollection<string> Interpolators
+        {
+            set => RaiseAndSetIfChanged(ref _interpolators, value);
+            get => _interpolators;
         }
 
         #endregion

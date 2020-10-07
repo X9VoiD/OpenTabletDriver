@@ -21,8 +21,8 @@ namespace OpenTabletDriver
             Info.GetDriverInstance = () => this;
         }
         
-        public event EventHandler<bool> Reading;
-        public event EventHandler<IDeviceReport> ReportRecieved;
+        public event Action<bool> Reading;
+        public event Action<IDeviceReport> ReportRecieved;
         
         public bool EnableInput { set; get; }
         public HidDevice TabletDevice { private set; get; }
@@ -170,12 +170,10 @@ namespace OpenTabletDriver
                 }
             }
 
-            InterpolationEngine.Initialize();
-
             TabletReader = new DeviceReader<IDeviceReport>(TabletDevice, reportParser);
             TabletReader.Start();
             TabletReader.Report += OnReport;
-            TabletReader.ReadingChanged += (sender, e) => Reading?.Invoke(sender, e);
+            TabletReader.ReadingChanged += (state) => Reading?.Invoke(state);
             
             if (identifier.FeatureInitReport is byte[] featureInitReport && featureInitReport.Length > 0)
             {
@@ -265,14 +263,15 @@ namespace OpenTabletDriver
             AuxReader = null;
         }
 
-        private void OnReport(object sender, IDeviceReport report)
+        public void OnReport(IDeviceReport report)
         {
+            this.ReportRecieved?.Invoke(report);
             if (EnableInput && OutputMode?.TabletProperties != null)
             {
-                InterpolationEngine.HandleReport(report);
+                OutputMode.Read(report);
+                if (OutputMode is IBindingHandler<IBinding> bindingHandler)
+                    bindingHandler.HandleBinding(report);
             }
-
-            this.ReportRecieved?.Invoke(this, report);
         }
     }
 }

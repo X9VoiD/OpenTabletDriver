@@ -28,7 +28,7 @@ namespace OpenTabletDriver.Daemon
             Log.Output += (sender, message) => LogMessages.Add(message);
             Log.Output += (sender, message) => Console.WriteLine(Log.GetStringFormat(message));
             Log.Output += (sender, message) => Message?.Invoke(sender, message);
-            Driver.Reading += async (sender, isReading) => TabletChanged?.Invoke(this, isReading ? await GetTablet() : null);
+            Driver.Reading += async (isReading) => TabletChanged?.Invoke(this, isReading ? await GetTablet() : null);
             LoadUserSettings();
 
             HidSharp.DeviceList.Local.Changed += async (sender, e) => 
@@ -77,6 +77,7 @@ namespace OpenTabletDriver.Daemon
         private Collection<FileInfo> LoadedPlugins { set; get; } = new Collection<FileInfo>();
         private Collection<LogMessage> LogMessages { set; get; } = new Collection<LogMessage>();
         private Collection<ITool> Tools { set; get; } = new Collection<ITool>();
+        private Collection<Interpolator> Interpolators { set; get; } = new Collection<Interpolator>();
 
         public Task WriteMessage(LogMessage message)
         {
@@ -281,9 +282,9 @@ namespace OpenTabletDriver.Daemon
 
         private void SetInterpolatorSettings()
         {
-            if (Settings.ActiveInterpolator != null)
+            if (Settings.Interpolators != null)
             {
-                var plugin = new PluginReference(Settings.ActiveInterpolator);
+                var plugin = new PluginReference(Settings.Interpolators);
                 var type = plugin.GetTypeReference<Interpolator>();
 
                 var interpolator = plugin.Construct<Interpolator>();
@@ -297,14 +298,9 @@ namespace OpenTabletDriver.Daemon
                     }
                 }
 
-                InterpolationEngine.ActiveInterpolator = interpolator;
-                InterpolationEngine.Enabled = true;
+                interpolator.Enabled = true;
 
                 Log.Write("Settings", $"Interpolator: {interpolator}");
-            }
-            else
-            {
-                InterpolationEngine.Enabled = false;
             }
         }
 
@@ -357,12 +353,12 @@ namespace OpenTabletDriver.Daemon
 
         public Task SetTabletDebug(bool enabled)
         {
-            void onDeviceReport(object sender, IDeviceReport report)
+            void onDeviceReport(IDeviceReport report)
             {
                 if (report is ITabletReport tabletReport)
-                    TabletReport?.Invoke(sender, new DebugTabletReport(tabletReport));
+                    TabletReport?.Invoke(this, new DebugTabletReport(tabletReport));
                 if (report is IAuxReport auxReport)
-                    AuxReport?.Invoke(sender, new DebugAuxReport(auxReport));
+                    AuxReport?.Invoke(this, new DebugAuxReport(auxReport));
             }
             if (enabled)
             {

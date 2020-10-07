@@ -1,8 +1,8 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace OpenTabletDriver.Plugin.Tablet.Interpolator
 {
-    internal class InterpolatedTabletReport : ITabletReport
+    internal class SyntheticTabletReport : ISyntheticTabletReport
     {
         public byte[] Raw { get; }
         public uint ReportID { get; }
@@ -10,7 +10,7 @@ namespace OpenTabletDriver.Plugin.Tablet.Interpolator
         public uint Pressure { get; set; }
         public bool[] PenButtons { get; set; }
 
-        public InterpolatedTabletReport(ITabletReport report)
+        public SyntheticTabletReport(ITabletReport report)
         {
             this.Raw = report.Raw;
             this.ReportID = report.ReportID;

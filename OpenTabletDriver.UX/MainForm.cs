@@ -107,20 +107,14 @@ namespace OpenTabletDriver.UX
 
             interpolatorEditor = ConstructPluginSettingsEditor<Interpolator>(
                 "Interpolator",
-                () =>
-                {
-                    if (App.Settings.ActiveInterpolator != null)
-                        return App.Settings.ActiveInterpolator.Equals(interpolatorEditor.SelectedPlugin.Path);
-                    else
-                        return false;
-                },
-                (sender, enabled) =>
+                () => App.Settings.Interpolators.Contains(interpolatorEditor.SelectedPlugin.Path),
+                (enabled) =>
                 {
                     var path = interpolatorEditor.SelectedPlugin.Path;
-                    if (enabled)
-                        App.Settings.ActiveInterpolator = path;
-                    else
-                        App.Settings.ActiveInterpolator = null;
+                    if (enabled && !App.Settings.Interpolators.Contains(path))
+                        App.Settings.Interpolators.Add(path);
+                    else if (!enabled && App.Settings.Interpolators.Contains(path))
+                        App.Settings.Interpolators.Remove(path);
                 }
             );
 
