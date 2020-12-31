@@ -2,6 +2,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Reflection;
+using System.Threading;
 using Eto.Drawing;
 using Eto.Forms;
 using OpenTabletDriver.Desktop;
@@ -17,6 +18,7 @@ namespace OpenTabletDriver.UX
     {
         public static void Run(string platform, string[] args)
         {
+            SingleInstance();
             var root = new RootCommand("OpenTabletDriver UX")
             {
                 new Option<bool>(new string[] { "-m", "--minimized" }, "Start the application minimized")
@@ -104,5 +106,34 @@ namespace OpenTabletDriver.UX
             var dataStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("OpenTabletDriver.UX.Assets.otd.png");
             return new Bitmap(dataStream);
         });
+
+        private static void SingleInstance()
+        {
+            var handle = new EventWaitHandle(false, EventResetMode.AutoReset, "OpenTabletDriver.UX.Wpf", out var host);
+            if (host)
+            {
+                var fg_thread = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        handle.WaitOne();
+                        Application.Instance?.AsyncInvoke(() =>
+                        {
+                            var form = Application.Instance?.MainForm;
+                            form?.Show();
+                            form.WindowState = WindowState.Normal;
+                            form.BringToFront();
+                            form.WindowStyle = WindowStyle.Default;
+                        });
+                    }
+                });
+                fg_thread.Start();
+            }
+            else
+            {
+                handle.Set();
+                Environment.Exit(0);
+            }
+        }
     }
 }
