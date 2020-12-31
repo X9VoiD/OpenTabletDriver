@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Eto.Forms;
 
 namespace OpenTabletDriver.UX.Wpf
@@ -19,7 +18,7 @@ namespace OpenTabletDriver.UX.Wpf
             var handle = new EventWaitHandle(false, EventResetMode.AutoReset, "OpenTabletDriver.UX.Wpf", out var host);
             if (host)
             {
-                Task.Run(() =>
+                var bg_thread = new Thread(() =>
                 {
                     while (true)
                     {
@@ -34,6 +33,8 @@ namespace OpenTabletDriver.UX.Wpf
                         });
                     }
                 });
+                bg_thread.IsBackground = true;
+                bg_thread.Start();
             }
             else
             {
