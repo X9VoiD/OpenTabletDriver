@@ -10,7 +10,7 @@ using OpenTabletDriver.Plugin.Components;
 
 namespace OpenTabletDriver
 {
-    public abstract class DriverServiceCollection : ServiceCollection
+    public class DriverServiceCollection : ServiceCollection
     {
         private static IEnumerable<ServiceDescriptor> RequiredServices => new ServiceDescriptor[]
         {
