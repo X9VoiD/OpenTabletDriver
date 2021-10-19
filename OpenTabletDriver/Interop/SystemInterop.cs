@@ -6,10 +6,6 @@ namespace OpenTabletDriver.Interop
 {
     public class SystemInterop
     {
-        protected SystemInterop()
-        {
-        }
-
         public static PluginPlatform CurrentPlatform
         {
             get

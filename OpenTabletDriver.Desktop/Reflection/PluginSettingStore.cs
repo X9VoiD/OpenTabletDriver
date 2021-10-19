@@ -82,8 +82,8 @@ namespace OpenTabletDriver.Desktop.Reflection
                 {
                     if (setting.HasValue)
                         property.SetValue(target, setting.GetValue(property.PropertyType));
-                    else if (property.GetCustomAttribute<DefaultPropertyValueAttribute>() is DefaultPropertyValueAttribute defaults)
-                        property.SetValue(target, defaults.Value);
+                    else if (property.GetCustomAttribute<DefaultPluginDataAttribute>() is DefaultPluginDataAttribute defaults)
+                        property.SetValue(target, defaults.Data);
                 }
             }
         }

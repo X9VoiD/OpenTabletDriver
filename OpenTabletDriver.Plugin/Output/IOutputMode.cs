@@ -4,6 +4,7 @@ using OpenTabletDriver.Plugin.Tablet;
 
 namespace OpenTabletDriver.Plugin.Output
 {
+    [PluginType(PluginLifetime.Scoped)]
     public interface IOutputMode : IPipelineElement<IDeviceReport>
     {
         /// <summary>

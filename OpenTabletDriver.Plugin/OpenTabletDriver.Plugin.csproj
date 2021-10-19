@@ -14,4 +14,8 @@
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenTabletDriver" />
+  </ItemGroup>
+
 </Project>

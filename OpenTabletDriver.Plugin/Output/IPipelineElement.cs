@@ -2,6 +2,7 @@ using System;
 
 namespace OpenTabletDriver.Plugin.Output
 {
+    [PluginType(PluginLifetime.Transient)]
     public interface IPipelineElement<T>
     {
         /// <summary>
