@@ -5,7 +5,7 @@ using OpenTabletDriver.Plugin.Settings;
 
 namespace OpenTabletDriver.Plugin.Components
 {
-    public abstract class TabletSettingsProvider : ITabletSettingsProvider
+    public class TabletSettingsProvider : ITabletSettingsProvider
     {
         private readonly IDisplayProvider _displayProvider;
         private readonly DriverDefaults _driverDefaults;
@@ -48,13 +48,10 @@ namespace OpenTabletDriver.Plugin.Components
             };
         }
 
-        public TabletSettings GetTabletSettings(string tabletName)
+        public TabletSettings GetInitialTabletSettings(string tabletName)
         {
             var tabletSettings = GetDefaultSettings();
             tabletSettings.TabletName = tabletName;
-
-            // TODO
-
             TabletSettingsCreated?.Invoke(this, new TabletSettingsCreatedEventArgs(tabletSettings));
             return tabletSettings;
         }
