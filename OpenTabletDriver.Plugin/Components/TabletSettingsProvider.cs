@@ -48,7 +48,7 @@ namespace OpenTabletDriver.Plugin.Components
             };
         }
 
-        public TabletSettings GetInitialTabletSettings(string tabletName)
+        public TabletSettings GetTabletDefaultSettings(string tabletName)
         {
             var tabletSettings = GetDefaultSettings();
             tabletSettings.TabletName = tabletName;

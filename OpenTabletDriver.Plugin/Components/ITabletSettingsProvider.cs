@@ -7,6 +7,6 @@ namespace OpenTabletDriver.Plugin.Components
     public interface ITabletSettingsProvider
     {
         TabletSettings GetDefaultSettings();
-        TabletSettings? GetTabletSettings(string tabletName);
+        TabletSettings? GetTabletDefaultSettings(string tabletName);
     }
 }
