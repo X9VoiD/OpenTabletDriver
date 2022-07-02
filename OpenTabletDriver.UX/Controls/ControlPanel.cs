@@ -16,6 +16,13 @@ namespace OpenTabletDriver.UX.Controls
 {
     public class ControlPanel : Panel
     {
+        private TabPage consoleTabPage = new TabPage
+        {
+            Text = "Console",
+            Padding = 5,
+            Content = new LogView()
+        };
+
         public ControlPanel()
         {
             this.Content = tabControl = new TabControl
@@ -54,21 +61,7 @@ namespace OpenTabletDriver.UX.Controls
                         Padding = 5,
                         Content = toolEditor = new()
                     },
-                    new TabPage
-                    {
-                        Text = "Info",
-                        Padding = 5,
-                        Content = placeholder = new Placeholder
-                        {
-                            Text = "No tablets are detected."
-                        }
-                    },
-                    new TabPage
-                    {
-                        Text = "Console",
-                        Padding = 5,
-                        Content = logView = new()
-                    }
+                    consoleTabPage
                 }
             };
 
@@ -85,14 +78,12 @@ namespace OpenTabletDriver.UX.Controls
             {
                 if (message.Level > LogLevel.Info)
                 {
-                    tabControl.SelectedPage = logView.Parent as TabPage;
+                    tabControl.SelectedPage = consoleTabPage;
                 }
             });
         }
 
         private TabControl tabControl;
-        private Placeholder placeholder;
-        private LogView logView;
         private OutputModeEditor outputModeEditor;
         private BindingEditor penBindingEditor, auxBindingEditor, mouseBindingEditor;
         private PluginSettingStoreCollectionEditor<IPositionedPipelineElement<IDeviceReport>> filterEditor;
@@ -122,34 +113,22 @@ namespace OpenTabletDriver.UX.Controls
 
             if (tablet != null)
             {
-                bool switchToOutput = tabControl.SelectedPage == placeholder.Parent;
-
-                SetPageVisibility(placeholder, false);
                 SetPageVisibility(outputModeEditor, true);
                 SetPageVisibility(filterEditor, true);
                 SetPageVisibility(penBindingEditor, tablet.Properties.Specifications.Pen != null);
                 SetPageVisibility(auxBindingEditor, tablet.Properties.Specifications.AuxiliaryButtons != null);
                 SetPageVisibility(mouseBindingEditor, tablet.Properties.Specifications.MouseButtons != null);
                 SetPageVisibility(toolEditor, true);
-
-                if (switchToOutput)
-                    tabControl.SelectedIndex = 0;
             }
             else
             {
-                SetPageVisibility(placeholder, true);
                 SetPageVisibility(outputModeEditor, false);
                 SetPageVisibility(filterEditor, false);
                 SetPageVisibility(penBindingEditor, false);
                 SetPageVisibility(auxBindingEditor, false);
                 SetPageVisibility(mouseBindingEditor, false);
                 SetPageVisibility(toolEditor, false);
-
-                if (tabControl.SelectedPage != logView.Parent)
-                    tabControl.SelectedIndex = 0;
             }
-
-            SetPageVisibility(logView, true);
         });
 
         public BindableBinding<ControlPanel, Profile> ProfileBinding
