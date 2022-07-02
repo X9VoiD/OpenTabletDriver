@@ -102,7 +102,7 @@ namespace OpenTabletDriver.UX.Controls
 
         public event EventHandler<EventArgs> ProfileChanged;
 
-        protected virtual void OnProfileChanged() => Application.Instance.AsyncInvoke(async () =>
+        protected virtual async void OnProfileChanged()
         {
             ProfileChanged?.Invoke(this, EventArgs.Empty);
 
@@ -129,7 +129,7 @@ namespace OpenTabletDriver.UX.Controls
                 SetPageVisibility(mouseBindingEditor, false);
                 SetPageVisibility(toolEditor, false);
             }
-        });
+        }
 
         public BindableBinding<ControlPanel, Profile> ProfileBinding
         {
