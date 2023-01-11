@@ -1,14 +1,16 @@
 # Simple powershell script to easily build on Windows and verify functionality.
 
 $ErrorActionPreference = "Stop";
-$NetRuntime = "win-x64";
+$DaemonRuntime = "win-x64";
+$UIRuntime = "win10-x64";
 $PrevPath = $(Get-Location).Path;
 $nl = [Environment]::NewLine;
+$OutputDir = "./bin";
 
 $Config = "Release";
 
-$Options = @("--configuration", "$Config", "--verbosity=quiet", "--self-contained=false", "--output=./bin", "/p:PublishSingleFile=true", "/p:DebugType=embedded",`
-    "/p:SuppressNETCoreSdkPreviewMessage=true", "/p:PublishTrimmed=false", "--runtime=$NetRuntime", "-p:SourceRevisionId=$(git rev-parse --short HEAD)");
+$Options = @("--configuration", "$Config", "--verbosity=quiet", "/p:PublishSingleFile=true", "/p:DebugType=embedded",`
+    "/p:SuppressNETCoreSdkPreviewMessage=true", "--self-contained=false", "-p:SourceRevisionId=$(git rev-parse --short HEAD)");
 
 # Change dir to script root, in case people run the script outside of the folder.
 Set-Location $PSScriptRoot;
@@ -33,21 +35,22 @@ if (Test-Path "./bin") {
     }
 }
 
+dotnet restore --verbosity=quiet;
 dotnet clean --configuration $Config --verbosity=quiet;
 
 Write-Output "Building OpenTabletDriver with runtime $NetRuntime...";
 New-Item -ItemType Directory -Force -Path "./bin";
 
 Write-Output "${nl}Building Daemon...$nl";
-dotnet publish .\OpenTabletDriver.Daemon $Options;
+dotnet publish .\OpenTabletDriver.Daemon $Options --output "${OutputDir}" --runtime "${DaemonRuntime}";
 if ($LASTEXITCODE -ne 0) { exit 1; }
 
-Write-Output "${nl}Building Console...$nl";
-dotnet publish .\OpenTabletDriver.Console $Options;
-if ($LASTEXITCODE -ne 0) { exit 2; }
+# Write-Output "${nl}Building Console...$nl";
+# dotnet publish .\OpenTabletDriver.Console $Options;
+# if ($LASTEXITCODE -ne 0) { exit 2; }
 
-Write-Output "${nl}Building WPF UX...$nl";
-dotnet publish .\OpenTabletDriver.UX.Wpf $Options;
+Write-Output "${nl}Building UI...$nl";
+dotnet publish .\OpenTabletDriver.UI $Options --output "${OutputDir}" --runtime "${UIRuntime}";
 if ($LASTEXITCODE -ne 0) { exit 3; }
 
 Write-Output "${nl}Build finished. Binaries created in ./bin";
