@@ -20,15 +20,17 @@ namespace OpenTabletDriver.UX.Controls
             _centerPanel = new Panel();
 
             dynamicLayout.BeginVertical();
-            dynamicLayout.Add(_topPanel, xscale: true);
+            dynamicLayout.Add(_topPanel);
 
             dynamicLayout.BeginHorizontal();
-            dynamicLayout.Add(_leftPanel, yscale: true);
-            dynamicLayout.Add(_centerPanel, xscale: true, yscale: true);
-            dynamicLayout.Add(_rightPanel, yscale: true);
+            dynamicLayout.Add(_leftPanel);
+            dynamicLayout.Add(_centerPanel);
+            dynamicLayout.Add(null); // horizontal spacer
+            dynamicLayout.Add(_rightPanel);
             dynamicLayout.EndHorizontal();
 
-            dynamicLayout.Add(_bottomPanel, xscale: true);
+            dynamicLayout.Add(null); // vertical spacer
+            dynamicLayout.Add(_bottomPanel);
             dynamicLayout.EndVertical();
 
             Content = dynamicLayout;

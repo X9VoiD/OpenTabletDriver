@@ -20,6 +20,7 @@
   <ItemGroup Label="NuGet Packages">
     <PackageReference Include="Eto.Forms" Version="2.7.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
+    <PackageReference Include="Eto.SkiaDraw" Version="0.2.0" />
   </ItemGroup>
 
   <ItemGroup Label="Resources">

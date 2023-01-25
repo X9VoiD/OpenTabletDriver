@@ -14,6 +14,7 @@
 
   <ItemGroup Label="NuGet Packages">
     <PackageReference Include="Eto.Platform.Mac64" Version="2.7.3" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.3" />
   </ItemGroup>
 
 </Project>

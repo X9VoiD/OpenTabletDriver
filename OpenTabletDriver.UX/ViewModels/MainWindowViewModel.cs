@@ -1,11 +1,14 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Eto.Drawing;
 using Eto.Forms;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.UX.Models;
+using MvvmRelayCommand = CommunityToolkit.Mvvm.Input.RelayCommand;
 
 namespace OpenTabletDriver.UX.ViewModels
 {
@@ -42,6 +45,18 @@ namespace OpenTabletDriver.UX.ViewModels
         private ImmutableArray<PluginContextDto> _plugins;
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the sidebar is expanded.
+        /// </summary>
+        [ObservableProperty]
+        private bool _sidebarExpanded;
+
+        public string Title { get; }
+
+        public string Version { get; }
+
+        public Bitmap ApplicationIcon { get; }
+
+        /// <summary>
         /// Gets an observable collection of tablet view models.
         /// </summary>
         public ObservableCollection<TabletViewModel> Tablets { get; } = new ObservableCollection<TabletViewModel>();
@@ -55,6 +70,11 @@ namespace OpenTabletDriver.UX.ViewModels
         /// Gets an observable collection of preset names.
         /// </summary>
         public ObservableCollection<string> Presets { get; } = new ObservableCollection<string>();
+
+        /// <summary>
+        /// Gets a command that toggles the sidebar's Expand property.
+        /// </summary>
+        public IRelayCommand ToggleSidebarExpandCommand { get; }
 
         /// <summary>
         /// Gets an asynchronous command that saves the current settings.
@@ -89,12 +109,17 @@ namespace OpenTabletDriver.UX.ViewModels
         /// </remarks>
         public MainWindowViewModel()
         {
+            Title = $"OpenTabletDriver";
+            Version = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+            ApplicationIcon = Bitmap.FromResource("OpenTabletDriver.UX.Assets.otd.png");
+
             _daemonService.PropertyChanged += (sender, e) => Application.Instance.AsyncInvoke(() =>
             {
                 if (e.PropertyName == nameof(_daemonService.IsConnected))
                     IsConnected = _daemonService.IsConnected;
             });
 
+            ToggleSidebarExpandCommand = new MvvmRelayCommand(() => SidebarExpanded = !SidebarExpanded);
             SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync, canExecute: () => IsConnected);
             ResetSettingsCommand = new AsyncRelayCommand(ResetSettingsAsync, canExecute: () => IsConnected);
             GetPresetsCommand = new AsyncRelayCommand(GetPresetsAsync, canExecute: () => IsConnected);
