@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace OpenTabletDriver.UX.ViewModels
+namespace OpenTabletDriver.UI.ViewModels
 {
-    public partial class OutputModeViewModel : BaseViewModel
+    public partial class OutputModeViewModel : ViewModelBase
     {
         private readonly TabletViewModel _tabletViewModel;
 

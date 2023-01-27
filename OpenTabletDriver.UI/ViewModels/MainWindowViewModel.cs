@@ -4,19 +4,16 @@ using System.Diagnostics;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Eto.Drawing;
-using Eto.Forms;
 using OpenTabletDriver.Daemon.Contracts;
-using OpenTabletDriver.UX.Models;
-using MvvmRelayCommand = CommunityToolkit.Mvvm.Input.RelayCommand;
+using OpenTabletDriver.UI.Models;
 
-namespace OpenTabletDriver.UX.ViewModels
+namespace OpenTabletDriver.UI.ViewModels
 {
     /// <summary>
     /// Represents the main view model and is responsible for
     /// managing the daemon connection and the tablet and tool view models.
     /// </summary>
-    public sealed partial class MainWindowViewModel : BaseViewModel
+    public sealed partial class MainWindowViewModel : ViewModelBase
     {
         private readonly DaemonService _daemonService = new();
 
@@ -24,6 +21,12 @@ namespace OpenTabletDriver.UX.ViewModels
         /// Gets or sets a boolean indicating whether the daemon is connected.
         /// </summary>
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsDisconnected))]
+        [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand),
+                                    nameof(ResetSettingsCommand),
+                                    nameof(GetPresetsCommand),
+                                    nameof(ApplyPresetCommand),
+                                    nameof(SaveAsPresetCommand))]
         private bool _isConnected;
 
         /// <summary>
@@ -54,52 +57,22 @@ namespace OpenTabletDriver.UX.ViewModels
 
         public string Version { get; }
 
-        public Bitmap ApplicationIcon { get; }
+        public bool IsDisconnected => !_isConnected;
 
         /// <summary>
         /// Gets an observable collection of tablet view models.
         /// </summary>
-        public ObservableCollection<TabletViewModel> Tablets { get; } = new ObservableCollection<TabletViewModel>();
+        public ObservableCollection<TabletViewModel> Tablets { get; } = new();
 
         /// <summary>
         /// Gets an observable collection of tool view models.
         /// </summary>
-        public ObservableCollection<ToolViewModel> Tools { get; } = new ObservableCollection<ToolViewModel>();
+        public ObservableCollection<ToolViewModel> Tools { get; } = new();
 
         /// <summary>
         /// Gets an observable collection of preset names.
         /// </summary>
-        public ObservableCollection<string> Presets { get; } = new ObservableCollection<string>();
-
-        /// <summary>
-        /// Gets a command that toggles the sidebar's Expand property.
-        /// </summary>
-        public IRelayCommand ToggleSidebarExpandCommand { get; }
-
-        /// <summary>
-        /// Gets an asynchronous command that saves the current settings.
-        /// </summary>
-        public IAsyncRelayCommand SaveSettingsCommand { get; }
-
-        /// <summary>
-        /// Gets an asynchronous command that resets the current settings.
-        /// </summary>
-        public IAsyncRelayCommand ResetSettingsCommand { get; }
-
-        /// <summary>
-        /// Gets an asynchronous command that gets the current presets. This updates the <see cref="Presets"/> collection.
-        /// </summary>
-        public IAsyncRelayCommand GetPresetsCommand { get; }
-
-        /// <summary>
-        /// Gets an asynchronous command that applies a preset.
-        /// </summary>
-        public IAsyncRelayCommand<string> ApplyPresetCommand { get; }
-
-        /// <summary>
-        /// Gets an asynchronous command that saves the currently applied settings as a preset.
-        /// </summary>
-        public IAsyncRelayCommand<string> SaveAsPresetCommand { get; }
+        public ObservableCollection<string> Presets { get; } = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
@@ -111,20 +84,12 @@ namespace OpenTabletDriver.UX.ViewModels
         {
             Title = $"OpenTabletDriver";
             Version = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-            ApplicationIcon = Bitmap.FromResource("OpenTabletDriver.UX.Assets.otd.png");
 
-            _daemonService.PropertyChanged += (sender, e) => Application.Instance.AsyncInvoke(() =>
+            _daemonService.PropertyChanged += (sender, e) =>
             {
-                if (e.PropertyName == nameof(_daemonService.IsConnected))
+                if (e.PropertyName == nameof(DaemonService.IsConnected))
                     IsConnected = _daemonService.IsConnected;
-            });
-
-            ToggleSidebarExpandCommand = new MvvmRelayCommand(() => SidebarExpanded = !SidebarExpanded);
-            SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync, canExecute: () => IsConnected);
-            ResetSettingsCommand = new AsyncRelayCommand(ResetSettingsAsync, canExecute: () => IsConnected);
-            GetPresetsCommand = new AsyncRelayCommand(GetPresetsAsync, canExecute: () => IsConnected);
-            ApplyPresetCommand = new AsyncRelayCommand<string>(ApplyPresetAsync, canExecute: ApplyPresetValidate);
-            SaveAsPresetCommand = new AsyncRelayCommand<string>(SaveAsPresetAsync, canExecute: _ => IsConnected);
+            };
 
             Task.Run(_daemonService.ConnectAsync).ConfigureAwait(false);
         }
@@ -147,9 +112,19 @@ namespace OpenTabletDriver.UX.ViewModels
         }
 
         /// <summary>
+        /// Toggles the sidebar.
+        /// </summary>
+        [RelayCommand]
+        private void ToggleSidebar()
+        {
+            SidebarExpanded = !SidebarExpanded;
+        }
+
+        /// <summary>
         /// Saves the currently applied settings.
         /// </summary>
         /// <returns>An awaitable task that completes when daemon is done saving settings.</returns>
+        [RelayCommand(CanExecute = nameof(IsConnected))]
         private async Task SaveSettingsAsync()
         {
             // TODO: apply profiles of tablets with dirty profiles.
@@ -161,6 +136,7 @@ namespace OpenTabletDriver.UX.ViewModels
         /// Resets the settings to its defaults.
         /// </summary>
         /// <returns>An awaitable task that completes when daemon is done resetting settings.</returns>
+        [RelayCommand(CanExecute = nameof(IsConnected))]
         private async Task ResetSettingsAsync()
         {
             await _daemonService.Instance.ResetSettings();
@@ -170,6 +146,7 @@ namespace OpenTabletDriver.UX.ViewModels
         /// Gets the current presets. This updates the <see cref="Presets"/> collection.
         /// </summary>
         /// <returns>An awaitable task that completes when <see cref="Presets"/> is updated.</returns>
+        [RelayCommand(CanExecute = nameof(IsConnected))]
         private async Task GetPresetsAsync()
         {
             // TODO: switch to using immutable array for presets?
@@ -183,20 +160,11 @@ namespace OpenTabletDriver.UX.ViewModels
         /// </summary>
         /// <param name="preset">The name of the preset to apply.</param>
         /// <returns>An awaitable task that completes when daemon is done applying the preset.</returns>
+        [RelayCommand(CanExecute = nameof(IsConnected))]
         private async Task ApplyPresetAsync(string? preset)
         {
-            Debug.Assert(preset != null);
-            await _daemonService.Instance.ApplyPreset(preset);
-        }
-
-        /// <summary>
-        /// Validates the preset name for <see cref="ApplyPresetCommand"/>.
-        /// </summary>
-        /// <param name="preset">The name of the preset to apply.</param>
-        /// <returns>True if the preset name is valid and is in the list of known presets, otherwise false.</returns>
-        private bool ApplyPresetValidate(string? preset)
-        {
-            return IsConnected && preset != null && Presets.Contains(preset);
+            if (preset is not null && Presets.Contains(preset))
+                await _daemonService.Instance.ApplyPreset(preset);
         }
 
         /// <summary>
@@ -204,6 +172,7 @@ namespace OpenTabletDriver.UX.ViewModels
         /// </summary>
         /// <param name="preset">The name of the preset to save.</param>
         /// <returns>An awaitable task that completes when daemon is done saving the preset.</returns>
+        [RelayCommand(CanExecute = nameof(IsConnected))]
         private async Task SaveAsPresetAsync(string? preset)
         {
             Debug.Assert(preset != null);
@@ -250,7 +219,7 @@ namespace OpenTabletDriver.UX.ViewModels
 
         private void Daemon_TabletRemoved(object? sender, int tabletId)
         {
-            for (int i = 0; i < Tablets.Count; i++)
+            for (var i = 0; i < Tablets.Count; i++)
             {
                 if (Tablets[i].TabletId == tabletId)
                 {

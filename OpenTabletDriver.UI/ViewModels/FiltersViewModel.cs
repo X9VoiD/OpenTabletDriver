@@ -1,6 +1,6 @@
-namespace OpenTabletDriver.UX.ViewModels
+namespace OpenTabletDriver.UI.ViewModels
 {
-    public class FiltersViewModel : BaseViewModel
+    public class FiltersViewModel : ViewModelBase
     {
         private readonly TabletViewModel _tabletViewModel;
 

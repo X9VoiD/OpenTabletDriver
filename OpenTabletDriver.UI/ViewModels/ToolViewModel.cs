@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
 
-namespace OpenTabletDriver.UX.ViewModels
+namespace OpenTabletDriver.UI.ViewModels
 {
-    public partial class ToolViewModel : BaseViewModel
+    public partial class ToolViewModel : ViewModelBase
     {
         [ObservableProperty]
         private PluginDto? _descriptor;

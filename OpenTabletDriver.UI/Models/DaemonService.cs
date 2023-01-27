@@ -3,7 +3,7 @@ using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.Daemon.Contracts.RPC;
 using OpenTabletDriver.Logging;
 
-namespace OpenTabletDriver.UX.Models;
+namespace OpenTabletDriver.UI.Models;
 
 public partial class DaemonService : ObservableObject
 {

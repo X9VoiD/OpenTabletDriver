@@ -1,6 +1,6 @@
-namespace OpenTabletDriver.UX.ViewModels
+namespace OpenTabletDriver.UI.ViewModels
 {
-    public class BindingsViewModel : BaseViewModel
+    public class BindingsViewModel : ViewModelBase
     {
         private readonly TabletViewModel _tabletViewModel;
 

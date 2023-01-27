@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.Tablet;
 
-namespace OpenTabletDriver.UX.Models
+namespace OpenTabletDriver.UI.Models
 {
     public sealed partial class TabletHandler : ObservableObject, IDisposable
     {
