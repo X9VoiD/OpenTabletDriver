@@ -53,6 +53,16 @@ namespace OpenTabletDriver.UI.ViewModels
         {
             _tabletViewModel = tabletViewModel;
 
+            OutputAreaBounds = ImmutableArray<Area>.Empty;
+
+            var tabletSpecs = _tabletViewModel.Handler.Configuration.Specifications;
+            var tabletDigitizerSpecs = tabletSpecs.Digitizer!;
+            InputAreaBounds = new Area
+            {
+                Width = tabletDigitizerSpecs.Width,
+                Height = tabletDigitizerSpecs.Height
+            };
+
             // setup output area
             // setup input area
             // setup output mode selector

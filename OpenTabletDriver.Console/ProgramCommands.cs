@@ -9,9 +9,7 @@ using System.Threading.Tasks;
 using OpenTabletDriver.Console.Attributes;
 using OpenTabletDriver.Daemon;
 using OpenTabletDriver.Daemon.Contracts;
-using OpenTabletDriver.Daemon.Profiles;
 using OpenTabletDriver.Daemon.Reflection;
-using OpenTabletDriver.Daemon.Updater;
 using OpenTabletDriver.Output;
 using static System.Console;
 

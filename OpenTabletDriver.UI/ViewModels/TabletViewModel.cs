@@ -6,7 +6,7 @@ namespace OpenTabletDriver.UI.ViewModels
 {
     public partial class TabletViewModel : ViewModelBase
     {
-        private readonly TabletHandler _handler;
+        internal TabletHandler Handler { get; }
 
         [ObservableProperty]
         private OutputModeViewModel _outputModeViewModel;
@@ -26,7 +26,7 @@ namespace OpenTabletDriver.UI.ViewModels
                                   nameof(DiscardProfileCommand))]
         private bool _profileDirty;
 
-        public int TabletId => _handler.TabletId;
+        public int TabletId => Handler.TabletId;
         public bool IsNormal => TabletState == InputDeviceState.Normal;
         public IAsyncRelayCommand StartPipelineCommand { get; }
         public IAsyncRelayCommand ApplyProfileCommand { get; }
@@ -35,9 +35,9 @@ namespace OpenTabletDriver.UI.ViewModels
 
         public TabletViewModel(TabletHandler handler)
         {
-            _handler = handler;
+            Handler = handler;
 
-            _handler.PropertyChanged += (sender, e) =>
+            Handler.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(TabletHandler.Profile))
                 {
@@ -47,11 +47,11 @@ namespace OpenTabletDriver.UI.ViewModels
                 }
                 else if (e.PropertyName == nameof(TabletHandler.TabletState))
                 {
-                    TabletState = _handler.TabletState;
+                    TabletState = Handler.TabletState;
                 }
             };
 
-            _tabletState = _handler.TabletState;
+            _tabletState = Handler.TabletState;
             _outputModeViewModel = new OutputModeViewModel(this);
             _bindingsViewModel = new BindingsViewModel(this);
             _filtersViewModel = new FiltersViewModel(this);
@@ -64,24 +64,24 @@ namespace OpenTabletDriver.UI.ViewModels
 
         private async Task StartPipelineAsync()
         {
-            await _handler.SetTabletState(InputDeviceState.Normal);
+            await Handler.SetTabletState(InputDeviceState.Normal);
         }
 
         private async Task ApplyProfileAsync()
         {
-            await _handler.ApplyProfile();
+            await Handler.ApplyProfile();
             ProfileDirty = false;
         }
 
         private async Task DiscardProfileAsync()
         {
-            await _handler.DiscardProfile();
+            await Handler.DiscardProfile();
             ProfileDirty = false;
         }
 
         private async Task ResetProfileAsync()
         {
-            await _handler.ResetProfile();
+            await Handler.ResetProfile();
             ProfileDirty = false;
         }
     }

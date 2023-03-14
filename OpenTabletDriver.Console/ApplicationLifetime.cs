@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTabletDriver.Daemon;
 using OpenTabletDriver.Daemon.Contracts;
-using OpenTabletDriver.Daemon.RPC;
+using OpenTabletDriver.Daemon.Contracts.RPC;
 
 namespace OpenTabletDriver.Console
 {

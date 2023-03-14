@@ -6,26 +6,71 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="OpenTabletDriver.UI.Views.MainWindowView"
         x:DataType="vm:MainWindowViewModel"
+        x:CompileBindings="True"
         Icon="/Assets/otd.ico"
-        Title="Binding">
+        Title="{Binding Title}"
+        Background="Transparent"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaToDecorationsHint="True"
+        Name="MainWindow">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
     <Panel>
-        <!-- <ExperimentalAcrylicBorder IsHitTestVisible="False"> -->
-        <!--     <ExperimentalAcrylicBorder.Material> -->
-        <!--         <ExperimentalAcrylicMaterial -->
-        <!--             BackgroundSource="Digger" -->
-        <!--             TintColor="Black" -->
-        <!--             TintOpacity="1" -->
-        <!--             MaterialOpacity="0.65" /> -->
-        <!--     </ExperimentalAcrylicBorder.Material> -->
-        <!-- </ExperimentalAcrylicBorder> -->
-        <Label Content="{CompiledBinding Title}" />
-    </Panel>
 
+        <!-- Noisy stuff -->
+        <!-- TODO: fine-grain control over the material opacity of the noise for different controls-->
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0.8" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+
+        <!-- This panel margin ensures that all content is visible when the window is maximized on Windows. -->
+        <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
+            <Grid RowDefinitions="Auto,*">
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0"
+                            Height="48"
+                            IsHitTestVisible="False"
+                            Orientation="Horizontal">
+                    <Image Source="/Assets/otd.png" Margin="12" />
+                    <TextBlock Text="{Binding Title}"
+                               VerticalAlignment="Center"
+                               Margin="12,0"/>
+                </StackPanel>
+
+                <!-- Content -->
+                <SplitView Grid.Row="1"
+                           IsPaneOpen="True"
+                           DisplayMode="CompactInline"
+                           OpenPaneLength="240"
+                           PaneBackground="#00000000">
+                    <SplitView.Pane>
+                        <!-- TODO: Pane expands when hovered and changes opacity -->
+                        <TextBlock Text="Pane"
+                                   FontSize="24"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </SplitView.Pane>
+
+                    <Grid>
+                        <TextBlock Text="Content"
+                                   FontSize="24"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Grid>
+                </SplitView>
+
+            </Grid>
+        </Panel>
+    </Panel>
 </Window>

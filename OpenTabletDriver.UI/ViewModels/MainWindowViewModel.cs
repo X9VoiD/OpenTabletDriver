@@ -2,10 +2,12 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.UI.Models;
+using OpenTabletDriver.UI.Services;
 
 namespace OpenTabletDriver.UI.ViewModels
 {
@@ -15,13 +17,12 @@ namespace OpenTabletDriver.UI.ViewModels
     /// </summary>
     public sealed partial class MainWindowViewModel : ViewModelBase
     {
-        private readonly DaemonService _daemonService = new();
+        private readonly DaemonService _daemonService;
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the daemon is connected.
         /// </summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsDisconnected))]
         [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand),
                                     nameof(ResetSettingsCommand),
                                     nameof(GetPresetsCommand),
@@ -47,17 +48,9 @@ namespace OpenTabletDriver.UI.ViewModels
         [ObservableProperty]
         private ImmutableArray<PluginContextDto> _plugins;
 
-        /// <summary>
-        /// Gets or sets a boolean indicating whether the sidebar is expanded.
-        /// </summary>
-        [ObservableProperty]
-        private bool _sidebarExpanded;
+        public string Title { get; } = "OpenTabletDriver";
 
-        public string Title { get; }
-
-        public string Version { get; }
-
-        public bool IsDisconnected => !_isConnected;
+        public string Version { get; } = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
         /// <summary>
         /// Gets an observable collection of tablet view models.
@@ -74,18 +67,25 @@ namespace OpenTabletDriver.UI.ViewModels
         /// </summary>
         public ObservableCollection<string> Presets { get; } = new();
 
+        public MainWindowViewModel()
+        {
+            if (!Design.IsDesignMode)
+                throw new InvalidOperationException();
+
+            // TODO: setup design-time data
+            _daemonService = null!;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
         /// </summary>
         /// <remarks>
         /// Requires <see cref="InitializeAsync"/> to be called after construction before use.
         /// </remarks>
-        public MainWindowViewModel()
+        public MainWindowViewModel(DaemonService daemonService)
         {
-            Title = $"OpenTabletDriver";
-            Version = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-
-            _daemonService.PropertyChanged += (sender, e) =>
+            _daemonService = daemonService;
+            _daemonService.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(DaemonService.IsConnected))
                     IsConnected = _daemonService.IsConnected;
@@ -109,15 +109,6 @@ namespace OpenTabletDriver.UI.ViewModels
             await SetupTabletViewModels();
             await SetupToolViewModels();
             await GetPresetsAsync();
-        }
-
-        /// <summary>
-        /// Toggles the sidebar.
-        /// </summary>
-        [RelayCommand]
-        private void ToggleSidebar()
-        {
-            SidebarExpanded = !SidebarExpanded;
         }
 
         /// <summary>
