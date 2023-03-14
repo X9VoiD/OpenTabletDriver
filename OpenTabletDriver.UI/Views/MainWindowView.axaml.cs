@@ -21,7 +21,6 @@ public partial class MainWindowView : Window
         }
 
         // Force acrylic blur for everything else
-        // TODO: should be possible to disable
         TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
     }
 }
