@@ -6,13 +6,20 @@ namespace OpenTabletDriver.UI;
 
 public class ViewLocator : IDataTemplate
 {
-    public Control Build(object? data)
+    public IControl Build(object data)
     {
-        // reflection no no
-        throw new NotImplementedException();
+        var name = data.GetType().FullName!.Replace("ViewModel", "View");
+        var type = Type.GetType(name);
+
+        if (type != null)
+        {
+            return (Control)Activator.CreateInstance(type)!;
+        }
+
+        return new TextBlock { Text = "Not Found: " + name };
     }
 
-    public bool Match(object? data)
+    public bool Match(object data)
     {
         return data is ViewModelBase;
     }
