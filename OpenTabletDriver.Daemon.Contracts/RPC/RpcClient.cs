@@ -6,7 +6,17 @@ using StreamJsonRpc;
 
 namespace OpenTabletDriver.Daemon.Contracts.RPC
 {
-    public class RpcClient<T> where T : class
+    public interface IRpcClient<T> where T : class
+    {
+        T? Instance { get; }
+        bool IsConnected { get; }
+        event EventHandler? Connected;
+        event EventHandler? Disconnected;
+        Task ConnectAsync();
+        void Disconnect();
+    }
+
+    public class RpcClient<T> : IRpcClient<T> where T : class
     {
         private readonly string _pipeName;
 
@@ -25,7 +35,7 @@ namespace OpenTabletDriver.Daemon.Contracts.RPC
         public event EventHandler? Connected;
         public event EventHandler? Disconnected;
 
-        public async Task Connect()
+        public async Task ConnectAsync()
         {
             _stream = GetStream();
             var connect = _stream.ConnectAsync();

@@ -47,7 +47,7 @@ dotnet publish .\OpenTabletDriver.Console $Options;
 if ($LASTEXITCODE -ne 0) { exit 2; }
 
 Write-Output "${nl}Building WPF UX...$nl";
-dotnet publish .\OpenTabletDriver.UX.Wpf $Options;
+dotnet publish .\OpenTabletDriver.UI $Options;
 if ($LASTEXITCODE -ne 0) { exit 3; }
 
 Write-Output "${nl}Build finished. Binaries created in ./bin";

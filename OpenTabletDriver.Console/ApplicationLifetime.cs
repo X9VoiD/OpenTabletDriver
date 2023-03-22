@@ -21,7 +21,7 @@ namespace OpenTabletDriver.Console
 
         public async Task Run(string[] args)
         {
-            await _rpcClient.Connect();
+            await _rpcClient.ConnectAsync();
 
             var commands = ActivatorUtilities.CreateInstance<ProgramCommands>(_serviceProvider);
             var root = commands.Build("otd");

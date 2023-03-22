@@ -1,0 +1,82 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
+        xmlns:otdc="using:OpenTabletDriver.UI.Controls"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="OpenTabletDriver.UI.Views.PlaygroundView"
+        x:DataType="vm:PlaygroundViewModel"
+        x:CompileBindings="True"
+        Icon="/Assets/otd.ico"
+        Title="{Binding Title}"
+        Background="Transparent"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaToDecorationsHint="True"
+        Name="MainWindow">
+    <Panel>
+
+        <!-- Noisy stuff -->
+        <!-- TODO: fine-grain control over the material opacity of the noise for different controls-->
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="{DynamicResource BackgroundColor}"
+                    TintOpacity="1"
+                    MaterialOpacity="0"
+                    FallbackColor="{DynamicResource BackgroundColor}"/>
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+
+        <!-- Focus thingy, lose transparency when focus is lost -->
+        <Rectangle Name="WindowBg"
+                   IsHitTestVisible="False"
+                   Fill="{DynamicResource BackgroundColorBrush}">
+            <Rectangle.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"></DoubleTransition>
+                </Transitions>
+            </Rectangle.Transitions>
+        </Rectangle>
+
+        <!-- This panel margin ensures that all content is visible when the window is maximized on Windows. -->
+        <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
+            <Grid RowDefinitions="Auto,*">
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0"
+                            Height="48"
+                            IsHitTestVisible="False"
+                            Orientation="Horizontal">
+                    <materialIcons:MaterialIcon Kind="ArrowLeft"
+                                                Margin="20, 0"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Margin="0,0"/>
+                </StackPanel>
+
+                <!-- Content -->
+                <SplitView Grid.Row="1"
+                           IsPaneOpen="True"
+                           DisplayMode="CompactInline"
+                           OpenPaneLength="240"
+                           PaneBackground="#00000000">
+                    <SplitView.Pane>
+                        <TextBlock Text="Pane"
+                                   FontSize="24"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </SplitView.Pane>
+
+                    <otdc:NavigationHost NavigationService="{StaticResource NavigationService}"/>
+                </SplitView>
+            </Grid>
+        </Panel>
+    </Panel>
+</Window>

@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup Label="Project Properties">
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(FrameworkLatest)</TargetFramework>
@@ -6,39 +7,10 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaVersion>11.0.0-preview5</AvaloniaVersion>
   </PropertyGroup>
-
-  <PropertyGroup Label="Warnings">
-    <NoWarn>
-      VSTHRD200,  <!-- Ignore Async suffix -->
-      VSTHRD105   <!-- Ignore Default Task Scheduler -->
-    </NoWarn>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
-    <AvaloniaResource Include="Assets\**" />
-    <None Remove=".gitignore" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TrimmerRootDescriptor Include="Roots.xml" />
-  </ItemGroup>
 
   <ItemGroup Label="Project References">
-    <ProjectReference Include="..\OpenTabletDriver.Daemon.Contracts\OpenTabletDriver.Daemon.Contracts.csproj" />
+    <ProjectReference Include="..\OpenTabletDriver.UI.Library\OpenTabletDriver.UI.Library.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="Nuget Packages">
-    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="6.4.0-preview5" />
-    <PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
-  </ItemGroup>
 </Project>
