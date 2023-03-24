@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using OpenTabletDriver.UI.ViewModels;
+using OpenTabletDriver.UI.Views;
 
 namespace OpenTabletDriver.UI;
 
@@ -8,18 +9,11 @@ public class ViewLocator : IDataTemplate
 {
     public Control? Build(object? data)
     {
-        if (data is null)
-            return null;
-
-        var name = data.GetType().FullName!.Replace("ViewModel", "View");
-        var type = Type.GetType(name);
-
-        if (type != null)
+        return data switch
         {
-            return (Control)Activator.CreateInstance(type)!;
-        }
-
-        return new TextBlock { Text = "Not Found: " + name };
+            MainWindowViewModel => new MainWindowView(),
+            _ => throw new InvalidOperationException("No matching view/control")
+        };
     }
 
     public bool Match(object? data)

@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Project Properties">
-    <OutputType>WinExe</OutputType>
     <TargetFramework>$(FrameworkLatest)</TargetFramework>
     <RootNamespace>OpenTabletDriver.UI</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <AvaloniaVersion>11.0.0-preview5</AvaloniaVersion>
+    <AvaloniaVersion>11.0.0-preview6</AvaloniaVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Warnings">
@@ -39,8 +38,8 @@
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
-    <PackageReference Include="Material.Icons.Avalonia" Version="2.0.0-preview2" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="2.0.0-preview3" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
+    <!-- <PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" /> -->
   </ItemGroup>
 </Project>

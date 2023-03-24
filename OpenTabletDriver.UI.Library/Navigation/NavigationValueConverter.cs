@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Controls;
@@ -14,12 +14,12 @@ namespace OpenTabletDriver.UI.Navigation;
 public class NavigationValueConverter : IValueConverter
 {
     private readonly IServiceProvider _provider;
-    private readonly ImmutableArray<NavigationRoute> _routes;
+    private readonly ReadOnlyCollection<NavigationRoute> _routes;
 
-    public NavigationValueConverter(IServiceProvider provider, IEnumerable<NavigationRoute> routes)
+    public NavigationValueConverter(IServiceProvider provider, ReadOnlyCollection<NavigationRoute> routes)
     {
         _provider = provider;
-        _routes = routes.ToImmutableArray();
+        _routes = routes;
     }
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -40,15 +40,7 @@ public class NavigationValueConverter : IValueConverter
             return BindingNotification.Null;
         }
 
-        var control = (Control)_provider.GetRequiredService(route.ControlType);
-
-        var mainDataContext = App.Current?.DataContext;
-        Debug.Assert(mainDataContext != null, "App.Current.DataContext is null");
-
-        // TODO: verify that this is working as intended
-        var dataContext = route.DataContextConverter?.Invoke(mainDataContext);
-        control.DataContext = dataContext ?? mainDataContext;
-        return control;
+        return _provider.GetRequiredService(route.ObjectType);
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

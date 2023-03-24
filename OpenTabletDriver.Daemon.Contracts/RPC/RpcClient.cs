@@ -27,7 +27,6 @@ namespace OpenTabletDriver.Daemon.Contracts.RPC
 
         private NamedPipeClientStream? _stream;
         private JsonRpc? _rpc;
-        private readonly TimeSpan _connectTimeout = TimeSpan.FromSeconds(5);
 
         public T? Instance { private set; get; }
         public bool IsConnected { private set; get; }
@@ -38,11 +37,7 @@ namespace OpenTabletDriver.Daemon.Contracts.RPC
         public async Task ConnectAsync()
         {
             _stream = GetStream();
-            var connect = _stream.ConnectAsync();
-            var timeout = Task.Delay(_connectTimeout);
-            var result = await Task.WhenAny(connect, timeout);
-            if (result == timeout)
-                throw new TimeoutException($"Connecting to daemon failed after {_connectTimeout.Seconds} seconds.");
+            await _stream.ConnectAsync(5000);
 
             _rpc = new JsonRpc(new MessageHandler(_stream));
             _rpc.Disconnected += (_, _) => OnDisconnected();

@@ -2,11 +2,13 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
+using Avalonia;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.UI.Models;
+using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
 namespace OpenTabletDriver.UI.ViewModels
@@ -18,6 +20,11 @@ namespace OpenTabletDriver.UI.ViewModels
     public sealed partial class MainWindowViewModel : ViewModelBase
     {
         private readonly IDaemonService _daemonService;
+        private readonly INavigator _navigator;
+        private string? _currentRoute;
+
+        [ObservableProperty]
+        private string _title = "OpenTabletDriver";
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the daemon is connected.
@@ -48,8 +55,6 @@ namespace OpenTabletDriver.UI.ViewModels
         [ObservableProperty]
         private ImmutableArray<PluginContextDto> _plugins;
 
-        public string Title { get; } = "OpenTabletDriver";
-
         public string Version { get; } = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
         /// <summary>
@@ -70,23 +75,53 @@ namespace OpenTabletDriver.UI.ViewModels
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
         /// </summary>
-        public MainWindowViewModel(IDaemonService daemonService)
+        public MainWindowViewModel(IDaemonService daemonService, INavigator navigator)
         {
             _daemonService = daemonService;
-            _daemonService.PropertyChanged += (_, e) =>
+            _daemonService.PropertyChanged += (_, e) => Dispatcher.UIThread.Post(() =>
             {
                 if (e.PropertyName == nameof(IDaemonService.State))
+                {
+                    switch (_daemonService.State)
+                    {
+                        case DaemonState.Connecting:
+                            DisplayPlaceholder("Connecting to OpenTabletDriver.Daemon...");
+                            break;
+                        case DaemonState.Disconnected:
+                            DisplayPlaceholder(
+                                "Failed to connect to OpenTabletDriver.Daemon. Make sure that it is running.");
+                            break;
+                        default:
+                            HidePlaceholder();
+                            break;
+                    }
+
                     IsConnected = _daemonService.State == DaemonState.Connected;
-            };
+                }
+            });
+            _navigator = navigator;
 
             // Connection-time setup is done on OnIsConnectedChanged()
-            Dispatcher.UIThread.InvokeAsync(_daemonService.ConnectAsync).ConfigureAwait(false);
+            Dispatcher.UIThread.InvokeAsync(attemptDaemonConnection).ConfigureAwait(false);
+
+            async Task attemptDaemonConnection()
+            {
+                try
+                {
+                    await _daemonService!.ConnectAsync();
+                }
+                catch
+                {
+                    // TODO: log
+                }
+            }
         }
 
         public MainWindowViewModel()
         {
             // TODO: setup design-time data
             _daemonService = null!;
+            _navigator = null!;
         }
 
         /// <summary>
@@ -170,6 +205,19 @@ namespace OpenTabletDriver.UI.ViewModels
             await _daemonService.Instance.SaveAsPreset(preset);
         }
 
+        private void DisplayPlaceholder(string placeholder)
+        {
+            Application.Current!.Resources["MainPlaceholderText"] = placeholder;
+            _navigator.NextAsRoot("MainPlaceholder");
+        }
+
+        private void HidePlaceholder()
+        {
+            _currentRoute ??= "TabletList";
+            DisplayPlaceholder("Connected");
+            // _navigator.Next(_currentRoute);
+        }
+
         private async Task SetupTabletViewModels()
         {
             foreach (var tabletId in await _daemonService.Instance!.GetTablets())
@@ -246,8 +294,6 @@ namespace OpenTabletDriver.UI.ViewModels
                 Tablets.Clear();
                 Tools.Clear();
                 Presets.Clear();
-
-                Task.Run(_daemonService.ConnectAsync).ConfigureAwait(false);
             }
         }
     }

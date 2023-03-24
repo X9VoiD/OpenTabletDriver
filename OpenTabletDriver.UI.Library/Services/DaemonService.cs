@@ -24,7 +24,6 @@ public interface IDaemonService : INotifyPropertyChanged, INotifyPropertyChangin
 public partial class DaemonService : ObservableObject, IDaemonService
 {
     private readonly IRpcClient<IDriverDaemon> _rpcClient;
-    private TaskCompletionSource _completionSource = new();
     private IDriverDaemon? _instance;
     private bool _suppressStateChangedEvents;
 
@@ -46,7 +45,19 @@ public partial class DaemonService : ObservableObject, IDaemonService
 
     public async Task ConnectAsync()
     {
-        await _completionSource.Task;
+        if (!_rpcClient.IsConnected)
+        {
+            State = DaemonState.Connecting;
+            try
+            {
+                await _rpcClient.ConnectAsync();
+            }
+            catch
+            {
+                State = DaemonState.Disconnected;
+                throw;
+            }
+        }
     }
 
     public async Task ReconnectAsync()
@@ -60,7 +71,7 @@ public partial class DaemonService : ObservableObject, IDaemonService
 
     private void OnConnected(object? _, EventArgs args)
     {
-        _completionSource.SetResult();
+        Instance = _rpcClient.Instance;
         Log.Output += Log_Output;
 
         if (!_suppressStateChangedEvents)
@@ -69,8 +80,7 @@ public partial class DaemonService : ObservableObject, IDaemonService
 
     private void OnDisconnected(object? _, EventArgs args)
     {
-        _instance = null;
-        _completionSource = new TaskCompletionSource();
+        Instance = null;
         Log.Output -= Log_Output;
 
         if (!_suppressStateChangedEvents)
