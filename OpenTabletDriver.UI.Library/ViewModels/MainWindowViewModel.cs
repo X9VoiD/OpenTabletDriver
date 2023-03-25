@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using Avalonia;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,7 +24,7 @@ namespace OpenTabletDriver.UI.ViewModels
         private string? _currentRoute;
 
         [ObservableProperty]
-        private string _title = "OpenTabletDriver";
+        private string _title;
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the daemon is connected.
@@ -36,6 +36,12 @@ namespace OpenTabletDriver.UI.ViewModels
                                     nameof(ApplyPresetCommand),
                                     nameof(SaveAsPresetCommand))]
         private bool _isConnected;
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the side pane is open.
+        /// </summary>
+        [ObservableProperty]
+        private bool _sidePaneOpen;
 
         /// <summary>
         /// Gets or sets an array of currently available displays.
@@ -77,29 +83,11 @@ namespace OpenTabletDriver.UI.ViewModels
         /// </summary>
         public MainWindowViewModel(IDaemonService daemonService, INavigator navigator)
         {
+            _title = "OpenTabletDriver v" + Version;
             _daemonService = daemonService;
-            _daemonService.PropertyChanged += (_, e) => Dispatcher.UIThread.Post(() =>
-            {
-                if (e.PropertyName == nameof(IDaemonService.State))
-                {
-                    switch (_daemonService.State)
-                    {
-                        case DaemonState.Connecting:
-                            DisplayPlaceholder("Connecting to OpenTabletDriver.Daemon...");
-                            break;
-                        case DaemonState.Disconnected:
-                            DisplayPlaceholder(
-                                "Failed to connect to OpenTabletDriver.Daemon. Make sure that it is running.");
-                            break;
-                        default:
-                            HidePlaceholder();
-                            break;
-                    }
-
-                    IsConnected = _daemonService.State == DaemonState.Connected;
-                }
-            });
+            _daemonService.PropertyChanged += HandleDaemonServiceOnPropertyChanged;
             _navigator = navigator;
+            _navigator.NextAsRoot(AppRoutes.DaemonConnectionRoute);
 
             // Connection-time setup is done on OnIsConnectedChanged()
             Dispatcher.UIThread.InvokeAsync(attemptDaemonConnection).ConfigureAwait(false);
@@ -117,11 +105,33 @@ namespace OpenTabletDriver.UI.ViewModels
             }
         }
 
+        private void HandleDaemonServiceOnPropertyChanged(object? _, PropertyChangedEventArgs e)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (e.PropertyName == nameof(IDaemonService.State))
+                {
+                    switch (_daemonService.State)
+                    {
+                        case DaemonState.Connecting:
+                            break;
+                        case DaemonState.Disconnected:
+                            break;
+                        default:
+                            break;
+                    }
+
+                    IsConnected = _daemonService.State == DaemonState.Connected;
+                }
+            });
+        }
+
         public MainWindowViewModel()
         {
             // TODO: setup design-time data
             _daemonService = null!;
             _navigator = null!;
+            _title = "OpenTabletDriver";
         }
 
         /// <summary>
@@ -203,19 +213,6 @@ namespace OpenTabletDriver.UI.ViewModels
             Debug.Assert(preset != null);
             Debug.Assert(_daemonService.Instance != null);
             await _daemonService.Instance.SaveAsPreset(preset);
-        }
-
-        private void DisplayPlaceholder(string placeholder)
-        {
-            Application.Current!.Resources["MainPlaceholderText"] = placeholder;
-            _navigator.NextAsRoot("MainPlaceholder");
-        }
-
-        private void HidePlaceholder()
-        {
-            _currentRoute ??= "TabletList";
-            DisplayPlaceholder("Connected");
-            // _navigator.Next(_currentRoute);
         }
 
         private async Task SetupTabletViewModels()

@@ -58,8 +58,7 @@
                                                 VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding Title}"
                                FontSize="12"
-                               VerticalAlignment="Center"
-                               Margin="12,0"/>
+                               VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Content -->

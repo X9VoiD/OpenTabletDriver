@@ -7,10 +7,12 @@ namespace OpenTabletDriver.UI;
 
 public static class AppRoutes
 {
+    public const string DaemonConnectionRoute = "DaemonConnection";
+
     public static IServiceCollection AddApplicationRoutes(this IServiceCollection services)
     {
         return services
             .AddSingleton<MainWindowViewModel>()
-            .AddNavigationRoute<PlaceholderViewModel, PlaceholderView>("MainPlaceholder");
+            .AddNavigationRoute<DaemonConnectionViewModel, DaemonConnectionView>(DaemonConnectionRoute);
     }
 }

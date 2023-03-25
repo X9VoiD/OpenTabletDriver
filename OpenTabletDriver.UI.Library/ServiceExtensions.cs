@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.Daemon.Contracts.RPC;
 using OpenTabletDriver.UI.Navigation;
@@ -18,9 +19,9 @@ public static class ServiceExtensions
     {
         return services
             .AddTransient<App>()
-            .AddSingleton<AppDataContext>()
             .AddSingleton<IRpcClient<IDriverDaemon>>(_ => new RpcClient<IDriverDaemon>("OpenTabletDriver.Daemon"))
             .AddSingleton<IDaemonService, DaemonService>()
-            .UseNavigation<NavigationService>();
+            .UseNavigation<NavigationService>()
+            .AddSingleton<IMessenger, StrongReferenceMessenger>();
     }
 }

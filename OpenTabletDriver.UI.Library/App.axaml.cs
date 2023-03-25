@@ -3,6 +3,8 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using OpenTabletDriver.UI.ViewModels;
 using OpenTabletDriver.UI.Views;
 
 namespace OpenTabletDriver.UI;
@@ -11,10 +13,10 @@ public class App : Application
 {
     private IEnumerable<IStartupJob>? _startupJobs;
 
-    public App(AppDataContext appContext, IEnumerable<IStartupJob> startupJobs)
+    public App(IServiceProvider provider, IEnumerable<IStartupJob> startupJobs)
     {
+        Ioc.Default.ConfigureServices(provider); // allow use of Ioc.Default.GetService<T>()
         _startupJobs = startupJobs;
-        DataContext = appContext;
 
         TaskScheduler.UnobservedTaskException += (sender, e) =>
         {
@@ -51,9 +53,9 @@ public class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindowView
+            desktop.MainWindow = new MainWindowView()
             {
-                DataContext = ((AppDataContext)DataContext!).MainWindowViewModel
+                DataContext = Ioc.Default.GetService<MainWindowViewModel>()
             };
         }
 

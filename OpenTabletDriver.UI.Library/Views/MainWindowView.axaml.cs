@@ -1,8 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using OpenTabletDriver.UI.Navigation;
 
 namespace OpenTabletDriver.UI.Views;
@@ -37,25 +35,23 @@ public partial class MainWindowView : Window
         }
 
         _hasTransparency = ActualTransparencyLevel != WindowTransparencyLevel.None;
-        if (!_hasTransparency)
+        if (_hasTransparency)
+        {
+            Activated += (sender, e) =>
+            {
+                WindowBg.Opacity = 0.65;
+            };
+
+            Deactivated += (sender, e) =>
+            {
+                WindowBg.Opacity = 1.0;
+            };
+        }
+        else
         {
             // If transparency is not supported, remove the opacity animation
             WindowBg.IsVisible = false;
         }
-    }
-
-    protected override void OnGotFocus(GotFocusEventArgs e)
-    {
-        if (_hasTransparency)
-            WindowBg.Opacity = 0.65;
-        base.OnGotFocus(e);
-    }
-
-    protected override void OnLostFocus(RoutedEventArgs e)
-    {
-        if (_hasTransparency)
-            WindowBg.Opacity = 1.0;
-        base.OnLostFocus(e);
     }
 
     private void HookBackButtonOpacityHandler()
