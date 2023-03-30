@@ -36,8 +36,12 @@ public class NavigationValueConverter : IValueConverter
         var route = _routes.FirstOrDefault(r => r.Route == page);
         if (route is null)
         {
-            Debug.WriteLine("Cannot find navigation route for page '{page}'.");
-            return BindingNotification.Null;
+            Debug.WriteLine($"Cannot find navigation route for page '{page}'.");
+            var navigation404 = _routes.FirstOrDefault(r => r.Route == "404");
+
+            return navigation404 is not null
+                ? _provider.GetRequiredService(navigation404.ObjectType)
+                : BindingNotification.Null;
         }
 
         return _provider.GetRequiredService(route.ObjectType);

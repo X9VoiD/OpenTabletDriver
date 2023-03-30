@@ -9,19 +9,31 @@ public static class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        RunAvaloniaApp(args);
+    }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure(SetupOpenTabletDriverApp)
+        => AppBuilder.Configure(() => SetupOpenTabletDriverApp(Array.Empty<string>()))
             .UsePlatformDetect()
             .LogToTrace();
 
-    private static App SetupOpenTabletDriverApp()
+    private static void RunAvaloniaApp(string[] args)
+    {
+        AppBuilder.Configure(() => SetupOpenTabletDriverApp(args))
+            .UsePlatformDetect()
+            .LogToTrace()
+            .StartWithClassicDesktopLifetime(args);
+    }
+
+    private static App SetupOpenTabletDriverApp(string[] args)
     {
         var serviceProvider = new ServiceCollection()
             .WithDefaultServices()
+            .WithNormalEnvironment(args)
+            .AddApplicationViewModels()
             .AddApplicationRoutes()
             .BuildServiceProvider();
 

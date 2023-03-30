@@ -1,7 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using Avalonia;
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using OpenTabletDriver.UI.Navigation;
+using OpenTabletDriver.UI.ViewModels;
 
 namespace OpenTabletDriver.UI.Views;
 
@@ -13,12 +14,10 @@ public partial class MainWindowView : Window
     public MainWindowView()
     {
         InitializeComponent();
+        _navigationService = Ioc.Default.GetRequiredService<INavigationService>();
         SetTransparencyLevelHint();
-
-        _navigationService = Application.Current!.Resources.TryGetResource("NavigationService", null, out var s)
-            ? (INavigationService)s!
-            : throw new Exception("Failed to get NavigationService from resources");
         HookBackButtonOpacityHandler();
+        DataContext = Ioc.Default.GetService<MainWindowViewModel>();
     }
 
     private void SetTransparencyLevelHint()
@@ -37,15 +36,9 @@ public partial class MainWindowView : Window
         _hasTransparency = ActualTransparencyLevel != WindowTransparencyLevel.None;
         if (_hasTransparency)
         {
-            Activated += (sender, e) =>
-            {
-                WindowBg.Opacity = 0.65;
-            };
-
-            Deactivated += (sender, e) =>
-            {
-                WindowBg.Opacity = 1.0;
-            };
+            Activated += (_, _) => WindowBg.Opacity = 0.65;
+            Deactivated += (_, _) => WindowBg.Opacity = 1.0;
+            WindowBg.Opacity = 0.65; // assume active
         }
         else
         {
@@ -56,18 +49,10 @@ public partial class MainWindowView : Window
 
     private void HookBackButtonOpacityHandler()
     {
-        _navigationService.PropertyChanged += (sender, e) =>
-        {
-            if (e.PropertyName == nameof(_navigationService.CanGoBack))
-            {
-                HandleBackButtonOpacity();
-            }
-        };
-        HandleBackButtonOpacity();
-    }
-
-    private void HandleBackButtonOpacity()
-    {
-        BackButton.Opacity = _navigationService.CanGoBack ? 1.0 : 0.5;
+        _navigationService.HandleProperty(
+            nameof(_navigationService.CanGoBack),
+            service => service.CanGoBack,
+            (service, canGoBack) => BackButton.Opacity = canGoBack ? 1.0 : 0.5
+        );
     }
 }

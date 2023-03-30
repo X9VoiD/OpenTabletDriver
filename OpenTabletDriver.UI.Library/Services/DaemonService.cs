@@ -1,8 +1,10 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.Daemon.Contracts.RPC;
 using OpenTabletDriver.Logging;
+using OpenTabletDriver.UI.Models;
 
 namespace OpenTabletDriver.UI.Services;
 
@@ -17,24 +19,33 @@ public interface IDaemonService : INotifyPropertyChanged, INotifyPropertyChangin
 {
     DaemonState State { get; }
     IDriverDaemon? Instance { get; }
+    ObservableCollection<ITabletService> Tablets { get; }
     Task ConnectAsync();
+    Task ConnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
     Task ReconnectAsync();
+    Task ReconnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
 }
 
 public partial class DaemonService : ObservableObject, IDaemonService
 {
     private readonly IRpcClient<IDriverDaemon> _rpcClient;
+    private DaemonState _state;
     private IDriverDaemon? _instance;
     private bool _suppressStateChangedEvents;
 
-    [ObservableProperty]
-    private DaemonState _state;
+    public DaemonState State
+    {
+        get => _state;
+        private set => SetProperty(ref _state, value);
+    }
 
     public IDriverDaemon? Instance
     {
         get => _instance;
         private set => SetProperty(ref _instance, value);
     }
+
+    public ObservableCollection<ITabletService> Tablets { get; } = new();
 
     public DaemonService(IRpcClient<IDriverDaemon> rpcClient)
     {
@@ -43,14 +54,19 @@ public partial class DaemonService : ObservableObject, IDaemonService
         rpcClient.Disconnected += OnDisconnected;
     }
 
-    public async Task ConnectAsync()
+    public Task ConnectAsync()
+    {
+        return ConnectAsync(TimeSpan.FromSeconds(5));
+    }
+
+    public async Task ConnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         if (!_rpcClient.IsConnected)
         {
             State = DaemonState.Connecting;
             try
             {
-                await _rpcClient.ConnectAsync();
+                await _rpcClient.ConnectAsync(timeout, cancellationToken);
             }
             catch
             {
@@ -60,12 +76,17 @@ public partial class DaemonService : ObservableObject, IDaemonService
         }
     }
 
-    public async Task ReconnectAsync()
+    public Task ReconnectAsync()
+    {
+        return ReconnectAsync(TimeSpan.FromSeconds(5));
+    }
+
+    public async Task ReconnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         _suppressStateChangedEvents = true;
         State = DaemonState.Connecting;
         _rpcClient.Disconnect();
-        await _rpcClient.ConnectAsync();
+        await _rpcClient.ConnectAsync(timeout, cancellationToken);
         _suppressStateChangedEvents = false;
     }
 

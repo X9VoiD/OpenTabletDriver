@@ -27,7 +27,7 @@ public interface INavigationService : INotifyPropertyChanged
     string? CurrentPage { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the navigation stack has more than one page.
+    /// Gets a boolean indicating whether the navigation stack has more than one page.
     /// </summary>
     bool CanGoBack { get; }
 

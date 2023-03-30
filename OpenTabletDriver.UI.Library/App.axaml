@@ -1,7 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:OpenTabletDriver.UI"
-             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="OpenTabletDriver.UI.App"
              RequestedThemeVariant="Dark">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
@@ -12,7 +11,6 @@
 
     <Application.Styles>
         <FluentTheme />
-        <materialIcons:MaterialIconStyles />
         <StyleInclude Source="Styles/DefaultDark/DefaultDark.axaml" />
     </Application.Styles>
 </Application>

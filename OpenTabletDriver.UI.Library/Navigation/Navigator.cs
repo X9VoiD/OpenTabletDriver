@@ -9,6 +9,8 @@ public sealed class Navigator : INavigator
         _navigationService = navigationService;
     }
 
+    public string? CurrentPage => _navigationService.CurrentPage;
+
     public void Back()
     {
         _navigationService.Back();

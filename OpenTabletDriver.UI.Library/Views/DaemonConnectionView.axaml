@@ -8,7 +8,8 @@
              x:DataType="vm:DaemonConnectionViewModel"
              x:CompileBindings="True">
     <RelativePanel VerticalAlignment="Stretch"
-                   HorizontalAlignment="Stretch">
+                   HorizontalAlignment="Stretch"
+                   ClipToBounds="False">
         <TextBlock x:Name="MainTextBlock"
                    Text="{Binding MainText}"
                    FontSize="16"
@@ -25,23 +26,27 @@
                     Command="{Binding GoToHelpWebsiteCommand}"
                     Margin="8, 12" />
         </StackPanel>
-        <ItemsControl Items="{Binding QolHintText}"
-                      IsVisible="{Binding ShowQolHintText}"
-                      RelativePanel.AlignBottomWithPanel="True"
-                      RelativePanel.AlignHorizontalCenterWithPanel="True"
-                      Margin="48, 16">
-            <!-- <ItemsControl.ItemsPanel>
-                <Template>
-                    <StackPanel/>
-                </Template>
-            </ItemsControl.ItemsPanel> -->
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding}"
-                               FontSize="12"
-                               HorizontalAlignment="Center"/>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <Panel RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    Margin="48, 16"
+                    IsHitTestVisible="False"
+                    ClipToBounds="False">
+            <ScrollViewer x:Name="Scroller"
+                          VerticalScrollBarVisibility="Hidden">
+                <ItemsControl x:Name="QolHintPanel"
+                            Items="{Binding QolHintText}"
+                            IsVisible="{Binding ShowQolHintText}"
+                            RelativePanel.AlignBottomWithPanel="True">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"
+                                    IsHitTestVisible="False"
+                                    FontSize="12"
+                                    HorizontalAlignment="Center"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Panel>
     </RelativePanel>
 </UserControl>

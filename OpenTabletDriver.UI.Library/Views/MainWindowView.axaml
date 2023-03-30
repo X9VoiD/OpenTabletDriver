@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
         xmlns:c="using:OpenTabletDriver.UI.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -51,11 +50,11 @@
                             Height="48"
                             IsHitTestVisible="False"
                             Orientation="Horizontal">
-                    <materialIcons:MaterialIcon x:Name="BackButton"
-                                                Kind="ArrowLeft"
-                                                Margin="20, 0"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"/>
+                    <PathIcon Name="BackButton"
+                              Margin="20, 0"
+                              Width="12"
+                              Height="12"
+                              Data="{StaticResource arrow_back}"/>
                     <TextBlock Text="{Binding Title}"
                                FontSize="12"
                                VerticalAlignment="Center"/>
@@ -63,15 +62,12 @@
 
                 <!-- Content -->
                 <SplitView Grid.Row="1"
-                           IsPaneOpen="True"
-                           DisplayMode="CompactInline"
+                           IsPaneOpen="{Binding SidePaneOpen}"
+                           DisplayMode="Inline"
                            OpenPaneLength="240"
-                           PaneBackground="#00000000">
+                           PaneBackground="Transparent">
                     <SplitView.Pane>
-                        <TextBlock Text="Pane"
-                                   FontSize="16"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
+                        <c:NavigationPaneView Margin="12, 20, 0, 8"/>
                     </SplitView.Pane>
 
                     <c:NavigationHost NavigationService="{StaticResource NavigationService}"/>

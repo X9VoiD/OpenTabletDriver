@@ -3,9 +3,11 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using OpenTabletDriver.UI.Navigation;
 
 namespace OpenTabletDriver.UI.Controls;
@@ -94,9 +96,7 @@ public partial class NavigationHost : UserControl
                 oldService.Navigated -= HandleNavigated;
 
             if (change.NewValue is INavigationService newService)
-            {
                 newService.Navigated += HandleNavigated;
-            }
         }
         base.OnPropertyChanged(change);
     }

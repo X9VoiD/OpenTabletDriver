@@ -1,0 +1,55 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenTabletDriver.UI.Controls.NavigationPaneView"
+             x:DataType="vm:NavigationPaneViewModel"
+             x:CompileBindings="True">
+    <UserControl.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter x:DataType="vm:NavigationItem" Property="IsEnabled" Value="{Binding IsEnabled}" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="20, 8" />
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Margin" Value="0, 2" />
+            </Style>
+            <Style Selector="^:selected">
+                <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
+                </Style>
+                <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="#2effffff" />
+                </Style>
+                <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="#33ffffff" />
+                </Style>
+            </Style>
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel>
+        <ListBox Items="{Binding Navigations}"
+                 SelectedItem="{Binding SelectedNavigation}"
+                 DockPanel.Dock="Top">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <ListBoxItem Name="SettingsButton"
+                     IsSelected="{Binding SettingsOpened, Mode=OneWay}"
+                     DockPanel.Dock="Bottom" >
+            <TextBlock Text="Settings" />
+        </ListBoxItem>
+        <Panel></Panel>
+    </DockPanel>
+</UserControl>

@@ -1,13 +1,11 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.Daemon.Contracts;
-using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
@@ -21,7 +19,7 @@ namespace OpenTabletDriver.UI.ViewModels
     {
         private readonly IDaemonService _daemonService;
         private readonly INavigator _navigator;
-        private string? _currentRoute;
+        private readonly IDispatcher _dispatcher;
 
         [ObservableProperty]
         private string _title;
@@ -64,16 +62,6 @@ namespace OpenTabletDriver.UI.ViewModels
         public string Version { get; } = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
         /// <summary>
-        /// Gets an observable collection of tablet view models.
-        /// </summary>
-        public ObservableCollection<TabletViewModel> Tablets { get; } = new();
-
-        /// <summary>
-        /// Gets an observable collection of tool view models.
-        /// </summary>
-        public ObservableCollection<ToolViewModel> Tools { get; } = new();
-
-        /// <summary>
         /// Gets an observable collection of preset names.
         /// </summary>
         public ObservableCollection<string> Presets { get; } = new();
@@ -81,48 +69,40 @@ namespace OpenTabletDriver.UI.ViewModels
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
         /// </summary>
-        public MainWindowViewModel(IDaemonService daemonService, INavigator navigator)
+        public MainWindowViewModel(IDaemonService daemonService, INavigator navigator, IDispatcher dispatcher)
         {
             _title = "OpenTabletDriver v" + Version;
             _daemonService = daemonService;
-            _daemonService.PropertyChanged += HandleDaemonServiceOnPropertyChanged;
             _navigator = navigator;
+            _dispatcher = dispatcher;
+
             _navigator.NextAsRoot(AppRoutes.DaemonConnectionRoute);
+            _daemonService.HandleProperty(
+                nameof(IDaemonService.State),
+                d => d.State,
+                DaemonService_State_Handler
+            );
 
-            // Connection-time setup is done on OnIsConnectedChanged()
-            Dispatcher.UIThread.InvokeAsync(attemptDaemonConnection).ConfigureAwait(false);
-
-            async Task attemptDaemonConnection()
+            _dispatcher.Post(async () =>
             {
                 try
                 {
+                    // Connection-time setup is done on OnIsConnectedChanged()
                     await _daemonService!.ConnectAsync();
                 }
                 catch
                 {
                     // TODO: log
                 }
-            }
+            }, DispatcherPriority.MaxValue);
         }
 
-        private void HandleDaemonServiceOnPropertyChanged(object? _, PropertyChangedEventArgs e)
+        private void DaemonService_State_Handler(IDaemonService s, DaemonState state)
         {
-            Dispatcher.UIThread.Post(() =>
+            _dispatcher.ProbablySynchronousPost(() =>
             {
-                if (e.PropertyName == nameof(IDaemonService.State))
-                {
-                    switch (_daemonService.State)
-                    {
-                        case DaemonState.Connecting:
-                            break;
-                        case DaemonState.Disconnected:
-                            break;
-                        default:
-                            break;
-                    }
-
-                    IsConnected = _daemonService.State == DaemonState.Connected;
-                }
+                IsConnected = _daemonService.State == DaemonState.Connected;
+                SidePaneOpen = IsConnected; // TODO: calculate stuff
             });
         }
 
@@ -131,6 +111,7 @@ namespace OpenTabletDriver.UI.ViewModels
             // TODO: setup design-time data
             _daemonService = null!;
             _navigator = null!;
+            _dispatcher = null!;
             _title = "OpenTabletDriver";
         }
 
@@ -140,14 +121,9 @@ namespace OpenTabletDriver.UI.ViewModels
         /// <returns>An awaitable task that completes when all setup is complete.</returns>
         private async Task InitializeAsync()
         {
-            _daemonService.Instance!.TabletAdded += Daemon_TabletAdded;
-            _daemonService.Instance.TabletRemoved += Daemon_TabletRemoved;
-            _daemonService.Instance.ToolsChanged += Daemon_ToolsChanged;
-            Displays = (await _daemonService.Instance.GetDisplays()).ToImmutableArray();
+            Displays = (await _daemonService.Instance!.GetDisplays()).ToImmutableArray();
             ToolSettings = (await _daemonService.Instance.GetToolSettings()).ToImmutableArray();
             Plugins = (await _daemonService.Instance.GetPlugins()).ToImmutableArray();
-            await SetupTabletViewModels();
-            await SetupToolViewModels();
             await GetPresetsAsync();
         }
 
@@ -215,72 +191,11 @@ namespace OpenTabletDriver.UI.ViewModels
             await _daemonService.Instance.SaveAsPreset(preset);
         }
 
-        private async Task SetupTabletViewModels()
-        {
-            foreach (var tabletId in await _daemonService.Instance!.GetTablets())
-            {
-                await AddTabletViewModel(tabletId);
-            }
-        }
-
-        private async Task SetupToolViewModels()
-        {
-            foreach (var tool in await _daemonService.Instance!.GetToolSettings())
-            {
-                AddToolViewModel(tool);
-            }
-        }
-
-        private async Task AddTabletViewModel(int tabletId)
-        {
-            var tabletHandler = await TabletService.CreateAsync(_daemonService.Instance!, tabletId);
-            var tabletViewModel = new TabletViewModel(tabletHandler);
-            Tablets.Add(tabletViewModel);
-        }
-
-        private void AddToolViewModel(PluginSettings tool)
-        {
-            var toolDescriptor = _plugins
-                .SelectMany(c => c.Plugins)
-                .FirstOrDefault(p => p.Path == tool.Path);
-
-            var toolViewModel = new ToolViewModel(toolDescriptor, tool);
-            Tools.Add(toolViewModel);
-        }
-
-        private void Daemon_TabletAdded(object? sender, int tabletId)
-        {
-            AddTabletViewModel(tabletId).ConfigureAwait(false);
-        }
-
-        private void Daemon_TabletRemoved(object? sender, int tabletId)
-        {
-            for (var i = 0; i < Tablets.Count; i++)
-            {
-                if (Tablets[i].TabletId == tabletId)
-                {
-                    Tablets.RemoveAt(i);
-                    return;
-                }
-            }
-        }
-
-        private void Daemon_ToolsChanged(object? sender, IEnumerable<PluginSettings> tools)
-        {
-            foreach (var newToolSetting in tools)
-            {
-                var tool = Tools.FirstOrDefault(t => t.Settings.Path == newToolSetting.Path);
-                if (tool is null)
-                    continue;
-
-                tool.Settings = newToolSetting;
-            }
-        }
-
         partial void OnIsConnectedChanged(bool value)
         {
             if (value)
             {
+                // TODO: save route then restore on reconnect
                 InitializeAsync().ConfigureAwait(false);
             }
             else
@@ -288,9 +203,8 @@ namespace OpenTabletDriver.UI.ViewModels
                 Displays = ImmutableArray<DisplayDto>.Empty;
                 ToolSettings = ImmutableArray<PluginSettings>.Empty;
                 Plugins = ImmutableArray<PluginContextDto>.Empty;
-                Tablets.Clear();
-                Tools.Clear();
                 Presets.Clear();
+                _navigator.NextAsRoot(AppRoutes.DaemonConnectionRoute);
             }
         }
     }

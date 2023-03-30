@@ -1,10 +1,10 @@
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using OpenTabletDriver.UI.ViewModels;
 using OpenTabletDriver.UI.Views;
 
 namespace OpenTabletDriver.UI;
@@ -15,13 +15,13 @@ public class App : Application
 
     public App(IServiceProvider provider, IEnumerable<IStartupJob> startupJobs)
     {
-        Ioc.Default.ConfigureServices(provider); // allow use of Ioc.Default.GetService<T>()
+        Ioc.Default.ConfigureServices(provider); // allow use of Ioc.Default for DI
         _startupJobs = startupJobs;
 
         TaskScheduler.UnobservedTaskException += (sender, e) =>
         {
-            Debug.WriteLine("aaaaa");
-            Debug.WriteLine(e.Exception);
+            Debug.WriteLine("uoohhhhhh!!!");
+            ExceptionDispatchInfo.Throw(e.Exception); // forcibly crash
         };
     }
 
@@ -35,6 +35,19 @@ public class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
+    public override void OnFrameworkInitializationCompleted()
+    {
+        RemoveAvaloniaValidationPlugin();
+        RunStartupJobs();
+
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.MainWindow = new MainWindowView();
+        }
+
+        base.OnFrameworkInitializationCompleted();
+    }
+
     private void RunStartupJobs()
     {
         if (_startupJobs is null)
@@ -44,22 +57,6 @@ public class App : Application
             job.Run();
 
         _startupJobs = null;
-    }
-
-    public override void OnFrameworkInitializationCompleted()
-    {
-        RemoveAvaloniaValidationPlugin();
-        RunStartupJobs();
-
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.MainWindow = new MainWindowView()
-            {
-                DataContext = Ioc.Default.GetService<MainWindowViewModel>()
-            };
-        }
-
-        base.OnFrameworkInitializationCompleted();
     }
 
     private static void RemoveAvaloniaValidationPlugin()

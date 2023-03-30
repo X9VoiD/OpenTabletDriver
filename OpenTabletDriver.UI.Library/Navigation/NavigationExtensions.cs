@@ -20,28 +20,6 @@ public static class NavigationExtensions
             .AddStartupJob<NavigationStartup>();
     }
 
-    private class NavigationStartup : IStartupJob
-    {
-        private readonly INavigationService _navigationService;
-        private readonly NavigationValueConverter _converter;
-        private readonly NavigationViewLocator _viewLocator;
-
-        public NavigationStartup(INavigationService navigationService, NavigationValueConverter converter,
-            NavigationViewLocator viewLocator)
-        {
-            _navigationService = navigationService;
-            _converter = converter;
-            _viewLocator = viewLocator;
-        }
-
-        public void Run()
-        {
-            Application.Current!.Resources.Add("NavigationService", _navigationService);
-            Application.Current!.Resources.Add("NavigationValueConverter", _converter);
-            Application.Current!.DataTemplates.Insert(0, _viewLocator);
-        }
-    }
-
     public static IServiceCollection AddNavigationRoute<T>(this IServiceCollection services, string route)
         where T : class
     {
@@ -78,5 +56,27 @@ public static class NavigationExtensions
         services.Add(ServiceDescriptor.Describe(objectType, objectType, lifetime));
         services.AddSingleton(new NavigationRoute(route, objectType, viewType));
         return services;
+    }
+
+    private class NavigationStartup : IStartupJob
+    {
+        private readonly INavigationService _navigationService;
+        private readonly NavigationValueConverter _converter;
+        private readonly NavigationViewLocator _viewLocator;
+
+        public NavigationStartup(INavigationService navigationService, NavigationValueConverter converter,
+            NavigationViewLocator viewLocator)
+        {
+            _navigationService = navigationService;
+            _converter = converter;
+            _viewLocator = viewLocator;
+        }
+
+        public void Run()
+        {
+            Application.Current!.Resources.Add("NavigationService", _navigationService);
+            Application.Current!.Resources.Add("NavigationValueConverter", _converter);
+            Application.Current!.DataTemplates.Insert(0, _viewLocator);
+        }
     }
 }

@@ -9,8 +9,8 @@ $OutputDir = "./bin";
 
 $Config = "Release";
 
-$Options = @("--configuration", "$Config", "--verbosity=quiet", "--self-contained=false", "/p:PublishSingleFile=false", "/p:DebugType=embedded",`
-    "/p:SuppressNETCoreSdkPreviewMessage=true", "/p:PublishTrimmed=false", "-p:SourceRevisionId=$(git rev-parse --short HEAD)");
+$Options = @("--configuration", "$Config", "--verbosity=quiet", "/p:PublishSingleFile=true", "/p:DebugType=embedded",`
+    "/p:SuppressNETCoreSdkPreviewMessage=true", "--self-contained=false", "-p:SourceRevisionId=$(git rev-parse --short HEAD)");
 
 # Change dir to script root, in case people run the script outside of the folder.
 Set-Location $PSScriptRoot;

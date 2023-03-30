@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Pipes;
+using System.Threading;
 using System.Threading.Tasks;
 using OpenTabletDriver.Daemon.Contracts.RPC.Messages;
 using StreamJsonRpc;
@@ -13,6 +14,7 @@ namespace OpenTabletDriver.Daemon.Contracts.RPC
         event EventHandler? Connected;
         event EventHandler? Disconnected;
         Task ConnectAsync();
+        Task ConnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
         void Disconnect();
     }
 
@@ -34,10 +36,15 @@ namespace OpenTabletDriver.Daemon.Contracts.RPC
         public event EventHandler? Connected;
         public event EventHandler? Disconnected;
 
-        public async Task ConnectAsync()
+        public Task ConnectAsync()
+        {
+            return ConnectAsync(TimeSpan.FromSeconds(5));
+        }
+
+        public async Task ConnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
         {
             _stream = GetStream();
-            await _stream.ConnectAsync(5000);
+            await _stream.ConnectAsync(timeout, cancellationToken);
 
             _rpc = new JsonRpc(new MessageHandler(_stream));
             _rpc.Disconnected += (_, _) => OnDisconnected();

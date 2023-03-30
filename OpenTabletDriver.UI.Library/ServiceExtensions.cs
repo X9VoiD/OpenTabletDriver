@@ -1,7 +1,10 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.Daemon.Contracts.RPC;
+using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
@@ -18,10 +21,17 @@ public static class ServiceExtensions
     public static IServiceCollection WithDefaultServices(this IServiceCollection services)
     {
         return services
-            .AddTransient<App>()
+            .AddSingleton<App>()
             .AddSingleton<IRpcClient<IDriverDaemon>>(_ => new RpcClient<IDriverDaemon>("OpenTabletDriver.Daemon"))
             .AddSingleton<IDaemonService, DaemonService>()
+            .AddSingleton<IDispatcher>(_ => Dispatcher.UIThread)
+            .AddSingleton<IUISettingsProvider, UISettingsProvider>()
             .UseNavigation<NavigationService>()
             .AddSingleton<IMessenger, StrongReferenceMessenger>();
+    }
+
+    public static IServiceCollection WithNormalEnvironment(this IServiceCollection services, string[] args)
+    {
+        return services.AddSingleton<UIEnvironment>(UIEnvironment.Create(args));
     }
 }
