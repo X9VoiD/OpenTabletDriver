@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace OpenTabletDriver.UI.Models;
 
 public class UIEnvironment
@@ -23,10 +25,18 @@ public class UIEnvironment
 
     public static UIEnvironment Create(string[] args)
     {
-        var appDataPath = Path.Combine(
+        var defaultAppDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "OpenTabletDriver.UI"
         );
-        return new UIEnvironment(args, appDataPath);
+
+        var currentExe = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+        var alternativeAppDataPath = Path.Combine(currentExe, "userdata");
+
+        var appData = Directory.Exists(alternativeAppDataPath)
+            ? alternativeAppDataPath
+            : defaultAppDataPath;
+
+        return new UIEnvironment(args, defaultAppDataPath);
     }
 }
