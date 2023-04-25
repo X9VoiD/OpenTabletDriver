@@ -32,6 +32,11 @@ public interface INavigationService : INotifyPropertyChanged
     bool CanGoBack { get; }
 
     /// <summary>
+    /// Occurs when the navigation stack is changing.
+    /// </summary>
+    event EventHandler<NavigatingEventArgs>? Navigating;
+
+    /// <summary>
     /// Occurs when the navigation stack changes.
     /// </summary>
     event EventHandler<NavigatedEventArgs>? Navigated;
@@ -52,13 +57,13 @@ public interface INavigationService : INotifyPropertyChanged
     void BackToRoot();
 
     /// <summary>
-    /// Navigates to the specified page.
+    /// Navigates to the specified registered page.
     /// </summary>
-    /// <param name="page">The page to navigate to.</param>
+    /// <param name="page">The registered page to navigate to.</param>
     void Next(string page);
 
     /// <summary>
-    /// Clears the navigation stack and navigates to the specified page.
+    /// Clears the navigation stack and navigates to the specified registered page.
     /// </summary>
     /// <param name="page">The page to navigate to.</param>
     /// <remarks>

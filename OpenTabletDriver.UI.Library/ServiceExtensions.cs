@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTabletDriver.Daemon.Contracts;
@@ -7,6 +6,7 @@ using OpenTabletDriver.Daemon.Contracts.RPC;
 using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
+using OpenTabletDriver.UI.Services.Windows;
 
 namespace OpenTabletDriver.UI;
 
@@ -27,11 +27,24 @@ public static class ServiceExtensions
             .AddSingleton<IDispatcher>(_ => Dispatcher.UIThread)
             .AddSingleton<IUISettingsProvider, UISettingsProvider>()
             .UseNavigation<NavigationService>()
-            .AddSingleton<IMessenger, StrongReferenceMessenger>();
+            .AddSingleton<IMessenger, StrongReferenceMessenger>()
+            .AddSingleton<IAutoStartService, DefaultAutoStartService>();
     }
 
     public static IServiceCollection WithNormalEnvironment(this IServiceCollection services, string[] args)
     {
         return services.AddSingleton<UIEnvironment>(UIEnvironment.Create(args));
+    }
+
+    public static IServiceCollection WithPlatformServices(this IServiceCollection services)
+    {
+        if (OperatingSystem.IsWindows())
+            return services.AddWindowsServices();
+        // else if (OperatingSystem.IsLinux())
+        //     return services.AddLinuxServices();
+        // else if (OperatingSystem.IsMacOS())
+        //     return services.AddMacServices();
+        else
+            return services;
     }
 }

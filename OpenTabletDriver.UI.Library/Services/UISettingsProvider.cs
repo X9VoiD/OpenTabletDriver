@@ -10,38 +10,68 @@ namespace OpenTabletDriver.UI.Services;
 public interface IUISettingsProvider : INotifyPropertyChanged
 {
     UISettings? Settings { get; set; }
+    // TODO: remove this and instead make this service interact with a notification service.
+    // TODO: do the recovery in the service itself instead of the view model.
     UISettingsLoadException? LoadException { get; }
     Task SaveSettingsAsync();
 }
 
 public static class UISettingsProviderExtensions
 {
-    internal static WeakRefPropertyChangedHandler<IUISettingsProvider, UISettings?> WhenLoadedWeak(
+    internal static CompositeDisposable WhenLoadedOrSetWeak(
         this IUISettingsProvider provider,
-        Action<IUISettingsProvider, UISettings> action)
+        Action<CompositeDisposable, UISettings> onLoad,
+        Action<CompositeDisposable, UISettingsLoadException>? onException = null)
     {
-        return provider.HandlePropertyWeak(
+        var compositeDisposable = new CompositeDisposable();
+
+        var onLoadHandler = provider.HandlePropertyWeak(
             nameof(provider.Settings),
             p => p.Settings,
-            (p, s) =>
-            {
-                if (s != null) action(p, s);
-            }
+            (p, s) => { if (s is not null) onLoad(compositeDisposable, s); }
         );
+
+        compositeDisposable.Add(onLoadHandler);
+
+        if (onException is null)
+            return compositeDisposable;
+
+        var onExceptionHandler = provider.HandlePropertyWeak(
+            nameof(provider.LoadException),
+            p => p.LoadException,
+            (p, e) => { if (e is not null) onException(compositeDisposable, e); }
+        );
+
+        compositeDisposable.Add(onExceptionHandler);
+        return compositeDisposable;
     }
 
-    internal static StrongRefPropertyChangedHandler<IUISettingsProvider, UISettings?> WhenLoaded(
+    internal static CompositeDisposable WhenLoadedOrSet(
         this IUISettingsProvider provider,
-        Action<IUISettingsProvider, UISettings> action)
+        Action<CompositeDisposable, UISettings> onLoad,
+        Action<CompositeDisposable, UISettingsLoadException>? onException = null)
     {
-        return provider.HandleProperty(
+        var compositeDisposable = new CompositeDisposable();
+
+        var onLoadHandler = provider.HandleProperty(
             nameof(provider.Settings),
             p => p.Settings,
-            (p, s) =>
-            {
-                if (s != null) action(p, s);
-            }
+            (p, s) => { if (s is not null) onLoad(compositeDisposable, s); }
         );
+
+        compositeDisposable.Add(onLoadHandler);
+
+        if (onException is null)
+            return compositeDisposable;
+
+        var onExceptionHandler = provider.HandleProperty(
+            nameof(provider.LoadException),
+            p => p.LoadException,
+            (p, e) => { if (e is not null) onException(compositeDisposable, e); }
+        );
+
+        compositeDisposable.Add(onExceptionHandler);
+        return compositeDisposable;
     }
 }
 
@@ -87,7 +117,7 @@ public partial class UISettingsProvider : ObservableObject, IUISettingsProvider
 
     private async Task SaveSettingsAsync(UISettings? settings)
     {
-        using var fileStream = File.OpenWrite(_settingsPath);
+        using var fileStream = File.Open(_settingsPath, FileMode.Create, FileAccess.Write);
         await JsonSerializer.SerializeAsync(fileStream, settings, UISettingsContext.Default.Options);
     }
 

@@ -1,7 +1,6 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Controls;
 using OpenTabletDriver.UI.Navigation;
+using OpenTabletDriver.UI.ViewModels;
 
 namespace OpenTabletDriver.UI.Views;
 
@@ -13,4 +12,3 @@ public partial class UISettingsView : UserControl
         NavigationMixin.Attach(this);
     }
 }
-

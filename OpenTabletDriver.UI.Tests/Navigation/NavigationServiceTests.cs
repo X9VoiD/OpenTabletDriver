@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using FluentAssertions;
 using FluentAssertions.Events;
@@ -6,6 +7,7 @@ using OpenTabletDriver.UI.Navigation;
 
 namespace OpenTabletDriver.UI.Tests.Navigation;
 
+// TODO: test navigation cancels
 public class NavigationServiceTests
 {
     [Fact]
@@ -26,23 +28,11 @@ public class NavigationServiceTests
         navServ.CanGoBack.Should().BeFalse();
         navServ.CurrentPage.Should().Be("test");
 
-        var expectedEvents = new[]
-        {
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 0,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs(null, "test", NavigationKind.Next)
-                }
-            }
-        };
+        var expectedEvents = new List<OccurredEvent>()
+            .AddStandardNavigation(navServ, null, "test", NavigationKind.Next)
+            .ToArray();
 
-        navEvMon.OccurredEvents.Should().BeEquivalentTo(expectedEvents, options => options
-            .WithStrictOrdering()
-            .Excluding(e => e.TimestampUtc));
+        AssertEvents(navEvMon, expectedEvents);
     }
 
     [Fact]
@@ -57,53 +47,12 @@ public class NavigationServiceTests
         navServ.CanGoBack.Should().BeTrue();
         navServ.CurrentPage.Should().Be("test2");
 
-        var expectedEvents = new[]
-        {
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 0,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs(null, "test", NavigationKind.Next)
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanging),
-                Sequence = 1,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangingEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanged),
-                Sequence = 2,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangedEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 3,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs("test", "test2", NavigationKind.Next)
-                }
-            }
-        };
+        var expectedEvents = new List<OccurredEvent>()
+            .AddStandardNavigation(navServ, null, "test", NavigationKind.Next)
+            .AddStandardNavigation(navServ, "test", "test2", NavigationKind.Next, canGoBackChanged: true)
+            .ToArray();
 
-        navEvMon.OccurredEvents.Should().BeEquivalentTo(expectedEvents, options => options
-            .WithStrictOrdering()
-            .Excluding(e => e.TimestampUtc));
+        AssertEvents(navEvMon, expectedEvents);
     }
 
     [Fact]
@@ -135,43 +84,11 @@ public class NavigationServiceTests
         navServ.CanGoBack.Should().BeFalse();
         navServ.CurrentPage.Should().Be("test");
 
-        var expectedEvents = new[]
-        {
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanging),
-                Sequence = 0,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangingEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanged),
-                Sequence = 1,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangedEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 2,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs("test2", "test", NavigationKind.Back)
-                }
-            }
-        };
+        var expectedEvents = new List<OccurredEvent>()
+            .AddStandardNavigation(navServ, "test2", "test", NavigationKind.Back, canGoBackChanged: true)
+            .ToArray();
 
-        navEvMon.OccurredEvents.Should().BeEquivalentTo(expectedEvents, options => options
-            .WithStrictOrdering()
-            .Excluding(e => e.TimestampUtc));
+        AssertEvents(navEvMon, expectedEvents);
     }
 
     [Fact]
@@ -190,23 +107,11 @@ public class NavigationServiceTests
         navServ.CanGoBack.Should().BeTrue();
         navServ.CurrentPage.Should().Be("test2");
 
-        var expectedEvents = new[]
-        {
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 0,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs("test3", "test2", NavigationKind.Back)
-                }
-            }
-        };
+        var expectedEvents = new List<OccurredEvent>()
+            .AddStandardNavigation(navServ, "test3", "test2", NavigationKind.Back)
+            .ToArray();
 
-        navEvMon.OccurredEvents.Should().BeEquivalentTo(expectedEvents, options => options
-            .WithStrictOrdering()
-            .Excluding(e => e.TimestampUtc));
+        AssertEvents(navEvMon, expectedEvents);
     }
 
     [Fact]
@@ -220,23 +125,11 @@ public class NavigationServiceTests
         navServ.CanGoBack.Should().BeFalse();
         navServ.CurrentPage.Should().Be("test");
 
-        var expectedEvents = new[]
-        {
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 0,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs(null, "test", NavigationKind.NextAsRoot)
-                }
-            }
-        };
+        var expectedEvents = new List<OccurredEvent>()
+            .AddStandardNavigation(navServ, null, "test", NavigationKind.NextAsRoot)
+            .ToArray();
 
-        navEvMon.OccurredEvents.Should().BeEquivalentTo(expectedEvents, options => options
-            .WithStrictOrdering()
-            .Excluding(e => e.TimestampUtc));
+        AssertEvents(navEvMon, expectedEvents);
     }
 
     [Fact]
@@ -254,43 +147,11 @@ public class NavigationServiceTests
         navServ.CanGoBack.Should().BeFalse();
         navServ.CurrentPage.Should().Be("test3");
 
-        var expectedEvents = new[]
-        {
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanging),
-                Sequence = 0,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangingEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanged),
-                Sequence = 1,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangedEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 2,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs("test2", "test3", NavigationKind.NextAsRoot)
-                }
-            }
-        };
+        var expectedEvents = new List<OccurredEvent>()
+            .AddStandardNavigation(navServ, "test2", "test3", NavigationKind.NextAsRoot, canGoBackChanged: true)
+            .ToArray();
 
-        navEvMon.OccurredEvents.Should().BeEquivalentTo(expectedEvents, options => options
-            .WithStrictOrdering()
-            .Excluding(e => e.TimestampUtc));
+        AssertEvents(navEvMon, expectedEvents);
     }
 
     [Fact]
@@ -324,42 +185,106 @@ public class NavigationServiceTests
         navServ.CanGoBack.Should().BeFalse();
         navServ.CurrentPage.Should().Be("test");
 
-        var expectedEvents = new[]
-        {
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanging),
-                Sequence = 0,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangingEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.PropertyChanged),
-                Sequence = 1,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new PropertyChangedEventArgs(nameof(NavigationService.CanGoBack))
-                }
-            },
-            new OccurredEvent
-            {
-                EventName = nameof(NavigationService.Navigated),
-                Sequence = 2,
-                Parameters = new object[]
-                {
-                    navServ,
-                    new NavigatedEventArgs("test2", "test", NavigationKind.BackToRoot)
-                }
-            }
-        };
+        var expectedEvents = new List<OccurredEvent>()
+            .AddStandardNavigation(navServ, "test2", "test", NavigationKind.BackToRoot, canGoBackChanged: true)
+            .ToArray();
 
+        AssertEvents(navEvMon, expectedEvents);
+    }
+
+    private void AssertEvents(IMonitor<NavigationService> navEvMon, params OccurredEvent[] expectedEvents)
+    {
         navEvMon.OccurredEvents.Should().BeEquivalentTo(expectedEvents, options => options
             .WithStrictOrdering()
+            .Excluding(e => e.Sequence) // already accounted for by WithStrictOrdering
             .Excluding(e => e.TimestampUtc));
+    }
+}
+
+internal static class OccurredEventListExtensions
+{
+    public static List<OccurredEvent> AddStandardNavigation(
+        this List<OccurredEvent> events,
+        NavigationService navServ,
+        string? prev,
+        string curr,
+        NavigationKind kind,
+        bool canGoBackChanged = false)
+    {
+        if (canGoBackChanged)
+        {
+
+            // CanGoBack is changed after the Navigating event, so the sequence looks like:
+            // - Navigating
+            // - PropertyChanged (CanGoBack)
+            // - Navigated
+            // This is to only ever change CanGoBack once per navigation, no need to change
+            // it twice in the event that the navigation is cancelled.
+            events.AddRange(new OccurredEvent[]
+            {
+                new OccurredEvent
+                {
+                    EventName = nameof(NavigationService.Navigating),
+                    Parameters = new object[]
+                    {
+                        navServ,
+                        new NavigatingEventArgs(prev, curr, kind)
+                    }
+                },
+                new OccurredEvent
+                {
+                    EventName = nameof(NavigationService.PropertyChanging),
+                    Parameters = new object[]
+                    {
+                        navServ,
+                        new PropertyChangingEventArgs(nameof(NavigationService.CanGoBack))
+                    }
+                },
+                new OccurredEvent
+                {
+                    EventName = nameof(NavigationService.PropertyChanged),
+                    Parameters = new object[]
+                    {
+                        navServ,
+                        new PropertyChangedEventArgs(nameof(NavigationService.CanGoBack))
+                    }
+                },
+                new OccurredEvent
+                {
+                    EventName = nameof(NavigationService.Navigated),
+                    Parameters = new object[]
+                    {
+                        navServ,
+                        new NavigatedEventArgs(prev, curr, kind)
+                    }
+                }
+            });
+        }
+        else
+        {
+            events.AddRange(new OccurredEvent[]
+            {
+                new OccurredEvent
+                {
+                    EventName = nameof(NavigationService.Navigating),
+                    Parameters = new object[]
+                    {
+                        navServ,
+                        new NavigatingEventArgs(prev, curr, kind)
+                    }
+                },
+                new OccurredEvent
+                {
+                    EventName = nameof(NavigationService.Navigated),
+                    Parameters = new object[]
+                    {
+                        navServ,
+                        new NavigatedEventArgs(prev, curr, kind)
+                    }
+                }
+            });
+        }
+
+        return events;
     }
 }

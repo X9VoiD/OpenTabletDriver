@@ -11,13 +11,12 @@ namespace OpenTabletDriver.UI.ViewModels;
 public partial class DaemonConnectionViewModel : NavigationViewModelBase
 {
     private const string BASE_QOL_HINT_TEXT = """
-    Please make sure that OpenTabletDriver.Daemon is running or is in the same directory as OpenTabletDriver.UX.
+    Please make sure that OpenTabletDriver.Daemon is running or is in the same directory as OpenTabletDriver.UI.
     Click the "Help" button for more information.
     """;
 
     private readonly IDaemonService _daemonService;
     private UISettings _settings = null!; // non-null during and after WhenLoaded
-    private IDisposable? _dServSub;
     private int _retryCount = 0;
 
     [ObservableProperty]
@@ -38,13 +37,30 @@ public partial class DaemonConnectionViewModel : NavigationViewModelBase
     {
         _daemonService = daemonService;
 
-        settingsProvider.WhenLoaded((p, s) =>
+        this.WhenNavigatedTo(d =>
         {
-            _dServSub?.Dispose(); // avoid leaks
-            _dServSub = _daemonService.HandleProperty(
-                nameof(IDaemonService.State),
-                d => d.State,
-                DaemonService_State_Handler);
+            settingsProvider.WhenLoadedOrSet(
+                onLoad: (d, s) =>
+                {
+                    _settings = s;
+
+                    _settings.HandleProperty(
+                        nameof(UISettings.Kaomoji),
+                        s => s.Kaomoji,
+                        (s, v) => DaemonService_State_Handler(_daemonService, _daemonService.State)
+                    ).DisposeWith(d);
+
+                    _daemonService.HandleProperty(
+                        nameof(IDaemonService.State),
+                        d => d.State,
+                        DaemonService_State_Handler
+                    ).DisposeWith(d);
+                },
+                onException: (p, ex) =>
+                {
+                    MainText = "Failed to load settings! Go to the settings page to fix automatically.";
+                }
+            ).DisposeWith(d);
         });
 
         // TODO: Change QoL hint according to environment
@@ -76,18 +92,31 @@ public partial class DaemonConnectionViewModel : NavigationViewModelBase
     public static void GoToHelpWebsite()
     {
         // TODO: link to a more specific wiki page
-        IoHelpers.OpenLink("https://opentabletdriver.net/Wiki");
+        IoUtility.OpenLink("https://opentabletdriver.net/Wiki");
     }
 
     private void DaemonService_State_Handler(IDaemonService daemonService, DaemonState state)
     {
-        MainText = state switch
+        if (_settings.Kaomoji)
         {
-            DaemonState.Disconnected => "Daemon is not running! ~(>_<~)",
-            DaemonState.Connecting => "Connecting to daemon... |･ω･)",
-            DaemonState.Connected => "Connected to daemon. (◕‿◕✿)",
-            _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
-        };
+            MainText = state switch
+            {
+                DaemonState.Disconnected => "Daemon is not running! ~(>_<~)",
+                DaemonState.Connecting => "Connecting to daemon... |･ω･)",
+                DaemonState.Connected => "Connected to daemon. (◕‿◕✿)",
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+            };
+        }
+        else
+        {
+            MainText = state switch
+            {
+                DaemonState.Disconnected => "Daemon is not running!",
+                DaemonState.Connecting => "Connecting to daemon...",
+                DaemonState.Connected => "Connected to daemon.",
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+            };
+        }
 
         if (state == DaemonState.Connected)
         {

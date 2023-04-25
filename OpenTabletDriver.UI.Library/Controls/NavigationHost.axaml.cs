@@ -1,20 +1,14 @@
-using System.Globalization;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
-using Avalonia.Data.Converters;
-using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using OpenTabletDriver.UI.Navigation;
 
 namespace OpenTabletDriver.UI.Controls;
 
 /// <summary>
-/// Displays <see cref="ContentControl.Content"/> according to a <see cref="FuncDataTemplate"/>.
-/// Has different possible transitions for different navigation types.
+/// Displays <see cref="ContentControl.Content"/> with different possible
+/// transitions for different navigation types.
 /// </summary>
 public partial class NavigationHost : UserControl
 {
@@ -84,6 +78,7 @@ public partial class NavigationHost : UserControl
 
     protected override void OnDataContextChanged(EventArgs e)
     {
+        // Don't reorder
         base.OnDataContextChanged(e);
         PART_TransitioningContentControl.DataContext = _context;
     }

@@ -2,30 +2,33 @@ using System.ComponentModel;
 
 namespace OpenTabletDriver.UI;
 
+// we do it like this to avoid System.Linq.Expressions
 internal static class PropertyChangedExtensions
 {
     public static WeakRefPropertyChangedHandler<TSource, TTarget> HandlePropertyWeak<TSource, TTarget>(
         this TSource source,
         string sourceProperty,
         Func<TSource, TTarget> getter,
-        Action<TSource, TTarget> action)
+        Action<TSource, TTarget> action,
+        bool invokeEventOnCreation = true)
             where TSource : class, INotifyPropertyChanged
     {
-        return new WeakRefPropertyChangedHandler<TSource, TTarget>(source, sourceProperty, getter, action);
+        return new WeakRefPropertyChangedHandler<TSource, TTarget>(source, sourceProperty, getter, action, invokeEventOnCreation);
     }
 
     public static StrongRefPropertyChangedHandler<TSource, TTarget> HandleProperty<TSource, TTarget>(
         this TSource source,
         string sourceProperty,
         Func<TSource, TTarget> getter,
-        Action<TSource, TTarget> action)
+        Action<TSource, TTarget> action,
+        bool invokeEventOnCreation = true)
             where TSource : class, INotifyPropertyChanged
     {
-        return new StrongRefPropertyChangedHandler<TSource, TTarget>(source, sourceProperty, getter, action);
+        return new StrongRefPropertyChangedHandler<TSource, TTarget>(source, sourceProperty, getter, action, invokeEventOnCreation);
     }
 }
 
-internal readonly struct WeakRefPropertyChangedHandler<TSource, TTarget> : IDisposable
+internal class WeakRefPropertyChangedHandler<TSource, TTarget> : IDisposable
     where TSource : class, INotifyPropertyChanged
 {
     private readonly WeakReference<TSource> _source;
@@ -33,7 +36,7 @@ internal readonly struct WeakRefPropertyChangedHandler<TSource, TTarget> : IDisp
     private readonly Func<TSource, TTarget> _getter;
     private readonly Action<TSource, TTarget> _action;
 
-    public WeakRefPropertyChangedHandler(TSource source, string sourceProperty, Func<TSource, TTarget> getter, Action<TSource, TTarget> action)
+    public WeakRefPropertyChangedHandler(TSource source, string sourceProperty, Func<TSource, TTarget> getter, Action<TSource, TTarget> action, bool invokeEventOnCreation)
     {
         _source = new WeakReference<TSource>(source);
         _sourceProperty = sourceProperty;
@@ -41,7 +44,9 @@ internal readonly struct WeakRefPropertyChangedHandler<TSource, TTarget> : IDisp
         _action = action;
 
         source.PropertyChanged += HandlePropertyChanged;
-        action(source, getter(source)); // Invoke action on creation
+
+        if (invokeEventOnCreation)
+            action(source, getter(source));
     }
 
     private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -57,7 +62,7 @@ internal readonly struct WeakRefPropertyChangedHandler<TSource, TTarget> : IDisp
     }
 }
 
-internal readonly struct StrongRefPropertyChangedHandler<TSource, TTarget> : IDisposable
+internal class StrongRefPropertyChangedHandler<TSource, TTarget> : IDisposable
     where TSource : class, INotifyPropertyChanged
 {
     private readonly TSource _source;
@@ -65,7 +70,7 @@ internal readonly struct StrongRefPropertyChangedHandler<TSource, TTarget> : IDi
     private readonly Func<TSource, TTarget> _getter;
     private readonly Action<TSource, TTarget> _action;
 
-    public StrongRefPropertyChangedHandler(TSource source, string sourceProperty, Func<TSource, TTarget> getter, Action<TSource, TTarget> action)
+    public StrongRefPropertyChangedHandler(TSource source, string sourceProperty, Func<TSource, TTarget> getter, Action<TSource, TTarget> action, bool invokeEventOnCreation)
     {
         _source = source;
         _sourceProperty = sourceProperty;
@@ -73,7 +78,9 @@ internal readonly struct StrongRefPropertyChangedHandler<TSource, TTarget> : IDi
         _action = action;
 
         source.PropertyChanged += HandlePropertyChanged;
-        action(source, getter(source)); // Invoke action on creation
+
+        if (invokeEventOnCreation)
+            action(source, getter(source));
     }
 
     private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)

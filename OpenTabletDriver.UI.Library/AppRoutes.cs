@@ -17,7 +17,7 @@ public static class AppRoutes
     public const string DiagnosticsRoute = "Diagnostics";
     public const string SettingsRoute = "Settings";
 
-    public static IServiceCollection AddApplicationViewModels(this IServiceCollection services)
+    public static IServiceCollection AddGlobalApplicationViewModels(this IServiceCollection services)
     {
         return services
             .AddTransient<MainWindowViewModel>()
@@ -28,14 +28,14 @@ public static class AppRoutes
     {
         return services
             .AddNavigationRoute<Navigation404ViewModel, Navigation404View>("404")
-            .AddSingletonNavigationRoute<DaemonConnectionViewModel, DaemonConnectionView>(DaemonConnectionRoute);
-            // .AddNavigationRoute<TabletsOverviewViewModel, TabletsOverviewView>(TabletsOverviewRoute)
-            // .AddNavigationRoute<TabletMainSettingsViewModel, TabletMainSettingsView>(TabletMainSettingsRoute)
-            // .AddNavigationRoute<TabletBindingsViewModel, TabletBindingsView>(TabletBindingsRoute)
-            // .AddNavigationRoute<TabletFiltersViewModel, TabletFiltersView>(TabletFiltersRoute)
-            // .AddNavigationRoute<PluginsSettingsViewModel, PluginsSettingsView>(PluginsSettingsRoute)
-            // .AddNavigationRoute<PluginManagerViewModel, PluginManagerView>(PluginManagerRoute)
-            // .AddNavigationRoute<DiagnosticsViewModel, DiagnosticsView>(DiagnosticsRoute)
-            // .AddNavigationRoute<SettingsViewModel, SettingsView>(SettingsRoute);
+            .AddSingletonNavigationRoute<DaemonConnectionViewModel, DaemonConnectionView>(DaemonConnectionRoute)
+            .AddSingletonNavigationRoute<UISettingsViewModel, UISettingsView>(SettingsRoute) // register as singleton to preserve "modified" state
+            .AddSingletonNavigationRoute<TabletsOverviewViewModel, TabletsOverview>(TabletsOverviewRoute);
+        // .AddNavigationRoute<TabletMainSettingsViewModel, TabletMainSettingsView>(TabletMainSettingsRoute)
+        // .AddNavigationRoute<TabletBindingsViewModel, TabletBindingsView>(TabletBindingsRoute)
+        // .AddNavigationRoute<TabletFiltersViewModel, TabletFiltersView>(TabletFiltersRoute)
+        // .AddNavigationRoute<PluginsSettingsViewModel, PluginsSettingsView>(PluginsSettingsRoute)
+        // .AddNavigationRoute<PluginManagerViewModel, PluginManagerView>(PluginManagerRoute)
+        // .AddNavigationRoute<DiagnosticsViewModel, DiagnosticsView>(DiagnosticsRoute)
     }
 }

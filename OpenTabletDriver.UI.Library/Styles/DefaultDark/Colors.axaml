@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Color x:Key="BackgroundColor">#202020</Color>
-    <Color x:Key="ContainerColor">#323232</Color>
-    <SolidColorBrush x:Key="BackgroundColorBrush" Color="{DynamicResource BackgroundColor}" />
-    <SolidColorBrush x:Key="ContainerColorBrush" Color="{DynamicResource ContainerColor}" />
+    <Color x:Key="OTD_BackgroundColor">#202020</Color>
+    <Color x:Key="OTD_ContainerColor">#323232</Color>
+    <SolidColorBrush x:Key="OTD_BackgroundColorBrush" Color="{DynamicResource OTD_BackgroundColor}" />
+    <SolidColorBrush x:Key="OTD_ContainerColorBrush" Color="{DynamicResource OTD_ContainerColor}" />
 </ResourceDictionary>

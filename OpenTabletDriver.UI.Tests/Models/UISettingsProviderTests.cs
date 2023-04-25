@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using FluentAssertions;
 using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Services;
 
@@ -19,7 +21,18 @@ public class UISettingsProviderTests
     public void SettingsStartLoadingOnConstruct()
     {
         using var environment = new EnvWithSettings(DefaultSettings);
-        var settingsProvider = new UISettingsProvider(environment.Environment);
+        var settingsProvider = new UISettingsProvider(environment.Environment, new TaskDispatcher());
+        var manualResetEvent = new ManualResetEventSlim(false);
+
+        // Wait for settings to load
+        settingsProvider.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(UISettingsProvider.Settings))
+                manualResetEvent.Set();
+        };
+
+        manualResetEvent.Wait(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        settingsProvider.Settings.Should().NotBeNull();
     }
 
     private class EnvWithSettings : IDisposable

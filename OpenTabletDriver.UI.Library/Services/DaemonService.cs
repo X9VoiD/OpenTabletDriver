@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.Daemon.Contracts.RPC;
@@ -29,6 +30,7 @@ public interface IDaemonService : INotifyPropertyChanged, INotifyPropertyChangin
 public partial class DaemonService : ObservableObject, IDaemonService
 {
     private readonly IRpcClient<IDriverDaemon> _rpcClient;
+    private readonly IDispatcher _dispatcher;
     private DaemonState _state;
     private IDriverDaemon? _instance;
     private bool _suppressStateChangedEvents;
@@ -47,9 +49,10 @@ public partial class DaemonService : ObservableObject, IDaemonService
 
     public ObservableCollection<ITabletService> Tablets { get; } = new();
 
-    public DaemonService(IRpcClient<IDriverDaemon> rpcClient)
+    public DaemonService(IRpcClient<IDriverDaemon> rpcClient, IDispatcher dispatcher)
     {
         _rpcClient = rpcClient;
+        _dispatcher = dispatcher;
         rpcClient.Connected += OnConnected;
         rpcClient.Disconnected += OnDisconnected;
     }
@@ -90,10 +93,16 @@ public partial class DaemonService : ObservableObject, IDaemonService
         _suppressStateChangedEvents = false;
     }
 
-    private void OnConnected(object? _, EventArgs args)
+    private async void OnConnected(object? _, EventArgs args)
     {
-        Instance = _rpcClient.Instance;
+        var daemon = _rpcClient.Instance!;
         Log.Output += Log_Output;
+
+        daemon.TabletAdded += (sender, tabletId) => CreateTabletService(daemon, tabletId);
+        daemon.TabletRemoved += (sender, tabletId) => RemoveTabletService(tabletId);
+        (await daemon.GetTablets()).ForEach(tabletId => CreateTabletService(daemon, tabletId));
+
+        Instance = daemon;
 
         if (!_suppressStateChangedEvents)
             State = DaemonState.Connected;
@@ -111,5 +120,24 @@ public partial class DaemonService : ObservableObject, IDaemonService
     private void Log_Output(object? _, LogMessage message)
     {
         _instance!.WriteMessage(message).ConfigureAwait(false);
+    }
+
+    private void CreateTabletService(IDriverDaemon daemon, int tabletId)
+    {
+        _dispatcher.InvokeAsync(async () =>
+        {
+            var tabletService = await TabletService.CreateAsync(daemon, tabletId);
+            Tablets.Add(tabletService);
+        });
+    }
+
+    private void RemoveTabletService(int tabletId)
+    {
+        _dispatcher.ProbablySynchronousPost(() =>
+        {
+            var tabletService = Tablets.FirstOrDefault(tablet => tablet.TabletId == tabletId);
+            if (tabletService is not null)
+                Tablets.Remove(tabletService);
+        });
     }
 }

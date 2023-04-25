@@ -35,6 +35,7 @@ if (Test-Path "./bin") {
     }
 }
 
+dotnet restore --verbosity=quiet;
 dotnet clean --configuration $Config --verbosity=quiet;
 
 Write-Output "Building OpenTabletDriver with runtime $NetRuntime...";

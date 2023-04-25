@@ -1,6 +1,7 @@
 ﻿using System.Collections.Specialized;
-using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.ViewModels;
 
@@ -15,18 +16,23 @@ public partial class DaemonConnectionView : UserControl
         Window.SizeChangedEvent.AddClassHandler<DaemonConnectionView>(HandleClientSizeChanged);
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override void OnDataContextChanged(EventArgs e)
     {
-        var vm = (DaemonConnectionViewModel)DataContext!;
-        vm.QolHintText.CollectionChanged += HandleItemsChanged;
-        base.OnAttachedToVisualTree(e);
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        var vm = (DaemonConnectionViewModel)DataContext!;
-        vm.QolHintText.CollectionChanged -= HandleItemsChanged;
-        base.OnDetachedFromVisualTree(e);
+        if (DataContext is DaemonConnectionViewModel vm)
+        {
+            vm.QolHintText.CollectionChanged += HandleItemsChanged;
+            vm.ConnectCommand.HandleProperty(
+                nameof(IAsyncRelayCommand.IsRunning),
+                c => c.IsRunning,
+                (c, running) =>
+                {
+                    this.Cursor = running
+                        ? new Cursor(StandardCursorType.Wait)
+                        : new Cursor(StandardCursorType.Arrow);
+                }
+            );
+        }
+        base.OnDataContextChanged(e);
     }
 
     private void HandleItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)

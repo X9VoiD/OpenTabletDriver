@@ -6,7 +6,9 @@
         </Border>
     </Design.PreviewWith>
 
-    <!-- Add Styles Here -->
+    <!-- <StyleInclude Source="Controls/DefaultDark.axaml" /> -->
+    <StyleInclude Source="Classes/DefaultDark.axaml" />
+
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:c="using:OpenTabletDriver.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenTabletDriver.UI.Controls.TabletItem"
+             Name="PART_Root">
+    <Grid RowDefinitions="*,Auto">
+        <PathIcon Width="120"
+                Height="120"
+                Grid.Row="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Data="{StaticResource generic_tablet}"/>
+        <TextBlock Text="{CompiledBinding #PART_Root.TabletName, DataType={x:Type c:TabletItem}}"
+                    Grid.Row="1"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"/>
+    </Grid>
+</UserControl>

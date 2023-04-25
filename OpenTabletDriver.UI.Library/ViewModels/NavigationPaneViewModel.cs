@@ -16,34 +16,38 @@ public partial class NavigationPaneViewModel : ViewModelBase
     [ObservableProperty]
     private bool _settingsOpened;
 
-    public ObservableCollection<NavigationItem> Navigations { get; } = new()
-    {
-#if DEBUG
-        new NavigationItem("Daemon (DEBUG)", AppRoutes.DaemonConnectionRoute),
-#endif
-        new NavigationItem("Tablets", AppRoutes.TabletsOverviewRoute),
-        new NavigationItem("Tools", AppRoutes.ToolsSettingsRoute),
-        new NavigationItem("Plugin Manager", AppRoutes.PluginManagerRoute),
-        new NavigationItem("Diagnostics", AppRoutes.DiagnosticsRoute),
-    };
+    public ObservableCollection<NavigationItem> Navigations { get; } = new();
 
     public NavigationPaneViewModel(IDaemonService daemonService, INavigator navigator)
     {
         _daemonService = daemonService;
         _navigator = navigator;
 
-        var tablets = Navigations.First(n => n.Name == "Tablets");
-        var tools = Navigations.First(n => n.Name == "Tools");
-        var pluginManager = Navigations.First(n => n.Name == "Plugin Manager");
-
         daemonService.HandleProperty(
             nameof(IDaemonService.State),
             d => d.State,
             (d, s) =>
             {
-                tablets.IsEnabled = s == DaemonState.Connected;
-                tools.IsEnabled = s == DaemonState.Connected;
-                pluginManager.IsEnabled = s == DaemonState.Connected;
+                // clear the navigation list to workaround an avalonia layout bug
+                // unfortunately due to this we can't animate the Daemon item into
+                // popping up
+                Navigations.Clear();
+
+                var daemonDependentsEnabled = s == DaemonState.Connected;
+                if (!daemonDependentsEnabled)
+                {
+                    Navigations.Add(new NavigationItem("Daemon", AppRoutes.DaemonConnectionRoute));
+                }
+
+                var tablets = new NavigationItem("Tablets", AppRoutes.TabletsOverviewRoute, daemonDependentsEnabled);
+                var tools = new NavigationItem("Tools", AppRoutes.ToolsSettingsRoute, daemonDependentsEnabled);
+                var pluginManager = new NavigationItem("Plugin Manager", AppRoutes.PluginManagerRoute, daemonDependentsEnabled);
+                var diagnostics = new NavigationItem("Diagnostics", AppRoutes.DiagnosticsRoute);
+
+                Navigations.Add(tablets);
+                Navigations.Add(tools);
+                Navigations.Add(pluginManager);
+                Navigations.Add(diagnostics);
             });
     }
 

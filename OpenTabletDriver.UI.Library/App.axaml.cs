@@ -20,7 +20,6 @@ public class App : Application
 
         TaskScheduler.UnobservedTaskException += (sender, e) =>
         {
-            Debug.WriteLine("uoohhhhhh!!!");
             ExceptionDispatchInfo.Throw(e.Exception); // forcibly crash
         };
     }

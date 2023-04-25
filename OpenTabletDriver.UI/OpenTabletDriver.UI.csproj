@@ -5,8 +5,9 @@
     <TargetFramework>$(FrameworkLatest)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- <BuiltInComInteropSupport>true</BuiltInComInteropSupport> -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>../OpenTabletDriver.UI.Library/Assets/otd.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup Label="Project References">

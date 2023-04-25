@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
@@ -20,6 +21,7 @@ namespace OpenTabletDriver.UI.ViewModels
         private readonly IDaemonService _daemonService;
         private readonly INavigator _navigator;
         private readonly IDispatcher _dispatcher;
+        private readonly IUISettingsProvider _uiSettingsProvider;
 
         [ObservableProperty]
         private string _title;
@@ -40,6 +42,9 @@ namespace OpenTabletDriver.UI.ViewModels
         /// </summary>
         [ObservableProperty]
         private bool _sidePaneOpen;
+
+        [ObservableProperty]
+        private bool _transparencyEnabled;
 
         /// <summary>
         /// Gets or sets an array of currently available displays.
@@ -69,12 +74,26 @@ namespace OpenTabletDriver.UI.ViewModels
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
         /// </summary>
-        public MainWindowViewModel(IDaemonService daemonService, INavigator navigator, IDispatcher dispatcher)
+        public MainWindowViewModel(
+            IDaemonService daemonService,
+            INavigator navigator,
+            IDispatcher dispatcher,
+            IUISettingsProvider uiSettingsProvider)
         {
             _title = "OpenTabletDriver v" + Version;
             _daemonService = daemonService;
             _navigator = navigator;
             _dispatcher = dispatcher;
+            _uiSettingsProvider = uiSettingsProvider;
+
+            _uiSettingsProvider.WhenLoadedOrSet((d, settings) =>
+            {
+                settings.HandleProperty(
+                    nameof(UISettings.Transparency),
+                    s => s.Transparency,
+                    (s, v) => TransparencyEnabled = v
+                ).DisposeWith(d);
+            });
 
             _navigator.NextAsRoot(AppRoutes.DaemonConnectionRoute);
             _daemonService.HandleProperty(
@@ -102,17 +121,8 @@ namespace OpenTabletDriver.UI.ViewModels
             _dispatcher.ProbablySynchronousPost(() =>
             {
                 IsConnected = _daemonService.State == DaemonState.Connected;
-                SidePaneOpen = IsConnected; // TODO: calculate stuff
+                SidePaneOpen = true; // TODO: calculate stuff
             });
-        }
-
-        public MainWindowViewModel()
-        {
-            // TODO: setup design-time data
-            _daemonService = null!;
-            _navigator = null!;
-            _dispatcher = null!;
-            _title = "OpenTabletDriver";
         }
 
         /// <summary>

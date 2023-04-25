@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace OpenTabletDriver.UI;
 
-public static class IoHelpers
+public static class IoUtility
 {
     public static void OpenLink(string url)
     {

@@ -30,7 +30,7 @@ public class UIEnvironment
             "OpenTabletDriver.UI"
         );
 
-        var currentExe = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+        var currentExe = Path.GetDirectoryName(AppContext.BaseDirectory)!;
         var alternativeAppDataPath = Path.Combine(currentExe, "userdata");
 
         var appData = Directory.Exists(alternativeAppDataPath)

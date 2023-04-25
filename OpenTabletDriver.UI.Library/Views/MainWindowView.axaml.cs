@@ -18,6 +18,14 @@ public partial class MainWindowView : Window
         SetTransparencyLevelHint();
         HookBackButtonOpacityHandler();
         DataContext = Ioc.Default.GetService<MainWindowViewModel>();
+
+        this.PointerPressed += (sender, e) =>
+        {
+            if (!e.Handled)
+            {
+                App.Current?.FocusManager?.Focus(null);
+            }
+        };
     }
 
     private void SetTransparencyLevelHint()

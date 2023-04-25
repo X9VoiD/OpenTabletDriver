@@ -14,6 +14,11 @@ public partial class NavigationPaneView : UserControl
         DataContext = Ioc.Default.GetRequiredService<NavigationPaneViewModel>();
         var vm = (NavigationPaneViewModel)DataContext;
 
+        ConnectDisjointedList(vm);
+    }
+
+    private void ConnectDisjointedList(NavigationPaneViewModel vm)
+    {
         // Since the settings button is not actually part of the navigation pane,
         // we will need to manually handle the click event.
         SettingsButton.PointerPressed += (object? s, PointerPressedEventArgs e) =>

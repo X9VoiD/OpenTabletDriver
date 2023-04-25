@@ -14,8 +14,8 @@
         <Style Selector="ListBox">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style Selector="ListBoxItem">
-            <Setter x:DataType="vm:NavigationItem" Property="IsEnabled" Value="{Binding IsEnabled}" />
+        <Style Selector="ListBoxItem" x:DataType="vm:NavigationItem">
+            <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="20, 8" />
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
@@ -35,10 +35,11 @@
         </Style>
     </UserControl.Styles>
 
-    <DockPanel>
-        <ListBox Items="{Binding Navigations}"
+    <Grid RowDefinitions="Auto,*,Auto">
+        <ListBox Name="NavigationList"
+                 Items="{Binding Navigations}"
                  SelectedItem="{Binding SelectedNavigation}"
-                 DockPanel.Dock="Top">
+                 Grid.Row="0">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}" />
@@ -47,9 +48,8 @@
         </ListBox>
         <ListBoxItem Name="SettingsButton"
                      IsSelected="{Binding SettingsOpened, Mode=OneWay}"
-                     DockPanel.Dock="Bottom" >
+                     Grid.Row="2" >
             <TextBlock Text="Settings" />
         </ListBoxItem>
-        <Panel></Panel>
-    </DockPanel>
+    </Grid>
 </UserControl>

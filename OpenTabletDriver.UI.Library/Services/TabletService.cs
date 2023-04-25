@@ -28,6 +28,7 @@ namespace OpenTabletDriver.UI.Models
 
         public int TabletId { get; }
         public string Name => Configuration.Name;
+
         public InputDeviceState TabletState
         {
             get => _tabletState;

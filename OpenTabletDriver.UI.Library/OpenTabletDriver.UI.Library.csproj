@@ -41,4 +41,13 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
   </ItemGroup>
+
+  <!-- TODO -->
+  <ItemGroup Label="Windows-specific Nuget Packages">
+    <PackageReference Include="WindowsShortcutFactory" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenTabletDriver.UI.Tests" />
+  </ItemGroup>
 </Project>
