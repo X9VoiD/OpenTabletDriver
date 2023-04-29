@@ -34,7 +34,7 @@
             <ScrollViewer x:Name="Scroller"
                           VerticalScrollBarVisibility="Hidden">
                 <ItemsControl x:Name="QolHintPanel"
-                            Items="{Binding QolHintText}"
+                            ItemsSource="{Binding QolHintText}"
                             IsVisible="{Binding ShowQolHintText}"
                             RelativePanel.AlignBottomWithPanel="True">
                     <ItemsControl.ItemTemplate>

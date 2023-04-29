@@ -20,7 +20,7 @@ namespace OpenTabletDriver.UI.Models
         Task ResetProfile();
     }
 
-    public sealed partial class TabletService : ObservableObject, ITabletService, IDisposable
+    public sealed partial class TabletService : ObservableObject, ITabletService
     {
         private readonly IDriverDaemon _daemon;
         private InputDeviceState _tabletState;

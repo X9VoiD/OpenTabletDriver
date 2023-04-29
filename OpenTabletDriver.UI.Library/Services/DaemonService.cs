@@ -124,7 +124,7 @@ public partial class DaemonService : ObservableObject, IDaemonService
 
     private void CreateTabletService(IDriverDaemon daemon, int tabletId)
     {
-        _dispatcher.InvokeAsync(async () =>
+        _dispatcher.Post(async () =>
         {
             var tabletService = await TabletService.CreateAsync(daemon, tabletId);
             Tablets.Add(tabletService);

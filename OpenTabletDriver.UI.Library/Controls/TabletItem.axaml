@@ -3,19 +3,20 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:c="using:OpenTabletDriver.UI.Controls"
+             xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="OpenTabletDriver.UI.Controls.TabletItem"
-             Name="PART_Root">
-    <Grid RowDefinitions="*,Auto">
-        <PathIcon Width="120"
-                Height="120"
-                Grid.Row="0"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                Data="{StaticResource generic_tablet}"/>
-        <TextBlock Text="{CompiledBinding #PART_Root.TabletName, DataType={x:Type c:TabletItem}}"
-                    Grid.Row="1"
+             x:DataType="vm:TabletViewModel">
+    <Panel>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+            <PathIcon Width="120"
+                    Height="80"
                     VerticalAlignment="Center"
-                    HorizontalAlignment="Center"/>
-    </Grid>
+                    HorizontalAlignment="Center"
+                    Data="{StaticResource generic_tablet}"/>
+            <TextBlock Text="{Binding Name}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Panel>
 </UserControl>

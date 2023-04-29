@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace OpenTabletDriver.UI.NavigationV2;
@@ -23,8 +24,9 @@ public class Navigator : INavigator
         Routes = routes;
     }
 
-    public void Push(object? routeObject, bool asRoot = false)
+    public void Push(object routeObject, bool asRoot = false)
     {
+        ArgumentNullException.ThrowIfNull(routeObject);
         var kind = asRoot ? NavigationKind.PushAsRoot : NavigationKind.Push;
         Navigate(kind, routeObject);
     }
@@ -38,10 +40,14 @@ public class Navigator : INavigator
             var navigation404 = Routes.FirstOrDefault(r => r.Name == "404");
 
             var routeObject = navigation404 is not null
-                ? _serviceProvider.GetRequiredService(navigation404.ObjectType)
-                : null;
+                ? CreateRouteObject(navigation404)
+                : throw new InvalidOperationException($"Cannot find route descriptor for route name '{routeName}' and no 404 route is registered");
 
             Push(routeObject, asRoot);
+        }
+        else
+        {
+            Push(CreateRouteObject(route), asRoot);
         }
     }
 
@@ -98,8 +104,23 @@ public class Navigator : INavigator
                     break;
             }
 
+            _navigating = null; // at this point, navigation is "complete"
             CanGoBack = _navStack.Count > 1;
             Navigated?.Invoke(this, new NavigationEventData(kind, prev, curr));
+        }
+    }
+
+    private object CreateRouteObject(NavigationRoute route)
+    {
+        if (route.ViewType is not null)
+        {
+            var view = (Control)Activator.CreateInstance(route.ViewType)!;
+            view.DataContext = _serviceProvider.GetRequiredService(route.ObjectType);
+            return view;
+        }
+        else
+        {
+            return _serviceProvider.GetRequiredService(route.ObjectType);
         }
     }
 }

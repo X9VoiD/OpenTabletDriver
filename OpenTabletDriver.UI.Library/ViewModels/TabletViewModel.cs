@@ -9,7 +9,7 @@ public class TabletViewModel : NavigationViewModelBase
 
     public int TabletId { get; }
     public override string PageName { get; }
-    public string Name { get; }
+    public string Name { get; set; }
 
     public TabletViewModel(ITabletService tabletService)
     {

@@ -37,7 +37,7 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
         <ListBox Name="NavigationList"
-                 Items="{Binding Navigations}"
+                 ItemsSource="{Binding Navigations}"
                  SelectedItem="{Binding SelectedNavigation}"
                  Grid.Row="0">
             <ListBox.ItemTemplate>
