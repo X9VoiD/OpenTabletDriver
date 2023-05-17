@@ -1,14 +1,11 @@
-﻿using Avalonia.Controls;
-using OpenTabletDriver.UI.Navigation;
-using OpenTabletDriver.UI.ViewModels;
+﻿using OpenTabletDriver.UI.Controls;
 
 namespace OpenTabletDriver.UI.Views;
 
-public partial class UISettingsView : UserControl
+public partial class UISettingsView : ActivatableUserControl
 {
     public UISettingsView()
     {
         InitializeComponent();
-        NavigationMixin.Attach(this);
     }
 }

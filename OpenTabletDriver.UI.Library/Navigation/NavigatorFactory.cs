@@ -1,4 +1,4 @@
-namespace OpenTabletDriver.UI.NavigationV2;
+namespace OpenTabletDriver.UI.Navigation;
 
 public class NavigatorFactory : INavigatorFactory
 {

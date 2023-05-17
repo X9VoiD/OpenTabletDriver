@@ -24,7 +24,7 @@ public partial class UISettingsViewModelTests
         var settingsProvider = serviceProvider.GetRequiredService<UISettingsProviderMock>();
         var viewModel = serviceProvider.GetRequiredService<UISettingsViewModel>();
 
-        viewModel.OnNavigatedTo();
+        viewModel.OnActivated();
         viewModel.Settings.Should().Be(settingsProvider.Settings);
         viewModel.Modified.Should().BeFalse();
 

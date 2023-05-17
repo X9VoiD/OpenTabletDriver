@@ -1,13 +1,13 @@
+using OpenTabletDriver.UI.ViewModels;
+
 namespace OpenTabletDriver.UI.Navigation;
 
-public sealed class Navigation404ViewModel : NavigationViewModelBase
+public sealed class Navigation404ViewModel : ActivatableViewModelBase
 {
-    public override string PageName => "404";
-
     public string Message { get; }
 
-    public Navigation404ViewModel(INavigator navigator)
+    public Navigation404ViewModel()
     {
-        Message = $"The page '{navigator.CurrentPage}' does not exist.";
+        Message = $"Oops! The page you're looking for doesn't exist yet.";
     }
 }

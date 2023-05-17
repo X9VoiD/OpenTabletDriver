@@ -18,10 +18,10 @@ public partial class NavigationPaneViewModel : ViewModelBase
 
     public ObservableCollection<NavigationItem> Navigations { get; } = new();
 
-    public NavigationPaneViewModel(IDaemonService daemonService, INavigator navigator)
+    public NavigationPaneViewModel(IDaemonService daemonService, INavigatorFactory navigatorFactory)
     {
         _daemonService = daemonService;
-        _navigator = navigator;
+        _navigator = navigatorFactory.GetOrCreate(AppRoutes.MainHost);
 
         daemonService.HandleProperty(
             nameof(IDaemonService.State),
@@ -55,7 +55,7 @@ public partial class NavigationPaneViewModel : ViewModelBase
     {
         if (value != null)
         {
-            _navigator.NextAsRoot(value.Route);
+            _navigator.Push(value.Route, asRoot: true);
             SettingsOpened = false;
         }
     }
@@ -64,7 +64,7 @@ public partial class NavigationPaneViewModel : ViewModelBase
     {
         if (value)
         {
-            _navigator.NextAsRoot(AppRoutes.SettingsRoute);
+            _navigator.Push(AppRoutes.SettingsRoute, asRoot: true);
             SelectedNavigation = null;
         }
     }

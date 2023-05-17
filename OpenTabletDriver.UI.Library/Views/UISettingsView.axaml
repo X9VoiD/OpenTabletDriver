@@ -19,6 +19,8 @@
                             Maximum="200"/>
             <ci:ToggleInput Label="Kaomoji"
                             State="{Binding Settings.Kaomoji, Mode=TwoWay}" />
+            <ci:ToggleInput Label="Transparency"
+                            State="{Binding Settings.Transparency, Mode=TwoWay}" />
             <ci:ToggleInput Label="{Binding AutoStartLabel}"
                             IsVisible="{Binding AutoStartLabel, Converter={x:Static ObjectConverters.IsNotNull}}"
                             State="{Binding AutoStart, Mode=TwoWay}" />

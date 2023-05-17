@@ -26,7 +26,7 @@ public static class ServiceExtensions
             .AddSingleton<IDaemonService, DaemonService>()
             .AddSingleton<IDispatcher>(_ => Dispatcher.UIThread)
             .AddSingleton<IUISettingsProvider, UISettingsProvider>()
-            .UseNavigation<NavigationService>()
+            .UseNavigation<NavigatorFactory>()
             .AddSingleton<IMessenger, StrongReferenceMessenger>()
             .AddSingleton<IAutoStartService, DefaultAutoStartService>();
     }

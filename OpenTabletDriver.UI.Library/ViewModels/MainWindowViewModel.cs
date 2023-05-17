@@ -19,9 +19,10 @@ namespace OpenTabletDriver.UI.ViewModels
     public sealed partial class MainWindowViewModel : ViewModelBase
     {
         private readonly IDaemonService _daemonService;
-        private readonly INavigator _navigator;
         private readonly IDispatcher _dispatcher;
         private readonly IUISettingsProvider _uiSettingsProvider;
+
+        internal INavigator Navigator { get; }
 
         [ObservableProperty]
         private string _title;
@@ -36,6 +37,9 @@ namespace OpenTabletDriver.UI.ViewModels
                                     nameof(ApplyPresetCommand),
                                     nameof(SaveAsPresetCommand))]
         private bool _isConnected;
+
+        [ObservableProperty]
+        private bool _isSettingsLoaded;
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the side pane is open.
@@ -76,13 +80,13 @@ namespace OpenTabletDriver.UI.ViewModels
         /// </summary>
         public MainWindowViewModel(
             IDaemonService daemonService,
-            INavigator navigator,
+            INavigatorFactory navigatorFactory,
             IDispatcher dispatcher,
             IUISettingsProvider uiSettingsProvider)
         {
             _title = "OpenTabletDriver v" + Version;
             _daemonService = daemonService;
-            _navigator = navigator;
+            Navigator = navigatorFactory.GetOrCreate(AppRoutes.MainHost);
             _dispatcher = dispatcher;
             _uiSettingsProvider = uiSettingsProvider;
 
@@ -93,9 +97,15 @@ namespace OpenTabletDriver.UI.ViewModels
                     s => s.Transparency,
                     (s, v) => TransparencyEnabled = v
                 ).DisposeWith(d);
+
+                _dispatcher.Post(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    IsSettingsLoaded = true;
+                });
             });
 
-            _navigator.NextAsRoot(AppRoutes.DaemonConnectionRoute);
+            Navigator.Push(AppRoutes.DaemonConnectionRoute, asRoot: true);
             _daemonService.HandleProperty(
                 nameof(IDaemonService.State),
                 d => d.State,
@@ -214,7 +224,7 @@ namespace OpenTabletDriver.UI.ViewModels
                 ToolSettings = ImmutableArray<PluginSettings>.Empty;
                 Plugins = ImmutableArray<PluginContextDto>.Empty;
                 Presets.Clear();
-                _navigator.NextAsRoot(AppRoutes.DaemonConnectionRoute);
+                Navigator.Push(AppRoutes.DaemonConnectionRoute, asRoot: true);
             }
         }
     }

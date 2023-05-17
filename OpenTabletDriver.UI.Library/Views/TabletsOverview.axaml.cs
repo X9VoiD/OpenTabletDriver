@@ -1,16 +1,12 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using OpenTabletDriver.UI.Navigation;
+using OpenTabletDriver.UI.Controls;
 
 namespace OpenTabletDriver.UI.Views;
 
 // TODO: add preset management
-public partial class TabletsOverview : UserControl
+public partial class TabletsOverview : ActivatableUserControl
 {
     public TabletsOverview()
     {
         InitializeComponent();
-        NavigationMixin.Attach(this);
     }
 }

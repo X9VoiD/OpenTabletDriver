@@ -1,15 +1,11 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using OpenTabletDriver.UI.Navigation;
+using OpenTabletDriver.UI.Controls;
 
 namespace OpenTabletDriver.UI.Views;
 
-public partial class Navigation404View : UserControl
+public partial class Navigation404View : ActivatableUserControl
 {
     public Navigation404View()
     {
         InitializeComponent();
-        NavigationMixin.Attach(this);
     }
 }

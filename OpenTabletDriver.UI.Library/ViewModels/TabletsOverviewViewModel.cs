@@ -2,19 +2,17 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.UI.Models;
-using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
 namespace OpenTabletDriver.UI.ViewModels;
 
-public partial class TabletsOverviewViewModel : NavigationViewModelBase
+public partial class TabletsOverviewViewModel : ActivatableViewModelBase
 {
     private readonly IDaemonService _daemonService;
 
     [ObservableProperty]
     private TabletViewModel? _selectedTablet;
 
-    public override string PageName => "Tablets";
     public ObservableCollection<TabletViewModel> Tablets { get; } = new();
 
     public TabletsOverviewViewModel(IDaemonService daemonService)
@@ -52,9 +50,5 @@ public partial class TabletsOverviewViewModel : NavigationViewModelBase
         Tablets.Remove(tabletViewModel);
     }
 
-    public override void OnNavigatedTo()
-    {
-        // TODO: navigate to last selected tablet
-        base.OnNavigatedTo();
-    }
+    // TODO: navigate to last selected tablet
 }

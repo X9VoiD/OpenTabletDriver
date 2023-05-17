@@ -2,12 +2,11 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.UI.Models;
-using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
 namespace OpenTabletDriver.UI.ViewModels;
 
-public partial class UISettingsViewModel : NavigationViewModelBase
+public partial class UISettingsViewModel : ActivatableViewModelBase
 {
     private readonly IUISettingsProvider _settingsProvider;
     private readonly IAutoStartService _autoStartService;
@@ -33,14 +32,12 @@ public partial class UISettingsViewModel : NavigationViewModelBase
         }
     }
 
-    public override string PageName => "Settings";
-
     public UISettingsViewModel(IUISettingsProvider settingsProvider, IAutoStartService autoStartService)
     {
         _settingsProvider = settingsProvider;
         _autoStartService = autoStartService;
 
-        this.WhenNavigatedTo(d =>
+        this.WhenActivated(d =>
         {
             var modified = Modified; // Preserve modified state
             _settingsProvider.WhenLoadedOrSet(

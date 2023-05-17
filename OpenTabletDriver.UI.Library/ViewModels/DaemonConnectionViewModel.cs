@@ -3,12 +3,11 @@ using System.Security.Cryptography;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.UI.Models;
-using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
 namespace OpenTabletDriver.UI.ViewModels;
 
-public partial class DaemonConnectionViewModel : NavigationViewModelBase
+public partial class DaemonConnectionViewModel : ActivatableViewModelBase
 {
     private const string BASE_QOL_HINT_TEXT = """
     Please make sure that OpenTabletDriver.Daemon is running or is in the same directory as OpenTabletDriver.UI.
@@ -31,13 +30,11 @@ public partial class DaemonConnectionViewModel : NavigationViewModelBase
     [ObservableProperty]
     private bool _showQolHintText;
 
-    public override string PageName => "OhNyo";
-
     public DaemonConnectionViewModel(IDaemonService daemonService, IUISettingsProvider settingsProvider)
     {
         _daemonService = daemonService;
 
-        this.WhenNavigatedTo(d =>
+        this.WhenActivated(d =>
         {
             settingsProvider.WhenLoadedOrSet(
                 onLoad: (d, s) =>

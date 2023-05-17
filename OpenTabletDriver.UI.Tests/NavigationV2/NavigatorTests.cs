@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using FluentAssertions;
 using FluentAssertions.Events;
 using Microsoft.Extensions.DependencyInjection;
-using OpenTabletDriver.UI.NavigationV2;
+using OpenTabletDriver.UI.Navigation;
 
-namespace OpenTabletDriver.UI.Tests.NavigationV2;
+namespace OpenTabletDriver.UI.Tests.Navigation;
 
 public class NavigatorTests
 {

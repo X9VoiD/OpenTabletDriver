@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace OpenTabletDriver.UI.NavigationV2;
+namespace OpenTabletDriver.UI.Navigation;
 
 public class NavigationRouteCollection : ObservableCollection<NavigationRoute>
 {

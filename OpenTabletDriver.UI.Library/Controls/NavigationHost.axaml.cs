@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using OpenTabletDriver.UI.Navigation;
 
 namespace OpenTabletDriver.UI.Controls;
@@ -12,30 +12,22 @@ namespace OpenTabletDriver.UI.Controls;
 /// </summary>
 public partial class NavigationHost : UserControl
 {
-    private static int _sentinel;
-    private readonly NavigationContext _context = new();
-    private INavigationService? _navigationService;
+    private readonly INavigatorFactory _navigatorFactory;
+    private INavigator? _navigator;
 
     public NavigationHost()
     {
-        if (Interlocked.Increment(ref _sentinel) > 1)
-            throw new InvalidOperationException("Only one instance of NavigationHost can exist at a time.");
-
         InitializeComponent();
-        PART_TransitioningContentControl.DataContext = _context;
+        _navigatorFactory = Ioc.Default.GetRequiredService<INavigatorFactory>();
     }
 
-    public static readonly DirectProperty<NavigationHost, INavigationService?> NavigationServiceProperty =
-        AvaloniaProperty.RegisterDirect<NavigationHost, INavigationService?>(
-            nameof(NavigationService),
-            o => o.NavigationService,
-            (o, v) => o.NavigationService = v
-        );
+    public static readonly StyledProperty<string?> NavigationHostNameProperty =
+        AvaloniaProperty.Register<NavigationHost, string?>(nameof(NavigationHostName));
 
-    public INavigationService? NavigationService
+    public string? NavigationHostName
     {
-        get => _navigationService;
-        set => SetAndRaise(NavigationServiceProperty, ref _navigationService, value);
+        get => GetValue(NavigationHostNameProperty);
+        set => SetValue(NavigationHostNameProperty, value);
     }
 
     public static readonly StyledProperty<IPageTransition?> NextTransitionProperty =
@@ -76,48 +68,35 @@ public partial class NavigationHost : UserControl
         set => SetValue(BackToRootTransitionProperty, value);
     }
 
-    protected override void OnDataContextChanged(EventArgs e)
-    {
-        // Don't reorder
-        base.OnDataContextChanged(e);
-        PART_TransitioningContentControl.DataContext = _context;
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        if (change.Property == NavigationServiceProperty)
+        if (change.Property == NavigationHostNameProperty)
         {
-            if (change.OldValue is INavigationService oldService)
-                oldService.Navigated -= HandleNavigated;
+            if (_navigator is not null)
+            {
+                _navigator.Navigated -= HandleNavigated;
+            }
 
-            if (change.NewValue is INavigationService newService)
-                newService.Navigated += HandleNavigated;
+            if (change.NewValue is string newNavHostName)
+            {
+                _navigator = _navigatorFactory.GetOrCreate(newNavHostName);
+                _navigator.Navigated += HandleNavigated;
+            }
         }
         base.OnPropertyChanged(change);
     }
 
-    private void HandleNavigated(object? sender, NavigatedEventArgs e)
+    private void HandleNavigated(object? sender, NavigationEventData e)
     {
         PART_TransitioningContentControl.PageTransition = e.Kind switch
         {
-            NavigationKind.Next => NextTransition,
-            NavigationKind.Back => BackTransition ?? NextTransition,
-            NavigationKind.NextAsRoot => NextAsRootTransition ?? NextTransition,
-            NavigationKind.BackToRoot => BackToRootTransition ?? BackTransition ?? NextTransition,
+            NavigationKind.Push => NextTransition,
+            NavigationKind.Pop => BackTransition ?? NextTransition,
+            NavigationKind.PushAsRoot => NextAsRootTransition ?? NextTransition,
+            NavigationKind.PopToRoot => BackToRootTransition ?? BackTransition ?? NextTransition,
             _ => throw new InvalidOperationException("Invalid navigation kind.")
         };
 
-        _context.Page = e.Page;
+        PART_TransitioningContentControl.Content = e.Current;
     }
-
-    internal static void ResetSentinel()
-    {
-        _sentinel = 0;
-    }
-}
-
-internal partial class NavigationContext : ObservableObject
-{
-    [ObservableProperty]
-    private string? _page;
 }

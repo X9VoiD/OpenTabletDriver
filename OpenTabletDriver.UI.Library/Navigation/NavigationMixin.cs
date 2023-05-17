@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using OpenTabletDriver.UI.ViewModels;
 
 namespace OpenTabletDriver.UI.Navigation;
 
@@ -8,17 +9,17 @@ public static class NavigationMixin
     {
         control.AttachedToVisualTree += (s, e) =>
         {
-            if (control.DataContext is NavigationViewModelBase vm)
+            if (control.DataContext is ActivatableViewModelBase vm)
             {
-                vm.OnNavigatedTo();
+                vm.OnActivated();
             }
         };
 
         control.DetachedFromVisualTree += (s, e) =>
         {
-            if (control.DataContext is NavigationViewModelBase vm)
+            if (control.DataContext is ActivatableViewModelBase vm)
             {
-                vm.OnNavigatedFrom();
+                vm.OnDeactivated();
             }
         };
     }

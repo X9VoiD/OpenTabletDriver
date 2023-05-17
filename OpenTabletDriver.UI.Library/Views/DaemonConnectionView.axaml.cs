@@ -2,17 +2,16 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using CommunityToolkit.Mvvm.Input;
-using OpenTabletDriver.UI.Navigation;
+using OpenTabletDriver.UI.Controls;
 using OpenTabletDriver.UI.ViewModels;
 
 namespace OpenTabletDriver.UI.Views;
 
-public partial class DaemonConnectionView : UserControl
+public partial class DaemonConnectionView : ActivatableUserControl
 {
     public DaemonConnectionView()
     {
         InitializeComponent();
-        NavigationMixin.Attach(this);
         Window.SizeChangedEvent.AddClassHandler<DaemonConnectionView>(HandleClientSizeChanged);
     }
 

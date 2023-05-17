@@ -1,82 +1,76 @@
-using System.Collections.ObjectModel;
-using Avalonia;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTabletDriver.UI.Controls;
 
 namespace OpenTabletDriver.UI.Navigation;
 
 public static class NavigationExtensions
 {
     public static IServiceCollection UseNavigation<TNav>(this IServiceCollection services)
-        where TNav : class, INavigationService
+        where TNav : class, INavigatorFactory
     {
-        return services
-            .AddSingleton<INavigationService, TNav>()
-            .AddSingleton<INavigator, Navigator>()
-            .AddSingleton<ReadOnlyCollection<NavigationRoute>>(sp =>
-                new(sp.GetRequiredService<IEnumerable<NavigationRoute>>().ToArray()))
-            .AddTransient<NavigationValueConverter>()
-            .AddTransient<NavigationViewLocator>()
-            .AddStartupJob<NavigationStartup>();
+        return services.AddSingleton<INavigatorFactory, TNav>();
     }
 
-    public static IServiceCollection AddNavigationRoute<T>(this IServiceCollection services, string route)
-        where T : class
+    public static IServiceCollection AddTransientRoute<TObject>(this IServiceCollection services, string route)
     {
-        return AddRoute(services, route, typeof(T), null, ServiceLifetime.Transient);
+        return services.AddRoute(route, null, typeof(TObject), null, ServiceLifetime.Transient);
     }
 
-    public static IServiceCollection AddNavigationRoute<TObject, TView>(this IServiceCollection services, string route)
-        where TObject : class
+    public static IServiceCollection AddTransientRoute<TObject, TView>(this IServiceCollection services, string route)
         where TView : Control
     {
-        return AddRoute(services, route, typeof(TObject), typeof(TView), ServiceLifetime.Transient);
+        return services.AddRoute(route, null, typeof(TObject), typeof(TView), ServiceLifetime.Transient);
     }
 
-    public static IServiceCollection AddSingletonNavigationRoute<T>(this IServiceCollection services, string route)
-        where T : class
+    public static IServiceCollection AddTransientRoute<TObject>(this IServiceCollection services, string navHostName, string route)
     {
-        return AddRoute(services, route, typeof(T), null, ServiceLifetime.Singleton);
+        return services.AddRoute(route, navHostName, typeof(TObject), null, ServiceLifetime.Transient);
     }
 
-    public static IServiceCollection AddSingletonNavigationRoute<TObject, TView>(this IServiceCollection services, string route)
-        where TObject : class
+    public static IServiceCollection AddTransientRoute<TObject, TView>(this IServiceCollection services, string navHostName, string route)
         where TView : Control
     {
-        return AddRoute(services, route, typeof(TObject), typeof(TView), ServiceLifetime.Singleton);
+        return services.AddRoute(route, navHostName, typeof(TObject), typeof(TView), ServiceLifetime.Transient);
+    }
+
+    public static IServiceCollection AddSingletonRoute<TObject>(this IServiceCollection services, string route)
+    {
+        return services.AddRoute(route, null, typeof(TObject), null, ServiceLifetime.Singleton);
+    }
+
+    public static IServiceCollection AddSingletonRoute<TObject, TView>(this IServiceCollection services, string route)
+        where TView : Control
+    {
+        return services.AddRoute(route, null, typeof(TObject), typeof(TView), ServiceLifetime.Singleton);
+    }
+
+    public static IServiceCollection AddSingletonRoute<TObject>(this IServiceCollection services, string navHostName, string route)
+    {
+        return services.AddRoute(route, navHostName, typeof(TObject), null, ServiceLifetime.Singleton);
+    }
+
+    public static IServiceCollection AddSingletonRoute<TObject, TView>(this IServiceCollection services, string navHostName, string route)
+        where TView : Control
+    {
+        return services.AddRoute(route, navHostName, typeof(TObject), typeof(TView), ServiceLifetime.Singleton);
     }
 
     private static IServiceCollection AddRoute(
         this IServiceCollection services,
         string route,
+        string? navHostName,
         Type objectType,
         Type? viewType,
         ServiceLifetime lifetime)
     {
+#if DEBUG
+        if (viewType is not null && !viewType.IsAssignableTo(typeof(ActivatableUserControl)))
+            Debug.WriteLine($"Warning: {viewType} is not an {nameof(ActivatableUserControl)}");
+#endif
         services.Add(ServiceDescriptor.Describe(objectType, objectType, lifetime));
-        services.AddSingleton(new NavigationRoute(route, objectType, viewType));
+        services.AddSingleton(new NavigationRoute(navHostName, route, objectType, viewType));
         return services;
-    }
-
-    private class NavigationStartup : IStartupJob
-    {
-        private readonly INavigationService _navigationService;
-        private readonly NavigationValueConverter _converter;
-        private readonly NavigationViewLocator _viewLocator;
-
-        public NavigationStartup(INavigationService navigationService, NavigationValueConverter converter,
-            NavigationViewLocator viewLocator)
-        {
-            _navigationService = navigationService;
-            _converter = converter;
-            _viewLocator = viewLocator;
-        }
-
-        public void Run()
-        {
-            Application.Current!.Resources.Add("NavigationService", _navigationService);
-            Application.Current!.Resources.Add("NavigationValueConverter", _converter);
-            Application.Current!.DataTemplates.Insert(0, _viewLocator);
-        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.ViewModels;
@@ -8,17 +9,31 @@ namespace OpenTabletDriver.UI.Views;
 
 public partial class MainWindowView : Window
 {
-    private readonly INavigationService _navigationService;
-    private bool _hasTransparency;
+    private readonly INavigator _navigator;
+    private readonly IDispatcher _dispatcher;
+    private bool _windowTransparency = false;
 
     public MainWindowView()
     {
         InitializeComponent();
-        _navigationService = Ioc.Default.GetRequiredService<INavigationService>();
-        SetTransparencyLevelHint();
-        HookBackButtonOpacityHandler();
-        DataContext = Ioc.Default.GetService<MainWindowViewModel>();
+        NavigationHost.NavigationHostName = AppRoutes.MainHost;
+        DataContext = Ioc.Default.GetRequiredService<MainWindowViewModel>();
+        _navigator = Ioc.Default.GetRequiredService<INavigatorFactory>().GetOrCreate(AppRoutes.MainHost);
+        _dispatcher = Ioc.Default.GetRequiredService<IDispatcher>();
 
+        // UI/Service events
+        HookInputEvents();
+
+        // ViewModel events
+        var vm = (MainWindowViewModel)DataContext!;
+        BootstrapTransparency(vm);
+
+        Activate(); // ensure we have window-level focus on startup
+    }
+
+    private void HookInputEvents()
+    {
+        // Change focus to nothing when clicking on the background
         this.PointerPressed += (sender, e) =>
         {
             if (!e.Handled)
@@ -26,9 +41,15 @@ public partial class MainWindowView : Window
                 App.Current?.FocusManager?.Focus(null);
             }
         };
+
+        // Change back button opacity when navigation state changes
+        void handleOpacity(bool canGoBack) => BackButton.Opacity = canGoBack ? 1.0 : 0.5;
+
+        _navigator.Navigated += (_, _) => handleOpacity(_navigator.CanGoBack);
+        handleOpacity(_navigator.CanGoBack);
     }
 
-    private void SetTransparencyLevelHint()
+    private void BootstrapTransparency(MainWindowViewModel vm)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Build >= 22000)
         {
@@ -41,26 +62,44 @@ public partial class MainWindowView : Window
             TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
         }
 
-        _hasTransparency = ActualTransparencyLevel != WindowTransparencyLevel.None;
-        if (_hasTransparency)
+        Activated += (_, _) => { if (_windowTransparency) WindowBg.Opacity = 0.65; };
+        Deactivated += (_, _) => { if (_windowTransparency) WindowBg.Opacity = 1.0; };
+
+        vm.HandleProperty(
+            nameof(vm.TransparencyEnabled),
+            vm => vm.TransparencyEnabled,
+            (vm, transparencyEnabled) => _dispatcher.ProbablySynchronousPost(() =>
+            {
+                if (transparencyEnabled)
+                {
+                    EnableWindowTransparency();
+                }
+                else
+                {
+                    DisableWindowTransparency();
+                }
+            })
+        );
+    }
+
+    private void EnableWindowTransparency()
+    {
+        if (ActualTransparencyLevel != WindowTransparencyLevel.None)
         {
-            Activated += (_, _) => WindowBg.Opacity = 0.65;
-            Deactivated += (_, _) => WindowBg.Opacity = 1.0;
-            WindowBg.Opacity = 0.65; // assume active
+            _windowTransparency = true;
+            AcrylicBorder.IsVisible = true;
+            WindowBg.Opacity = 0.65;
         }
         else
         {
-            // If transparency is not supported, remove the opacity animation
-            WindowBg.IsVisible = false;
+            // If transparency is not supported, disable it
+            DisableWindowTransparency();
         }
     }
 
-    private void HookBackButtonOpacityHandler()
+    private void DisableWindowTransparency()
     {
-        _navigationService.HandleProperty(
-            nameof(_navigationService.CanGoBack),
-            service => service.CanGoBack,
-            (service, canGoBack) => BackButton.Opacity = canGoBack ? 1.0 : 0.5
-        );
+        _windowTransparency = false;
+        WindowBg.Opacity = 1.0;
     }
 }
