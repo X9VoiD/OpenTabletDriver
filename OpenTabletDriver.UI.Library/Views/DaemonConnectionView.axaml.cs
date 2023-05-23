@@ -20,12 +20,12 @@ public partial class DaemonConnectionView : ActivatableUserControl
         if (DataContext is DaemonConnectionViewModel vm)
         {
             vm.QolHintText.CollectionChanged += HandleItemsChanged;
-            vm.ConnectCommand.HandleProperty(
-                nameof(IAsyncRelayCommand.IsRunning),
-                c => c.IsRunning,
-                (c, running) =>
+            vm.HandleProperty(
+                nameof(DaemonConnectionViewModel.IsConnecting),
+                vm => vm.IsConnecting,
+                (vm, connecting) =>
                 {
-                    this.Cursor = running
+                    this.Cursor = connecting
                         ? new Cursor(StandardCursorType.Wait)
                         : new Cursor(StandardCursorType.Arrow);
                 }

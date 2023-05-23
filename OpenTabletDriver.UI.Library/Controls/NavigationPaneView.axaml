@@ -16,22 +16,6 @@
         </Style>
         <Style Selector="ListBoxItem" x:DataType="vm:NavigationItem">
             <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="20, 8" />
-            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="Margin" Value="0, 2" />
-            </Style>
-            <Style Selector="^:selected">
-                <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
-                </Style>
-                <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="Background" Value="#2effffff" />
-                </Style>
-                <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="Background" Value="#33ffffff" />
-                </Style>
-            </Style>
         </Style>
     </UserControl.Styles>
 
@@ -41,7 +25,7 @@
                  SelectedItem="{Binding SelectedNavigation}"
                  Grid.Row="0">
             <ListBox.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="vm:NavigationItem">
                     <TextBlock Text="{Binding Name}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>

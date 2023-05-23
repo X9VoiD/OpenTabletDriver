@@ -12,3 +12,20 @@ public sealed class DaemonConnectionChangedMessage : ValueChangedMessage<DaemonS
     {
     }
 }
+
+public enum NavigationItemSelection
+{
+    None,
+    Daemon,
+    Tablet,
+    Tool,
+    PluginManager,
+    Diagnostics
+}
+
+public sealed class NavigationPaneSelectionChangeRequest : ValueChangedMessage<NavigationItemSelection>
+{
+    public NavigationPaneSelectionChangeRequest(NavigationItemSelection value) : base(value)
+    {
+    }
+}

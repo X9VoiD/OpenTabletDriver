@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading.Channels;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
@@ -29,11 +31,26 @@ public interface IDaemonService : INotifyPropertyChanged, INotifyPropertyChangin
 
 public partial class DaemonService : ObservableObject, IDaemonService
 {
+    private record TabletIdListChange(
+        TabletIdListChangeType Change,
+        int Id
+    );
+
+    private enum TabletIdListChangeType
+    {
+        Add,
+        Remove
+    }
+
     private readonly IRpcClient<IDriverDaemon> _rpcClient;
     private readonly IDispatcher _dispatcher;
     private DaemonState _state;
     private IDriverDaemon? _instance;
     private bool _suppressStateChangedEvents;
+    private SemaphoreSlim _connectSemaphore = new(1, 1);
+    private Channel<TabletIdListChange> _tabletIdListChangeSerializer = Channel.CreateUnbounded<TabletIdListChange>();
+    private Task _idManagerTask;
+    private CancellationTokenSource _idManagerTaskRunning = new();
 
     public DaemonState State
     {
@@ -55,6 +72,37 @@ public partial class DaemonService : ObservableObject, IDaemonService
         _dispatcher = dispatcher;
         rpcClient.Connected += OnConnected;
         rpcClient.Disconnected += OnDisconnected;
+
+        _idManagerTask = Task.Run(StartIdManagerAsync);
+    }
+
+    private async Task StartIdManagerAsync()
+    {
+        var reader = _tabletIdListChangeSerializer.Reader;
+        await foreach (var change in reader.ReadAllAsync(_idManagerTaskRunning.Token))
+        {
+            switch (change.Change)
+            {
+                case TabletIdListChangeType.Add:
+                    await CreateTabletService(_instance!, change.Id);
+                    break;
+                case TabletIdListChangeType.Remove:
+                    RemoveTabletService(change.Id);
+                    break;
+            }
+        }
+
+        async Task CreateTabletService(IDriverDaemon daemon, int tabletId)
+        {
+            var tabletService = await TabletService.CreateAsync(daemon, tabletId);
+            _dispatcher.Post(() => Tablets.Add(tabletService));
+        }
+
+        void RemoveTabletService(int tabletId)
+        {
+            var tabletService = Tablets.First(tablet => tablet.TabletId == tabletId);
+            _dispatcher.Post(() => Tablets.Remove(tabletService));
+        }
     }
 
     public Task ConnectAsync()
@@ -93,28 +141,36 @@ public partial class DaemonService : ObservableObject, IDaemonService
         _suppressStateChangedEvents = false;
     }
 
-    private async void OnConnected(object? _, EventArgs args)
+    private void OnConnected(object? _, EventArgs args)
     {
         var daemon = _rpcClient.Instance!;
-        Log.Output += Log_Output;
+        daemon.TabletAdded += (sender, tabletId) => QueueChange(TabletIdListChangeType.Add, tabletId);
+        daemon.TabletRemoved += (sender, tabletId) => QueueChange(TabletIdListChangeType.Remove, tabletId);
 
-        daemon.TabletAdded += (sender, tabletId) => CreateTabletService(daemon, tabletId);
-        daemon.TabletRemoved += (sender, tabletId) => RemoveTabletService(tabletId);
-        (await daemon.GetTablets()).ForEach(tabletId => CreateTabletService(daemon, tabletId));
+        _dispatcher.ProbablySynchronousPost(() =>
+        {
+            Log.Output += Log_Output;
+            Instance = daemon;
+            if (!_suppressStateChangedEvents)
+                State = DaemonState.Connected;
+        });
 
-        Instance = daemon;
-
-        if (!_suppressStateChangedEvents)
-            State = DaemonState.Connected;
+        _ = Task.Run(async () =>
+        {
+            (await daemon.GetTablets()).ForEach(tabletId => QueueChange(TabletIdListChangeType.Add, tabletId));
+        });
     }
 
     private void OnDisconnected(object? _, EventArgs args)
     {
-        Instance = null;
-        Log.Output -= Log_Output;
+        using (_connectSemaphore.Lock())
+        {
+            Instance = null;
+            Log.Output -= Log_Output;
 
-        if (!_suppressStateChangedEvents)
-            State = DaemonState.Disconnected;
+            if (!_suppressStateChangedEvents)
+                State = DaemonState.Disconnected;
+        }
     }
 
     private void Log_Output(object? _, LogMessage message)
@@ -122,22 +178,9 @@ public partial class DaemonService : ObservableObject, IDaemonService
         _instance!.WriteMessage(message).ConfigureAwait(false);
     }
 
-    private void CreateTabletService(IDriverDaemon daemon, int tabletId)
+    private void QueueChange(TabletIdListChangeType change, int id)
     {
-        _dispatcher.Post(async () =>
-        {
-            var tabletService = await TabletService.CreateAsync(daemon, tabletId);
-            Tablets.Add(tabletService);
-        });
-    }
-
-    private void RemoveTabletService(int tabletId)
-    {
-        _dispatcher.ProbablySynchronousPost(() =>
-        {
-            var tabletService = Tablets.FirstOrDefault(tablet => tablet.TabletId == tabletId);
-            if (tabletService is not null)
-                Tablets.Remove(tabletService);
-        });
+        var success = _tabletIdListChangeSerializer.Writer.TryWrite(new TabletIdListChange(change, id));
+        Debug.Assert(success);
     }
 }

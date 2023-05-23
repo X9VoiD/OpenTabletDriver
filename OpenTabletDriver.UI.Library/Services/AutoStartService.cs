@@ -8,7 +8,7 @@ public interface IAutoStartService
     bool TrySetAutoStart(bool autoStart);
 }
 
-public class DefaultAutoStartService : IAutoStartService
+public class NullAutoStartService : IAutoStartService
 {
     public bool AutoStartSupported => false;
     public bool AutoStart => false;

@@ -59,3 +59,33 @@ public static class CompositeDisposableExtensions
         composite.Add(disposable);
     }
 }
+
+public static class SynchronizationExtensions
+{
+    public static async Task<SemaphoreSlimLock> LockAsync(this SemaphoreSlim sem)
+    {
+        await sem.WaitAsync();
+        return new SemaphoreSlimLock(sem);
+    }
+
+    public static SemaphoreSlimLock Lock(this SemaphoreSlim sem)
+    {
+        sem.Wait();
+        return new SemaphoreSlimLock(sem);
+    }
+
+    public struct SemaphoreSlimLock : IDisposable
+    {
+        private readonly SemaphoreSlim _sem;
+
+        public SemaphoreSlimLock(SemaphoreSlim sem)
+        {
+            _sem = sem;
+        }
+
+        public void Dispose()
+        {
+            _sem.Release();
+        }
+    }
+}

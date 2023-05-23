@@ -1,0 +1,27 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style Selector="Button.Icon">
+        <Style Selector="^ PathIcon">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="^:disabled PathIcon">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
+            <Style Selector="^:not(:disabled) PathIcon">
+                <Setter Property="Opacity" Value="0.8" />
+            </Style>
+        </Style>
+        <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="^:pressed PathIcon">
+            <Setter Property="RenderTransform" Value="scale(0.9)" />
+            <Setter Property="Opacity" Value="0.9" />
+        </Style>
+    </Style>
+</Styles>

@@ -1,5 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using OpenTabletDriver.UI.Navigation;
@@ -16,7 +18,6 @@ public partial class MainWindowView : Window
     public MainWindowView()
     {
         InitializeComponent();
-        NavigationHost.NavigationHostName = AppRoutes.MainHost;
         DataContext = Ioc.Default.GetRequiredService<MainWindowViewModel>();
         _navigator = Ioc.Default.GetRequiredService<INavigatorFactory>().GetOrCreate(AppRoutes.MainHost);
         _dispatcher = Ioc.Default.GetRequiredService<IDispatcher>();
@@ -38,15 +39,22 @@ public partial class MainWindowView : Window
         {
             if (!e.Handled)
             {
+                // TODO: is there a need to implement forward?
+                if (e.GetCurrentPoint(this).Properties.IsXButton1Pressed && _navigator.CanGoBack)
+                {
+                    _navigator.Pop();
+                    // TODO: horrible name, also don't rely on to-be-internal IPseudoClasses interface
+                    ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", true);
+                    _dispatcher.Post(async () =>
+                    {
+                        await Task.Delay(100);
+                        ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", false);
+                    });
+                }
+
                 App.Current?.FocusManager?.Focus(null);
             }
         };
-
-        // Change back button opacity when navigation state changes
-        void handleOpacity(bool canGoBack) => BackButton.Opacity = canGoBack ? 1.0 : 0.5;
-
-        _navigator.Navigated += (_, _) => handleOpacity(_navigator.CanGoBack);
-        handleOpacity(_navigator.CanGoBack);
     }
 
     private void BootstrapTransparency(MainWindowViewModel vm)

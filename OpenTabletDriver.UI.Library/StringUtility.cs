@@ -19,6 +19,20 @@ internal static class StringUtility
         }
     }
 
+    public static bool TryParseDouble(string? value, out double result)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            result = 0;
+            return true;
+        }
+        else
+        {
+            value = InsertImplicitZeroes(value);
+            return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+        }
+    }
+
     private static string InsertImplicitZeroes(string value)
     {
         var sb = new StringBuilder(value.Length + 3); // at most 3 characters will be added

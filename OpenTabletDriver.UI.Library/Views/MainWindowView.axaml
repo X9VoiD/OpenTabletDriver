@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:OpenTabletDriver.UI"
         xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
         xmlns:c="using:OpenTabletDriver.UI.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -32,7 +33,7 @@
         <!-- Focus thingy, lose transparency when focus is lost -->
         <Rectangle Name="WindowBg"
                    IsHitTestVisible="False"
-                   Fill="{DynamicResource OTD_BackgroundColorBrush}">
+                   Fill="{DynamicResource OTD_BackgroundBrush}">
             <Rectangle.Transitions>
                 <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.2"></DoubleTransition>
@@ -45,15 +46,28 @@
             <Grid RowDefinitions="Auto,*" IsVisible="{Binding IsSettingsLoaded}">
 
                 <!-- Header -->
-                <StackPanel Grid.Row="0"
+                <StackPanel Name="Header"
+                            Grid.Row="0"
                             Height="48"
-                            IsHitTestVisible="False"
                             Orientation="Horizontal">
-                    <PathIcon Name="BackButton"
-                              Margin="20, 0"
-                              Width="12"
-                              Height="12"
-                              Data="{StaticResource arrow_back}"/>
+                    <Button Classes="Icon"
+                            Name="BackButtonButton"
+                            Margin="8, 0"
+                            Width="40"
+                            Height="40"
+                            Background="Transparent"
+                            Command="{Binding GoBackCommand}">
+                        <PathIcon Name="BackButton"
+                                  Data="{StaticResource arrow_back}"
+                                  Width="12"
+                                  Height="12">
+                            <PathIcon.Transitions>
+                                <Transitions>
+                                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+                                </Transitions>
+                            </PathIcon.Transitions>
+                        </PathIcon>
+                    </Button>
                     <TextBlock Text="{Binding Title}"
                                FontSize="12"
                                VerticalAlignment="Center"/>
@@ -69,7 +83,9 @@
                         <c:NavigationPaneView Margin="12, 20, 12, 12"/>
                     </SplitView.Pane>
 
-                    <c:NavigationHost Name="NavigationHost" Padding="36, 12"/>
+                    <c:NavigationHost Name="NavigationHost"
+                                      NavigationHostName="{x:Static ui:AppRoutes.MainHost}"
+                                      Padding="36, 12"/>
                 </SplitView>
             </Grid>
 

@@ -27,28 +27,28 @@ public class Navigator : INavigator
     public void Push(object routeObject, bool asRoot = false)
     {
         ArgumentNullException.ThrowIfNull(routeObject);
-        var kind = asRoot ? NavigationKind.PushAsRoot : NavigationKind.Push;
-        Navigate(kind, routeObject);
+        if (routeObject is not Control)
+        {
+            var route = Find(routeObject.GetType());
+            routeObject = CreateViewOrMapNotFound(routeObject, route);
+        }
+        PushInternal((Control)routeObject, asRoot);
     }
 
     public void Push(string routeName, bool asRoot = false)
     {
-        var route = Routes.FirstOrDefault(r => r.Name == routeName);
-        if (route is null)
-        {
-            Debug.WriteLine($"Cannot find route descriptor for route name '{routeName}'");
-            var navigation404 = Routes.FirstOrDefault(r => r.Name == "404");
+        ArgumentNullException.ThrowIfNullOrEmpty(routeName);
+        var route = Find(routeName);
 
-            var routeObject = navigation404 is not null
-                ? CreateRouteObject(navigation404)
-                : throw new InvalidOperationException($"Cannot find route descriptor for route name '{routeName}' and no 404 route is registered");
+        PushInternal(route is not null
+            ? Create(route)
+            : MapNotFound(routeName, null), asRoot);
+    }
 
-            Push(routeObject, asRoot);
-        }
-        else
-        {
-            Push(CreateRouteObject(route), asRoot);
-        }
+    private void PushInternal(Control control, bool asRoot)
+    {
+        var kind = asRoot ? NavigationKind.PushAsRoot : NavigationKind.Push;
+        Navigate(kind, control);
     }
 
     public void Pop(bool toRoot = false)
@@ -67,10 +67,24 @@ public class Navigator : INavigator
     {
         if (_navigating is not null)
         {
-            // If a navigation is already in progress, cancel it.
-            // This happens when a navigation is triggered from Navigating event handler.
-            TraceUtility.PrintTrace(this, $"Cancelling navigation from {_navigating.Current} to {next}");
-            _navigating.Cancel = true;
+            if (_navigating.Cancel == NavigationCancellationKind.None)
+            {
+                throw new InvalidOperationException("Navigation is already in progress");
+            }
+            else if (_navigating.Cancel == NavigationCancellationKind.Replace)
+            {
+                TraceUtility.PrintTrace(this, $"Replacing navigation from {_navigating.Current} to {next}");
+                // no-op
+            }
+            else if (_navigating.Cancel == NavigationCancellationKind.Redirect)
+            {
+                TraceUtility.PrintTrace(this, $"Redirecting navigation from {_navigating.Current} to {next}");
+                CommitNavigation(_navigating.Kind, _navigating.Previous!, _navigating.Current);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unknown navigation cancellation kind: {_navigating.Cancel}");
+            }
         }
 
         var prev = Current;
@@ -84,43 +98,91 @@ public class Navigator : INavigator
         var eventArg = new CancellableNavigationEventData(kind, prev, curr);
         _navigating = eventArg;
         Navigating?.Invoke(this, eventArg);
-        if (!eventArg.Cancel)
+        if (eventArg.Cancel == NavigationCancellationKind.None)
         {
-            switch (kind)
-            {
-                case NavigationKind.Push:
-                    _navStack.Push(next!);
-                    break;
-                case NavigationKind.Pop:
-                    _navStack.Pop();
-                    break;
-                case NavigationKind.PushAsRoot:
-                    _navStack.Clear();
-                    _navStack.Push(next!);
-                    break;
-                case NavigationKind.PopToRoot:
-                    _navStack.Clear();
-                    _navStack.Push(curr);
-                    break;
-            }
-
+            CommitNavigation(kind, curr, next);
             _navigating = null; // at this point, navigation is "complete"
             CanGoBack = _navStack.Count > 1;
             Navigated?.Invoke(this, new NavigationEventData(kind, prev, curr));
         }
     }
 
-    private object CreateRouteObject(NavigationRoute route)
+    private void CommitNavigation(NavigationKind navigationKind, object curr, object? next)
     {
-        if (route.ViewType is not null)
+        switch (navigationKind)
         {
-            var view = (Control)Activator.CreateInstance(route.ViewType)!;
-            view.DataContext = _serviceProvider.GetRequiredService(route.ObjectType);
-            return view;
+            case NavigationKind.Push:
+                _navStack.Push(next!);
+                break;
+            case NavigationKind.Pop:
+                _navStack.Pop();
+                break;
+            case NavigationKind.PushAsRoot:
+                _navStack.Clear();
+                _navStack.Push(next!);
+                break;
+            case NavigationKind.PopToRoot:
+                _navStack.Clear();
+                _navStack.Push(curr);
+                break;
         }
-        else
+    }
+
+    private Control Create(NavigationRoute route)
+    {
+        var dataContext = _serviceProvider.GetRequiredService(route.ObjectType);
+        return CreateViewOrMapNotFound(dataContext, route);
+    }
+
+    private Control CreateViewOrMapNotFound(object dataContext, NavigationRoute? route)
+    {
+        if (route?.ViewType is null)
+            return MapNotFound(null, dataContext.GetType().Name);
+
+        return CreateView(dataContext, route);
+    }
+
+    private Control CreateView(object dataContext, NavigationRoute route)
+    {
+        var view = (Control)Activator.CreateInstance(route.ViewType!)!;
+        view.DataContext = dataContext;
+        return view;
+    }
+
+    private Control MapNotFound(string? routeName, string? viewModelType)
+    {
+        Debug.WriteLine(routeName is not null
+            ? $"Unknown route name '{routeName}'"
+            : $"Unknown view model type '{viewModelType}'");
+
+        var route = Find(typeof(NavigationMapNotFoundViewModel));
+        if (route == null)
         {
-            return _serviceProvider.GetRequiredService(route.ObjectType);
+            Debug.WriteLine("NavigationMapNotFoundViewModel not found, replacing with TextBlock");
+            return new TextBlock()
+            {
+                Text = routeName is not null
+                    ? $"Unknown route name '{routeName}'"
+                    : $"Unknown view model type '{viewModelType}'"
+            };
         }
+
+        var vm = new NavigationMapNotFoundViewModel()
+        {
+            Route = routeName,
+            ViewModelType = viewModelType
+        };
+
+        return CreateView(vm, route);
+    }
+
+    private NavigationRoute? Find(Type type)
+    {
+        return Routes.FirstOrDefault(r => r.ObjectType == type);
+    }
+
+    private NavigationRoute? Find(string routeName)
+    {
+        return Routes.FirstOrDefault(r => r.Name == routeName);
     }
 }

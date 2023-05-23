@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:n="using:OpenTabletDriver.UI.Navigation"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="OpenTabletDriver.UI.Views.Navigation404View"
-             x:DataType="n:Navigation404ViewModel"
+             x:Class="OpenTabletDriver.UI.Views.NavigationMapNotFoundView"
+             x:DataType="n:NavigationMapNotFoundViewModel"
              x:CompileBindings="True">
-  <TextBlock Text="{Binding Message}"
+  <TextBlock Name="TextBlock"
              FontSize="16"
              HorizontalAlignment="Center"
              VerticalAlignment="Center"/>

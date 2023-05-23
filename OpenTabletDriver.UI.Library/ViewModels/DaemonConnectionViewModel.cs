@@ -22,6 +22,9 @@ public partial class DaemonConnectionViewModel : ActivatableViewModelBase
     private string _mainText = null!;
 
     [ObservableProperty]
+    private bool _isConnecting;
+
+    [ObservableProperty]
     private ObservableCollection<string> _qolHintText = new();
 
     [ObservableProperty]
@@ -129,6 +132,7 @@ public partial class DaemonConnectionViewModel : ActivatableViewModelBase
             ShowQolHintText = true;
         }
 
+        IsConnecting = state == DaemonState.Connecting;
         ShowButtons = state == DaemonState.Disconnected;
     }
 

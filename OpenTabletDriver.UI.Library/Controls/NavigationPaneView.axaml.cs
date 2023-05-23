@@ -10,11 +10,9 @@ public partial class NavigationPaneView : UserControl
 {
     public NavigationPaneView()
     {
-        InitializeComponent();
         DataContext = Ioc.Default.GetRequiredService<NavigationPaneViewModel>();
-        var vm = (NavigationPaneViewModel)DataContext;
-
-        ConnectDisjointedList(vm);
+        InitializeComponent();
+        ConnectDisjointedList((NavigationPaneViewModel)DataContext);
     }
 
     private void ConnectDisjointedList(NavigationPaneViewModel vm)

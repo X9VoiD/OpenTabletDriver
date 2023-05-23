@@ -8,13 +8,15 @@
              x:Class="OpenTabletDriver.UI.Controls.TabletItem"
              x:DataType="vm:TabletViewModel">
     <Panel>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
-            <PathIcon Width="120"
-                    Height="80"
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+            <PathIcon
+                    Width="120"
+                    Height="75"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Data="{StaticResource generic_tablet}"/>
             <TextBlock Text="{Binding Name}"
+                        Margin="0, 0, 0, -4"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"/>
         </StackPanel>

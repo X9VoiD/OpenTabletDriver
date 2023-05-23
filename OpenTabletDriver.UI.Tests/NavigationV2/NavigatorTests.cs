@@ -220,6 +220,8 @@ public class NavigatorTests
 
     #endregion
 
+    // TODO: test cancelling behaviour
+
     private static INavigator CreateNavigator()
     {
         var navFactory = new ServiceCollection()

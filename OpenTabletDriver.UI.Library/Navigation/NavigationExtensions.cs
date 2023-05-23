@@ -10,7 +10,13 @@ public static class NavigationExtensions
     public static IServiceCollection UseNavigation<TNav>(this IServiceCollection services)
         where TNav : class, INavigatorFactory
     {
-        return services.AddSingleton<INavigatorFactory, TNav>();
+        return services
+            .AddSingleton<INavigatorFactory, TNav>();
+    }
+
+    public static IServiceCollection AddNavigationMapping<TObject, TView>(this IServiceCollection services, string? navHostName = null)
+    {
+        return services.AddRoute(null, navHostName, typeof(TObject), typeof(TView), ServiceLifetime.Transient);
     }
 
     public static IServiceCollection AddTransientRoute<TObject>(this IServiceCollection services, string route)
@@ -59,7 +65,7 @@ public static class NavigationExtensions
 
     private static IServiceCollection AddRoute(
         this IServiceCollection services,
-        string route,
+        string? route,
         string? navHostName,
         Type objectType,
         Type? viewType,
@@ -69,7 +75,8 @@ public static class NavigationExtensions
         if (viewType is not null && !viewType.IsAssignableTo(typeof(ActivatableUserControl)))
             Debug.WriteLine($"Warning: {viewType} is not an {nameof(ActivatableUserControl)}");
 #endif
-        services.Add(ServiceDescriptor.Describe(objectType, objectType, lifetime));
+        if (route is not null) // only add object type as service if route is not null, see NavigationRoute.cs
+            services.Add(ServiceDescriptor.Describe(objectType, objectType, lifetime));
         services.AddSingleton(new NavigationRoute(navHostName, route, objectType, viewType));
         return services;
     }

@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Name="PART_Root"
              x:Class="OpenTabletDriver.UI.Controls.Input.ToggleInput">
-    <Border Background="#10ffffff" CornerRadius="6" Padding="12, 16">
+    <Border Background="#10ffffff" CornerRadius="6" Padding="12">
         <Grid ColumnDefinitions="Auto,*,Auto">
             <TextBlock Text="{CompiledBinding #PART_Root.Label, DataType={x:Type ci:ToggleInput}}"
                        Grid.Column="0"

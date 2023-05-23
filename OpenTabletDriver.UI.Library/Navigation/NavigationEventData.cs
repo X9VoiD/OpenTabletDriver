@@ -1,3 +1,5 @@
+using Avalonia.Media;
+
 namespace OpenTabletDriver.UI.Navigation;
 
 public class NavigationEventData : EventArgs
@@ -16,9 +18,16 @@ public class NavigationEventData : EventArgs
 
 public class CancellableNavigationEventData : NavigationEventData
 {
-    public bool Cancel { get; set; }
+    public NavigationCancellationKind Cancel { get; set; }
 
     public CancellableNavigationEventData(NavigationKind kind, object? prev, object? curr) : base(kind, prev, curr)
     {
     }
+}
+
+public enum NavigationCancellationKind
+{
+    None,
+    Replace,
+    Redirect
 }

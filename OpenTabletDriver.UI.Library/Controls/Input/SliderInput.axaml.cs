@@ -9,9 +9,9 @@ namespace OpenTabletDriver.UI.Controls.Input;
 public partial class SliderInput : UserControl
 {
     private string? _label;
-    private float _number;
-    private float? _min;
-    private float? _max;
+    private double _number;
+    private double? _min;
+    private double? _max;
     private bool _slider;
 
     private bool _updatingText;
@@ -23,19 +23,19 @@ public partial class SliderInput : UserControl
         (o, v) => o.Label = v
     );
 
-    public static readonly DirectProperty<SliderInput, float> NumberProperty = AvaloniaProperty.RegisterDirect<SliderInput, float>(
+    public static readonly DirectProperty<SliderInput, double> NumberProperty = AvaloniaProperty.RegisterDirect<SliderInput, double>(
         nameof(Number),
         o => o.Number,
         (o, v) => o.Number = v
     );
 
-    public static readonly DirectProperty<SliderInput, float?> MinimumProperty = AvaloniaProperty.RegisterDirect<SliderInput, float?>(
+    public static readonly DirectProperty<SliderInput, double?> MinimumProperty = AvaloniaProperty.RegisterDirect<SliderInput, double?>(
         nameof(Minimum),
         o => o.Minimum,
         (o, v) => o.Minimum = v
     );
 
-    public static readonly DirectProperty<SliderInput, float?> MaximumProperty = AvaloniaProperty.RegisterDirect<SliderInput, float?>(
+    public static readonly DirectProperty<SliderInput, double?> MaximumProperty = AvaloniaProperty.RegisterDirect<SliderInput, double?>(
         nameof(Maximum),
         o => o.Maximum,
         (o, v) => o.Maximum = v
@@ -53,19 +53,19 @@ public partial class SliderInput : UserControl
         get => _label;
     }
 
-    public float Number
+    public double Number
     {
         set => SetAndRaise(NumberProperty, ref _number, value);
         get => _number;
     }
 
-    public float? Minimum
+    public double? Minimum
     {
         set => SetAndRaise(MinimumProperty, ref _min, value);
         get => _min;
     }
 
-    public float? Maximum
+    public double? Maximum
     {
         set => SetAndRaise(MaximumProperty, ref _max, value);
         get => _max;
@@ -100,7 +100,7 @@ public partial class SliderInput : UserControl
                 Number = 0;
                 _updatingText = false;
             }
-            else if (StringUtility.TryParseFloat(PART_Text.Text, out float result))
+            else if (StringUtility.TryParseDouble(PART_Text.Text, out double result))
             {
                 _previousText = PART_Text.Text;
                 Number = result;
@@ -151,7 +151,7 @@ public partial class SliderInput : UserControl
         _updatingText = true;
         _previousText = e.NewValue?.ToString() ?? string.Empty;
 
-        if (e.NewValue is float newValue)
+        if (e.NewValue is double newValue)
         {
             if (Minimum.HasValue && newValue < Minimum.Value)
             {

@@ -8,20 +8,29 @@
              x:Class="OpenTabletDriver.UI.Views.TabletsOverview"
              x:DataType="vm:TabletsOverviewViewModel"
              x:CompileBindings="True">
+    <Grid RowDefinitions="*,Auto">
+        <ListBox ItemsSource="{Binding Tablets}"
+                 SelectedItem="{Binding SelectedTablet}"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 Grid.Row="0">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:TabletViewModel">
+                    <c:TabletItem Width="140"
+                                  Height="140" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
-    <!-- TODO: disable ListBox hover styling -->
-
-    <ListBox ItemsSource="{Binding Tablets}" SelectedItem="{Binding SelectedTablet}" Background="Transparent">
-        <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-                <WrapPanel/>
-            </ItemsPanelTemplate>
-        </ListBox.ItemsPanel>
-        <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:TabletViewModel">
-                <c:TabletItem Width="160"
-                              Height="160" />
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-    </ListBox>
+        <!-- TODO: bind -->
+        <StackPanel Classes="CommandBar" Grid.Row="1">
+            <Button Content="Scan" />
+            <Button Content="Help" />
+        </StackPanel>
+    </Grid>
 </UserControl>

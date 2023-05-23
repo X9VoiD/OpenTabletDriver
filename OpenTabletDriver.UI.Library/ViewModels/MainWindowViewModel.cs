@@ -1,11 +1,10 @@
-using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using OpenTabletDriver.Daemon.Contracts;
+using CommunityToolkit.Mvvm.Messaging;
+using OpenTabletDriver.UI.Messages;
 using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
@@ -21,8 +20,8 @@ namespace OpenTabletDriver.UI.ViewModels
         private readonly IDaemonService _daemonService;
         private readonly IDispatcher _dispatcher;
         private readonly IUISettingsProvider _uiSettingsProvider;
-
-        internal INavigator Navigator { get; }
+        private readonly INavigator _navigator;
+        private readonly IMessenger _messenger;
 
         [ObservableProperty]
         private string _title;
@@ -33,10 +32,12 @@ namespace OpenTabletDriver.UI.ViewModels
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand),
                                     nameof(ResetSettingsCommand),
-                                    nameof(GetPresetsCommand),
-                                    nameof(ApplyPresetCommand),
                                     nameof(SaveAsPresetCommand))]
         private bool _isConnected;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(GoBackCommand))]
+        private bool _canGoBack;
 
         [ObservableProperty]
         private bool _isSettingsLoaded;
@@ -45,35 +46,12 @@ namespace OpenTabletDriver.UI.ViewModels
         /// Gets or sets a boolean indicating whether the side pane is open.
         /// </summary>
         [ObservableProperty]
-        private bool _sidePaneOpen;
+        private bool _sidePaneOpen = true;
 
         [ObservableProperty]
         private bool _transparencyEnabled;
 
-        /// <summary>
-        /// Gets or sets an array of currently available displays.
-        /// </summary>
-        [ObservableProperty]
-        private ImmutableArray<DisplayDto> _displays;
-
-        /// <summary>
-        /// Gets or sets an array of the settings currently applied for each tool.
-        /// </summary>
-        [ObservableProperty]
-        private ImmutableArray<PluginSettings> _toolSettings;
-
-        /// <summary>
-        /// Gets or sets an array that contains information about the plugins currently loaded and ways to configure them.
-        /// </summary>
-        [ObservableProperty]
-        private ImmutableArray<PluginContextDto> _plugins;
-
         public string Version { get; } = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-
-        /// <summary>
-        /// Gets an observable collection of preset names.
-        /// </summary>
-        public ObservableCollection<string> Presets { get; } = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
@@ -82,13 +60,15 @@ namespace OpenTabletDriver.UI.ViewModels
             IDaemonService daemonService,
             INavigatorFactory navigatorFactory,
             IDispatcher dispatcher,
-            IUISettingsProvider uiSettingsProvider)
+            IUISettingsProvider uiSettingsProvider,
+            IMessenger messenger)
         {
             _title = "OpenTabletDriver v" + Version;
             _daemonService = daemonService;
-            Navigator = navigatorFactory.GetOrCreate(AppRoutes.MainHost);
+            _navigator = navigatorFactory.GetOrCreate(AppRoutes.MainHost);
             _dispatcher = dispatcher;
             _uiSettingsProvider = uiSettingsProvider;
+            _messenger = messenger;
 
             _uiSettingsProvider.WhenLoadedOrSet((d, settings) =>
             {
@@ -100,12 +80,14 @@ namespace OpenTabletDriver.UI.ViewModels
 
                 _dispatcher.Post(async () =>
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(1)); // because we're too fast
                     IsSettingsLoaded = true;
                 });
             });
 
-            Navigator.Push(AppRoutes.DaemonConnectionRoute, asRoot: true);
+            _navigator.Navigated += (_, e) => CanGoBack = _navigator.CanGoBack;
+            _messenger.Send(new NavigationPaneSelectionChangeRequest(NavigationItemSelection.Daemon));
+
             _daemonService.HandleProperty(
                 nameof(IDaemonService.State),
                 d => d.State,
@@ -131,7 +113,6 @@ namespace OpenTabletDriver.UI.ViewModels
             _dispatcher.ProbablySynchronousPost(() =>
             {
                 IsConnected = _daemonService.State == DaemonState.Connected;
-                SidePaneOpen = true; // TODO: calculate stuff
             });
         }
 
@@ -141,10 +122,26 @@ namespace OpenTabletDriver.UI.ViewModels
         /// <returns>An awaitable task that completes when all setup is complete.</returns>
         private async Task InitializeAsync()
         {
-            Displays = (await _daemonService.Instance!.GetDisplays()).ToImmutableArray();
-            ToolSettings = (await _daemonService.Instance.GetToolSettings()).ToImmutableArray();
-            Plugins = (await _daemonService.Instance.GetPlugins()).ToImmutableArray();
-            await GetPresetsAsync();
+            var hasNavigated = false;
+            void navigated(object? sender, NavigationEventData e)
+            {
+                hasNavigated = true;
+            }
+
+            _navigator.Navigated += navigated;
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            _navigator.Navigated -= navigated;
+
+            if (!hasNavigated)
+            {
+                _messenger.Send(new NavigationPaneSelectionChangeRequest(NavigationItemSelection.Tablet));
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanGoBack))]
+        private void GoBack()
+        {
+            _navigator.Pop();
         }
 
         /// <summary>
@@ -172,33 +169,6 @@ namespace OpenTabletDriver.UI.ViewModels
         }
 
         /// <summary>
-        /// Gets the current presets. This updates the <see cref="Presets"/> collection.
-        /// </summary>
-        /// <returns>An awaitable task that completes when <see cref="Presets"/> is updated.</returns>
-        [RelayCommand(CanExecute = nameof(IsConnected))]
-        private async Task GetPresetsAsync()
-        {
-            // TODO: switch to using immutable array for presets?
-            Debug.Assert(_daemonService.Instance != null);
-            Presets.Clear();
-            foreach (var preset in await _daemonService.Instance.GetPresets())
-                Presets.Add(preset);
-        }
-
-        /// <summary>
-        /// Applies a preset.
-        /// </summary>
-        /// <param name="preset">The name of the preset to apply.</param>
-        /// <returns>An awaitable task that completes when daemon is done applying the preset.</returns>
-        [RelayCommand(CanExecute = nameof(IsConnected))]
-        private async Task ApplyPresetAsync(string? preset)
-        {
-            Debug.Assert(_daemonService.Instance != null);
-            if (preset is not null && Presets.Contains(preset))
-                await _daemonService.Instance.ApplyPreset(preset);
-        }
-
-        /// <summary>
         /// Saves the currently applied settings as a preset.
         /// </summary>
         /// <param name="preset">The name of the preset to save.</param>
@@ -215,16 +185,11 @@ namespace OpenTabletDriver.UI.ViewModels
         {
             if (value)
             {
-                // TODO: save route then restore on reconnect
                 InitializeAsync().ConfigureAwait(false);
             }
             else
             {
-                Displays = ImmutableArray<DisplayDto>.Empty;
-                ToolSettings = ImmutableArray<PluginSettings>.Empty;
-                Plugins = ImmutableArray<PluginContextDto>.Empty;
-                Presets.Clear();
-                Navigator.Push(AppRoutes.DaemonConnectionRoute, asRoot: true);
+                _messenger.Send(new NavigationPaneSelectionChangeRequest(NavigationItemSelection.Daemon));
             }
         }
     }

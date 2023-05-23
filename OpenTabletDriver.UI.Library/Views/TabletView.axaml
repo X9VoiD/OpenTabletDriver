@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
+             xmlns:c="using:OpenTabletDriver.UI.Controls"
+             xmlns:ci="using:OpenTabletDriver.UI.Controls.Input"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenTabletDriver.UI.Views.TabletView"
+             x:DataType="vm:TabletViewModel"
+             x:CompileBindings="True">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+            <StackPanel Grid.Row="0" Spacing="8" ClipToBounds="True">
+                <TextBlock Text="{Binding Name}" FontSize="24" Margin="0, 0, 0, 40"/>
+                <c:AreaDisplay DataContext="{Binding DisplayArea}" Margin="32, 0, 32, 32" Height="240" />
+
+                <TextBlock Text="Monitor Area" />
+                <Grid ColumnDefinitions="*,*">
+                    <ci:FloatInput DataContext="{Binding DisplayArea.Mapping}" Margin="0, 0, 4, 0" Grid.Column="0" Number="{Binding X, Mode=TwoWay}" Label="X"/>
+                    <ci:FloatInput DataContext="{Binding DisplayArea.Mapping}" Margin="4, 0, 0 ,0" Grid.Column="1" Number="{Binding Y, Mode=TwoWay}" Label="Y"/>
+                </Grid>
+                <ci:SliderInput Number="{Binding DisplayArea.Mapping.Width, Mode=TwoWay}" Slider="True" Minimum="0" Maximum="{Binding DisplayArea.MaximumBounds.Width}" Label="Width"/>
+                <ci:SliderInput Number="{Binding DisplayArea.Mapping.Height, Mode=TwoWay}" Slider="True" Minimum="0" Maximum="{Binding DisplayArea.MaximumBounds.Height}" Label="Height"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- TODO: bind -->
+        <StackPanel Classes="CommandBar" Grid.Row="1">
+            <Button Content="Apply" />
+            <SplitButton Content="Save">
+                <SplitButton.Flyout>
+                    <MenuFlyout Placement="Top">
+                        <MenuItem Header="Discard" />
+                        <MenuItem Header="Reset" />
+                    </MenuFlyout>
+                </SplitButton.Flyout>
+            </SplitButton>
+        </StackPanel>
+    </Grid>
+
+    <!-- TODO: display something when tablet is uninitialized -->
+</UserControl>

@@ -1,5 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using OpenTabletDriver.UI.Controls;
+using OpenTabletDriver.UI.Messages;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
@@ -18,7 +21,7 @@ public partial class NavigationPaneViewModel : ViewModelBase
 
     public ObservableCollection<NavigationItem> Navigations { get; } = new();
 
-    public NavigationPaneViewModel(IDaemonService daemonService, INavigatorFactory navigatorFactory)
+    public NavigationPaneViewModel(IDaemonService daemonService, INavigatorFactory navigatorFactory, IMessenger messenger)
     {
         _daemonService = daemonService;
         _navigator = navigatorFactory.GetOrCreate(AppRoutes.MainHost);
@@ -49,6 +52,24 @@ public partial class NavigationPaneViewModel : ViewModelBase
                 Navigations.Add(pluginManager);
                 Navigations.Add(diagnostics);
             });
+
+        messenger.Register<NavigationPaneViewModel, NavigationPaneSelectionChangeRequest>(this, static (vm, req) =>
+        {
+            static NavigationItem? find(NavigationPaneViewModel vm, string route)
+            {
+                return vm.Navigations.FirstOrDefault(n => n.Route == route);
+            }
+
+            vm.SelectedNavigation = req.Value switch
+            {
+                NavigationItemSelection.Daemon => find(vm, AppRoutes.DaemonConnectionRoute),
+                NavigationItemSelection.Tablet => find(vm, AppRoutes.TabletsOverviewRoute),
+                NavigationItemSelection.Tool => find(vm, AppRoutes.ToolsSettingsRoute),
+                NavigationItemSelection.PluginManager => find(vm, AppRoutes.PluginManagerRoute),
+                NavigationItemSelection.Diagnostics => find(vm, AppRoutes.DiagnosticsRoute),
+                _ => null
+            };
+        });
     }
 
     partial void OnSelectedNavigationChanged(NavigationItem? value)

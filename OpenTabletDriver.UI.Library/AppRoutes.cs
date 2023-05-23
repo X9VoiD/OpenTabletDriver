@@ -32,10 +32,11 @@ public static class AppRoutes
     public static IServiceCollection AddApplicationRoutes(this IServiceCollection services)
     {
         return services
-            .AddTransientRoute<Navigation404ViewModel, Navigation404View>("404")
+            .AddNavigationMapping<NavigationMapNotFoundViewModel, NavigationMapNotFoundView>()
             .AddSingletonRoute<DaemonConnectionViewModel, DaemonConnectionView>(DaemonConnectionRoute)
             .AddSingletonRoute<UISettingsViewModel, UISettingsView>(SettingsRoute) // register as singleton to preserve "modified" state
-            .AddTransientRoute<TabletsOverviewViewModel, TabletsOverview>(TabletsOverviewRoute);
+            .AddSingletonRoute<TabletsOverviewViewModel, TabletsOverview>(TabletsOverviewRoute) // preserve tablet selection
+            .AddNavigationMapping<TabletViewModel, TabletView>();
         // .AddNavigationRoute<TabletMainSettingsViewModel, TabletMainSettingsView>(TabletMainSettingsRoute)
         // .AddNavigationRoute<TabletBindingsViewModel, TabletBindingsView>(TabletBindingsRoute)
         // .AddNavigationRoute<TabletFiltersViewModel, TabletFiltersView>(TabletFiltersRoute)
