@@ -1,5 +1,8 @@
+using System.Collections;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -12,12 +15,25 @@ public partial class AreaDisplay : UserControl
 {
     private static IImmutableSolidColorBrush _boundsBrush = new ImmutableSolidColorBrush(0x0AFFFFFF);
     private static IImmutableSolidColorBrush _mappingBrush = new ImmutableSolidColorBrush(0x800078D7);
-    private Rect _maximumBounds;
     private double _scale;
     private double _xOffset;
     private double _yOffset;
     private bool _captured;
     private Point _hitPoint;
+
+    private IList? _menuItems = new AvaloniaList<object>();
+
+    public static readonly DirectProperty<AreaDisplay, IList?> MenuItemsProperty =
+        AvaloniaProperty.RegisterDirect<AreaDisplay, IList?>(
+            nameof(MenuItems),
+            o => o.MenuItems,
+            (o, v) => o.MenuItems = v);
+
+    public IList? MenuItems
+    {
+        get => _menuItems;
+        set => SetAndRaise(MenuItemsProperty, ref _menuItems, value);
+    }
 
     public AreaDisplay()
     {
@@ -28,22 +44,10 @@ public partial class AreaDisplay : UserControl
     {
         if (DataContext is AreaDisplayViewModel vm)
         {
-            _maximumBounds = ToRect(vm.MaximumBounds);
-
             _xOffset = Math.Abs(Math.Min(vm.MaximumBounds.X, 0));
             _yOffset = Math.Abs(Math.Min(vm.MaximumBounds.Y, 0));
 
-            this.ContextMenu = new ContextMenu
-            {
-                ItemsSource = new[]
-                {
-                    new MenuItem
-                    {
-                        Header = "Map to...",
-                        ItemsSource = CreateQuickMapMenuItems(vm)
-                    }
-                }
-            };
+            CreateContextMenu(vm);
 
             foreach (var bounds in vm.Bounds)
             {
@@ -58,6 +62,44 @@ public partial class AreaDisplay : UserControl
         base.OnDataContextChanged(e);
     }
 
+    private void CreateContextMenu(AreaDisplayViewModel vm)
+    {
+        var menuItems = new List<object>()
+        {
+            new MenuItem()
+            {
+                Header = "Map to...",
+                ItemsSource = CreateQuickMapMenuItems(vm)
+            },
+            new MenuItem()
+            {
+                Header = "Restrict to mappable bounds",
+                Icon = new CheckBox()
+                {
+                    BorderThickness = new Thickness(0),
+                    IsHitTestVisible = false,
+                    [!CheckBox.IsCheckedProperty] = new Binding()
+                    {
+                        Source = vm,
+                        Path = nameof(vm.RestrictToMaximumBounds),
+                        Mode = BindingMode.OneWay
+                    },
+                },
+                Command = vm.ToggleRestrictToMaximumBoundsCommand
+            }
+        };
+
+        if (MenuItems is not null)
+        {
+            menuItems.AddRange(MenuItems.Cast<object>());
+        }
+
+        this.ContextMenu = new ContextMenu
+        {
+            ItemsSource = menuItems
+        };
+    }
+
     private MenuItem[] CreateQuickMapMenuItems(AreaDisplayViewModel vm)
     {
         static MenuItem createQuickMapMenuItem(AreaDisplayViewModel vm, Bounds bounds)
@@ -67,17 +109,24 @@ public partial class AreaDisplay : UserControl
                 Header = bounds.Name,
                 Command = new RelayCommand(() =>
                 {
-                    vm.Mapping.X = bounds.X;
-                    vm.Mapping.Y = bounds.Y;
+                    vm.SetProcessRestrictions(false);
+                    vm.Mapping.UntranslatedX = bounds.X;
+                    vm.Mapping.UntranslatedY = bounds.Y;
                     vm.Mapping.Width = bounds.Width;
                     vm.Mapping.Height = bounds.Height;
+                    vm.Mapping.Rotation = bounds.Rotation;
+                    vm.SetProcessRestrictions(true);
                 })
             };
         }
 
         var fullVirtualDesktop = createQuickMapMenuItem(vm, vm.MaximumBounds);
 
-        return vm.Bounds.Select(b => createQuickMapMenuItem(vm, b)).Prepend(fullVirtualDesktop).ToArray();
+        return vm.Bounds
+            .Where(b => b.Name is not null)
+            .Select(b => createQuickMapMenuItem(vm, b))
+            .Prepend(fullVirtualDesktop)
+            .ToArray();
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -92,7 +141,7 @@ public partial class AreaDisplay : UserControl
             var scaledWidth = maxCanvasSize.Height / vm.MaximumBounds.Height * vm.MaximumBounds.Width;
             var scaledHeight = maxCanvasSize.Width / vm.MaximumBounds.Width * vm.MaximumBounds.Height;
 
-            if (scaledWidth >= maxCanvasSize.Width)
+            if (scaledWidth > maxCanvasSize.Width)
             {
                 AreaCanvas.Width = maxCanvasSize.Width;
                 AreaCanvas.Height = scaledHeight;
@@ -170,10 +219,8 @@ public partial class AreaDisplay : UserControl
             {
                 var point = e.GetPosition(AreaCanvas) - _hitPoint;
                 var mapping = (Mapping)mapVisual.Tag!;
-                mapping.X = (int)Math.Round((point.X / _scale) - _xOffset);
-                mapping.Y = (int)Math.Round((point.Y / _scale) - _yOffset);
-
-                RestrictToVisibleBounds(mapping);
+                mapping.UntranslatedX = (point.X / _scale) - _xOffset;
+                mapping.UntranslatedY = (point.Y / _scale) - _yOffset;
             }
         };
 
@@ -188,41 +235,8 @@ public partial class AreaDisplay : UserControl
 
     private void SetPosition(Border border, Mapping mapping, double scale)
     {
-        Canvas.SetLeft(border, (mapping.X + _xOffset) * scale);
-        Canvas.SetTop(border, (mapping.Y + _yOffset) * scale);
-    }
-
-    private void RestrictToVisibleBounds(Mapping mapping)
-    {
-        var mappingRect = ToRect(mapping);
-        var centerPoint = mappingRect.Center;
-
-        if (centerPoint.X < _maximumBounds.Left)
-        {
-            mapping.X = (int)Math.Round(_maximumBounds.Left - mappingRect.Width / 2);
-        }
-        else if (centerPoint.X > _maximumBounds.Right)
-        {
-            mapping.X = (int)Math.Round(_maximumBounds.Right - mappingRect.Width / 2);
-        }
-
-        if (centerPoint.Y < _maximumBounds.Top)
-        {
-            mapping.Y = (int)Math.Round(_maximumBounds.Top - mappingRect.Height / 2);
-        }
-        else if (centerPoint.Y > _maximumBounds.Bottom)
-        {
-            mapping.Y = (int)Math.Round(_maximumBounds.Bottom - mappingRect.Height / 2);
-        }
-    }
-
-    private static Rect ToRect(Mapping mapping)
-    {
-        return new Rect(
-            mapping.X,
-            mapping.Y,
-            mapping.Width,
-            mapping.Height
-        );
+        Canvas.SetLeft(border, (mapping.UntranslatedX + _xOffset) * scale);
+        Canvas.SetTop(border, (mapping.UntranslatedY + _yOffset) * scale);
+        border.RenderTransform = new RotateTransform(mapping.Rotation);
     }
 }

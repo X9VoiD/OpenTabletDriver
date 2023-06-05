@@ -21,10 +21,10 @@ internal static class PropertyChangedExtensions
         string sourceProperty,
         Func<TSource, TTarget> getter,
         Action<TSource, TTarget> action,
-        bool invokeEventOnCreation = true)
+        bool invokeOnCreation = true)
             where TSource : class, INotifyPropertyChanged
     {
-        return new StrongRefPropertyChangedHandler<TSource, TTarget>(source, sourceProperty, getter, action, invokeEventOnCreation);
+        return new StrongRefPropertyChangedHandler<TSource, TTarget>(source, sourceProperty, getter, action, invokeOnCreation);
     }
 }
 

@@ -125,6 +125,7 @@ namespace OpenTabletDriver.Daemon
 
             _driver.InputDeviceRemoved += (sender, e) =>
             {
+                _tablets.Remove(e.Id);
                 TabletRemoved?.Invoke(sender, e.Id);
             };
 
@@ -156,6 +157,9 @@ namespace OpenTabletDriver.Daemon
                 appdataDir.Create();
                 Log.Write("Settings", $"Created OpenTabletDriver application data directory: {appdataDir.FullName}");
             }
+
+            var internalPlugins = CreateInternalsPluginContextDto(_pluginManager);
+            ImmutableInterlocked.Update(ref _plugins, p => p.Add(internalPlugins));
 
             _pluginManager.Load();
             _settingsManager.Load(new FileInfo(_appInfo.SettingsFile));
@@ -322,6 +326,7 @@ namespace OpenTabletDriver.Daemon
         public Task SaveSettings()
         {
             Settings settings = CreateSerializableSettings();
+            _settingsManager.Save(settings, new FileInfo(_appInfo.SettingsFile));
             settings.Serialize(new FileInfo(_appInfo.SettingsFile));
             Log.Write("Settings", $"Settings saved to '{_appInfo.SettingsFile}'");
 
@@ -600,6 +605,29 @@ namespace OpenTabletDriver.Daemon
             }
         }
 
+        private PluginContextDto CreateInternalsPluginContextDto(IPluginManager pluginManager)
+        {
+            var internalPluginTypes = pluginManager.InternalPluginTypes;
+            var otdVer = typeof(DriverDaemon).Assembly.GetName().Version;
+            var metadata = new PluginMetadata()
+            {
+                Name = "OpenTabletDriver Core",
+                Owner = "OpenTabletDriver",
+                Description = "OpenTabletDriver's core plugins.",
+                PluginVersion = otdVer,
+                SupportedDriverVersion = otdVer,
+                LicenseIdentifier = "LGPL-3.0",
+            };
+
+            var pluginDtos = internalPluginTypes.Select(t => ExtractDto(t));
+
+            return new PluginContextDto
+            {
+                Metadata = metadata,
+                Plugins = new Collection<PluginDto>(pluginDtos.ToArray())
+            };
+        }
+
         private PluginContextDto CreatePluginDto(PluginContext context)
         {
             var metadata = context.Metadata;
@@ -628,10 +656,16 @@ namespace OpenTabletDriver.Daemon
 
         private Profile GetOrCreateProfile(IServiceProvider serviceProvider, InputDevice inputDevice)
         {
-            // find a profile from memory or settings, else create a new default profile
-            var profile = _tablets.FirstOrDefault(kvp => kvp.Value.Item2.Tablet == inputDevice.Configuration.Name && kvp.Value.Item2.PersistentId == inputDevice.PersistentId).Value.Item2
-                ?? _settingsManager.Settings.Profiles.FirstOrDefault(p => p.Tablet == inputDevice.Configuration.Name && p.PersistentId == inputDevice.PersistentId)
-                ?? GetDefaultProfile(serviceProvider, inputDevice);
+            // find a profile from memory
+            var profile = _tablets.FirstOrDefault(kvp =>
+            {
+                var (tabletId, (tablet, profile)) = kvp;
+                return tablet.Configuration.Name == inputDevice.Configuration.Name
+                    && tablet.PersistentId == inputDevice.PersistentId;
+            }).Value.Item2;
+
+            profile ??= _settingsManager.Settings.Profiles.FirstOrDefault(p => p.Tablet == inputDevice.Configuration.Name && p.PersistentId == inputDevice.PersistentId);
+            profile ??= GetDefaultProfile(serviceProvider, inputDevice);
 
             ref var pair = ref CollectionsMarshal.GetValueRefOrAddDefault(_tablets, inputDevice.Id, out _);
             pair = (inputDevice, profile);

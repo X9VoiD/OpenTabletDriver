@@ -25,6 +25,7 @@ namespace OpenTabletDriver.UI.Models
         private readonly IDriverDaemon _daemon;
         private InputDeviceState _tabletState;
         private Profile _profile;
+        private bool _disposed;
 
         public int TabletId { get; }
         public string Name => Configuration.Name;
@@ -62,26 +63,31 @@ namespace OpenTabletDriver.UI.Models
 
         public async Task Initialize(bool initialize)
         {
+            ThrowIfDisposed();
             await _daemon.SetTabletState(TabletId, initialize ? InputDeviceState.Normal : InputDeviceState.Uninitialized);
         }
 
         public async Task SetTabletState(InputDeviceState state)
         {
+            ThrowIfDisposed();
             await _daemon.SetTabletState(TabletId, state);
         }
 
         public async Task ApplyProfile()
         {
+            ThrowIfDisposed();
             await _daemon.SetTabletProfile(TabletId, Profile);
         }
 
         public async Task DiscardProfile()
         {
+            ThrowIfDisposed();
             Profile = await _daemon.GetTabletProfile(TabletId);
         }
 
         public async Task ResetProfile()
         {
+            ThrowIfDisposed();
             await _daemon.ResetTabletProfile(TabletId);
             Profile = await _daemon.GetTabletProfile(TabletId);
         }
@@ -101,17 +107,20 @@ namespace OpenTabletDriver.UI.Models
             }
         }
 
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(TabletService));
+        }
+
         public void Dispose()
         {
-            try
-            {
-                _daemon.TabletStateChanged -= Daemon_TabletStateChanged;
-                _daemon.TabletProfileChanged -= Daemon_TabletProfileChanged;
-            }
-            catch
-            {
-                // noop
-            }
+            if (_disposed)
+                return;
+
+            _disposed = true;
+            _daemon.TabletStateChanged -= Daemon_TabletStateChanged;
+            _daemon.TabletProfileChanged -= Daemon_TabletProfileChanged;
         }
     }
 }

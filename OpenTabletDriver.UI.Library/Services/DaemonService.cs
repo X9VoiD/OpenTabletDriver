@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Threading.Channels;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
@@ -23,34 +21,56 @@ public interface IDaemonService : INotifyPropertyChanged, INotifyPropertyChangin
     DaemonState State { get; }
     IDriverDaemon? Instance { get; }
     ObservableCollection<ITabletService> Tablets { get; }
+    ObservableCollection<PluginSettings> Tools { get; }
+    ObservableCollection<PluginContextDto> PluginContexts { get; }
     Task ConnectAsync();
     Task ConnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
     Task ReconnectAsync();
     Task ReconnectAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
 }
 
-public partial class DaemonService : ObservableObject, IDaemonService
+public static class DaemonServiceExtensions
 {
-    private record TabletIdListChange(
-        TabletIdListChangeType Change,
-        int Id
-    );
-
-    private enum TabletIdListChangeType
+    public static IDisposable HandleStateChange(
+        this IDaemonService daemonService,
+        Action onConnect,
+        Action? onDisconnect = null,
+        Action? onConnecting = null)
     {
-        Add,
-        Remove
+        return daemonService.HandleProperty(
+            nameof(IDaemonService.State),
+            d => d.State,
+            (d, s) =>
+            {
+                switch (s)
+                {
+                    case DaemonState.Connected:
+                        onConnect();
+                        break;
+                    case DaemonState.Connecting:
+                        onConnecting?.Invoke();
+                        break;
+                    case DaemonState.Disconnected:
+                        onDisconnect?.Invoke();
+                        break;
+                }
+            }
+        );
     }
 
+    public static PluginDto? FindPlugin(this IDaemonService daemonService, string path)
+    {
+        return daemonService.PluginContexts.SelectMany(p => p.Plugins).FirstOrDefault(p => p.Path == path);
+    }
+}
+
+public partial class DaemonService : ObservableObject, IDaemonService
+{
     private readonly IRpcClient<IDriverDaemon> _rpcClient;
     private readonly IDispatcher _dispatcher;
     private DaemonState _state;
     private IDriverDaemon? _instance;
     private bool _suppressStateChangedEvents;
-    private SemaphoreSlim _connectSemaphore = new(1, 1);
-    private Channel<TabletIdListChange> _tabletIdListChangeSerializer = Channel.CreateUnbounded<TabletIdListChange>();
-    private Task _idManagerTask;
-    private CancellationTokenSource _idManagerTaskRunning = new();
 
     public DaemonState State
     {
@@ -65,6 +85,8 @@ public partial class DaemonService : ObservableObject, IDaemonService
     }
 
     public ObservableCollection<ITabletService> Tablets { get; } = new();
+    public ObservableCollection<PluginSettings> Tools { get; } = new();
+    public ObservableCollection<PluginContextDto> PluginContexts { get; } = new();
 
     public DaemonService(IRpcClient<IDriverDaemon> rpcClient, IDispatcher dispatcher)
     {
@@ -72,37 +94,6 @@ public partial class DaemonService : ObservableObject, IDaemonService
         _dispatcher = dispatcher;
         rpcClient.Connected += OnConnected;
         rpcClient.Disconnected += OnDisconnected;
-
-        _idManagerTask = Task.Run(StartIdManagerAsync);
-    }
-
-    private async Task StartIdManagerAsync()
-    {
-        var reader = _tabletIdListChangeSerializer.Reader;
-        await foreach (var change in reader.ReadAllAsync(_idManagerTaskRunning.Token))
-        {
-            switch (change.Change)
-            {
-                case TabletIdListChangeType.Add:
-                    await CreateTabletService(_instance!, change.Id);
-                    break;
-                case TabletIdListChangeType.Remove:
-                    RemoveTabletService(change.Id);
-                    break;
-            }
-        }
-
-        async Task CreateTabletService(IDriverDaemon daemon, int tabletId)
-        {
-            var tabletService = await TabletService.CreateAsync(daemon, tabletId);
-            _dispatcher.Post(() => Tablets.Add(tabletService));
-        }
-
-        void RemoveTabletService(int tabletId)
-        {
-            var tabletService = Tablets.First(tablet => tablet.TabletId == tabletId);
-            _dispatcher.Post(() => Tablets.Remove(tabletService));
-        }
     }
 
     public Task ConnectAsync()
@@ -144,43 +135,95 @@ public partial class DaemonService : ObservableObject, IDaemonService
     private void OnConnected(object? _, EventArgs args)
     {
         var daemon = _rpcClient.Instance!;
-        daemon.TabletAdded += (sender, tabletId) => QueueChange(TabletIdListChangeType.Add, tabletId);
-        daemon.TabletRemoved += (sender, tabletId) => QueueChange(TabletIdListChangeType.Remove, tabletId);
+        daemon.TabletAdded += async (sender, tabletId) => await createTabletService(tabletId);
+        daemon.TabletRemoved += (sender, tabletId) => removeTabletService(tabletId);
+        daemon.ToolsChanged += (sender, tools) => updateTools(tools);
+        daemon.PluginAdded += (sender, plugin) => addPlugin(plugin);
+        daemon.PluginRemoved += (sender, plugin) => removePlugin(plugin);
+        Log.Output += Log_Output;
 
-        _dispatcher.ProbablySynchronousPost(() =>
+        _dispatcher.Post(async () =>
         {
-            Log.Output += Log_Output;
             Instance = daemon;
             if (!_suppressStateChangedEvents)
                 State = DaemonState.Connected;
+
+            await daemon.GetTablets().ForEachAsync(async tabletId =>
+            {
+                var tabletService = await TabletService.CreateAsync(daemon, tabletId);
+                Tablets.Add(tabletService);
+            });
+
+            await daemon.GetToolSettings().ForEachAsync(tool => Tools.Add(tool));
+            await daemon.GetPlugins().ForEachAsync(plugin => PluginContexts.Add(plugin));
         });
 
-        _ = Task.Run(async () =>
+        async Task createTabletService(int tabletId)
         {
-            (await daemon.GetTablets()).ForEach(tabletId => QueueChange(TabletIdListChangeType.Add, tabletId));
-        });
+            try
+            {
+                var tabletService = await TabletService.CreateAsync(daemon!, tabletId);
+                _dispatcher.ProbablySynchronousPost(() => Tablets.Add(tabletService));
+            }
+            catch
+            {
+                // TODO: Log
+            }
+        }
+
+        void removeTabletService(int tabletId)
+        {
+            var tabletService = Tablets.FirstOrDefault(tablet => tablet.TabletId == tabletId);
+            if (tabletService is not null)
+            {
+                _dispatcher.ProbablySynchronousPost(() =>
+                {
+                    Tablets.Remove(tabletService);
+                    tabletService.Dispose();
+                });
+            }
+        }
+
+        void updateTools(IEnumerable<PluginSettings> tools)
+        {
+            var cachedTools = Tools.ToArray();
+            _dispatcher.ProbablySynchronousPost(() =>
+            {
+                Tools.Clear();
+                Tools.AddRange(cachedTools);
+            });
+        }
+
+        void addPlugin(PluginContextDto plugin)
+        {
+            _dispatcher.ProbablySynchronousPost(() => PluginContexts.Add(plugin));
+        }
+
+        void removePlugin(PluginContextDto plugin)
+        {
+            var existingPlugin = PluginContexts.First(p => PluginMetadata.Match(p.Metadata, plugin.Metadata));
+            _dispatcher.ProbablySynchronousPost(() => PluginContexts.Remove(existingPlugin));
+        }
     }
 
     private void OnDisconnected(object? _, EventArgs args)
     {
-        using (_connectSemaphore.Lock())
+        Log.Output -= Log_Output;
+
+        _dispatcher.Post(() =>
         {
             Instance = null;
-            Log.Output -= Log_Output;
+            Tablets.Clear();
+            Tools.Clear();
+            PluginContexts.Clear();
 
             if (!_suppressStateChangedEvents)
                 State = DaemonState.Disconnected;
-        }
+        });
     }
 
     private void Log_Output(object? _, LogMessage message)
     {
-        _instance!.WriteMessage(message).ConfigureAwait(false);
-    }
-
-    private void QueueChange(TabletIdListChangeType change, int id)
-    {
-        var success = _tabletIdListChangeSerializer.Writer.TryWrite(new TabletIdListChange(change, id));
-        Debug.Assert(success);
+        Instance!.WriteMessage(message).ConfigureAwait(false);
     }
 }

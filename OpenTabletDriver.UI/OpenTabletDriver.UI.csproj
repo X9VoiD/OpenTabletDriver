@@ -8,6 +8,7 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>../OpenTabletDriver.UI.Library/Assets/otd.ico</ApplicationIcon>
+    <AvaloniaXamlIlDebuggerLaunch>true</AvaloniaXamlIlDebuggerLaunch>
   </PropertyGroup>
 
   <ItemGroup Label="Project References">

@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 
 namespace OpenTabletDriver.UI.Controls.Input;
 
@@ -11,13 +12,15 @@ public partial class ToggleInput : UserControl
     public static readonly DirectProperty<ToggleInput, string?> LabelProperty = AvaloniaProperty.RegisterDirect<ToggleInput, string?>(
         nameof(Label),
         o => o.Label,
-        (o, v) => o.Label = v
+        (o, v) => o.Label = v,
+        defaultBindingMode: BindingMode.TwoWay
     );
 
-    public static readonly DirectProperty<ToggleInput, bool> StateProperty = AvaloniaProperty.RegisterDirect<ToggleInput, bool>(
-        nameof(State),
-        o => o.State,
-        (o, v) => o.State = v
+    public static readonly DirectProperty<ToggleInput, bool> ValueProperty = AvaloniaProperty.RegisterDirect<ToggleInput, bool>(
+        nameof(Value),
+        o => o.Value,
+        (o, v) => o.Value = v,
+        defaultBindingMode: BindingMode.TwoWay
     );
 
     public string? Label
@@ -26,9 +29,9 @@ public partial class ToggleInput : UserControl
         get => _label;
     }
 
-    public bool State
+    public bool Value
     {
-        set => SetAndRaise(StateProperty, ref _state, value);
+        set => SetAndRaise(ValueProperty, ref _state, value);
         get => _state;
     }
 

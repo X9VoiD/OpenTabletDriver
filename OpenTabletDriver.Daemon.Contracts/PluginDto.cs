@@ -18,6 +18,8 @@ namespace OpenTabletDriver.Daemon.Contracts
         public ImmutableArray<string> PluginInterfaces { get; }
         public string Name { get; }
         public ImmutableArray<PluginSettingMetadata> SettingsMetadata { get; }
-        public ReadOnlyDictionary<string, string> Attributes { get; set; }
+        public ReadOnlyDictionary<string, string> Attributes { get; }
+
+        public override string ToString() => Name;
     }
 }

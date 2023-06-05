@@ -10,6 +10,7 @@
 
   <PropertyGroup Label="Warnings">
     <NoWarn>
+      VSTHRD100,
       VSTHRD101,
       VSTHRD200,  <!-- Ignore Async suffix -->
       VSTHRD105,   <!-- Ignore Default Task Scheduler -->

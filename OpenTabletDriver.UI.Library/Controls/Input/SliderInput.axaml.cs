@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
+using Avalonia.Data;
 
 namespace OpenTabletDriver.UI.Controls.Input;
 
@@ -12,7 +11,9 @@ public partial class SliderInput : UserControl
     private double _number;
     private double? _min;
     private double? _max;
-    private bool _slider;
+    private bool _slider = true;
+    private string? _unit;
+    private int _precision = 2;
 
     private bool _updatingText;
     private string _previousText = string.Empty;
@@ -20,31 +21,52 @@ public partial class SliderInput : UserControl
     public static readonly DirectProperty<SliderInput, string?> LabelProperty = AvaloniaProperty.RegisterDirect<SliderInput, string?>(
         nameof(Label),
         o => o.Label,
-        (o, v) => o.Label = v
+        (o, v) => o.Label = v,
+        defaultBindingMode: BindingMode.TwoWay
     );
 
-    public static readonly DirectProperty<SliderInput, double> NumberProperty = AvaloniaProperty.RegisterDirect<SliderInput, double>(
-        nameof(Number),
-        o => o.Number,
-        (o, v) => o.Number = v
+    public static readonly DirectProperty<SliderInput, double> ValueProperty = AvaloniaProperty.RegisterDirect<SliderInput, double>(
+        nameof(Value),
+        o => o.Value,
+        (o, v) => o.Value = v,
+        defaultBindingMode: BindingMode.TwoWay
     );
 
     public static readonly DirectProperty<SliderInput, double?> MinimumProperty = AvaloniaProperty.RegisterDirect<SliderInput, double?>(
         nameof(Minimum),
         o => o.Minimum,
-        (o, v) => o.Minimum = v
+        (o, v) => o.Minimum = v,
+        defaultBindingMode: BindingMode.TwoWay
     );
 
     public static readonly DirectProperty<SliderInput, double?> MaximumProperty = AvaloniaProperty.RegisterDirect<SliderInput, double?>(
         nameof(Maximum),
         o => o.Maximum,
-        (o, v) => o.Maximum = v
+        (o, v) => o.Maximum = v,
+        defaultBindingMode: BindingMode.TwoWay
     );
 
-    public static readonly DirectProperty<SliderInput, bool> SliderProperty = AvaloniaProperty.RegisterDirect<SliderInput, bool>(
-        nameof(Slider),
-        o => o.Slider,
-        (o, v) => o.Slider = v
+    public static readonly DirectProperty<SliderInput, bool> ShowSliderProperty = AvaloniaProperty.RegisterDirect<SliderInput, bool>(
+        nameof(ShowSlider),
+        o => o.ShowSlider,
+        (o, v) => o.ShowSlider = v,
+        unsetValue: true,
+        defaultBindingMode: BindingMode.TwoWay
+    );
+
+    public static readonly DirectProperty<SliderInput, string?> UnitProperty = AvaloniaProperty.RegisterDirect<SliderInput, string?>(
+        nameof(Unit),
+        o => o.Unit,
+        (o, v) => o.Unit = v,
+        defaultBindingMode: BindingMode.TwoWay
+    );
+
+    public static readonly DirectProperty<SliderInput, int> PrecisionProperty = AvaloniaProperty.RegisterDirect<SliderInput, int>(
+        nameof(Precision),
+        o => o.Precision,
+        (o, v) => o.Precision = v,
+        unsetValue: 2,
+        defaultBindingMode: BindingMode.TwoWay
     );
 
     public string? Label
@@ -53,9 +75,9 @@ public partial class SliderInput : UserControl
         get => _label;
     }
 
-    public double Number
+    public double Value
     {
-        set => SetAndRaise(NumberProperty, ref _number, value);
+        set => SetAndRaise(ValueProperty, ref _number, value);
         get => _number;
     }
 
@@ -71,21 +93,34 @@ public partial class SliderInput : UserControl
         get => _max;
     }
 
-    public bool Slider
+    public bool ShowSlider
     {
-        set => SetAndRaise(SliderProperty, ref _slider, value);
+        set => SetAndRaise(ShowSliderProperty, ref _slider, value);
         get => _slider;
+    }
+
+    public string? Unit
+    {
+        set => SetAndRaise(UnitProperty, ref _unit, value);
+        get => _unit;
+    }
+
+    public int Precision
+    {
+        set => SetAndRaise(PrecisionProperty, ref _precision, value);
+        get => _precision;
     }
 
     static SliderInput()
     {
-        NumberProperty.Changed.AddClassHandler<SliderInput>((o, e) => o.NumberChanged(e));
+        ValueProperty.Changed.AddClassHandler<SliderInput>((o, e) => o.NumberChanged(e));
     }
 
     public SliderInput()
     {
         InitializeComponent();
 
+        PART_Text.Text = "0";
         PART_Text.TextChanging += (sender, e) =>
         {
             e.Handled = true;
@@ -97,13 +132,13 @@ public partial class SliderInput : UserControl
                 // not doing this results to having 0 in textbox when input is cleared
                 _updatingText = true;
                 _previousText = string.Empty;
-                Number = 0;
+                Value = 0;
                 _updatingText = false;
             }
             else if (StringUtility.TryParseDouble(PART_Text.Text, out double result))
             {
                 _previousText = PART_Text.Text;
-                Number = result;
+                Value = result;
             }
             else
             {
@@ -112,79 +147,41 @@ public partial class SliderInput : UserControl
                 _updatingText = false;
             }
         };
-
-        PART_Text.LostFocus += (sender, e) =>
-        {
-            if (Slider)
-            {
-                SetupManualInput(false);
-                Debug.WriteLine("SliderInput: Lost focus");
-            }
-        };
-
-        PART_SliderText.DoubleTapped += (sender, e) =>
-        {
-            if (Slider)
-            {
-                SetupManualInput(true);
-                Debug.WriteLine("SliderInput: Double tapped");
-            }
-
-            e.Handled = true;
-        };
-
-        PART_SliderText.PointerEntered += (sender, e) =>
-        {
-            this.Cursor = new Cursor(StandardCursorType.Ibeam);
-        };
-
-        PART_SliderText.PointerExited += (sender, e) =>
-        {
-            this.Cursor = new Cursor(StandardCursorType.Arrow);
-        };
     }
 
     private void NumberChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        if (_updatingText) return;
+        if (_updatingText)
+            return;
 
         _updatingText = true;
         _previousText = e.NewValue?.ToString() ?? string.Empty;
 
         if (e.NewValue is double newValue)
         {
+            newValue = Math.Round(newValue, (int)Precision);
+
             if (Minimum.HasValue && newValue < Minimum.Value)
             {
                 newValue = Minimum.Value;
-                Number = Minimum.Value;
+                Value = Minimum.Value;
             }
             else if (Maximum.HasValue && newValue > Maximum.Value)
             {
                 newValue = Maximum.Value;
-                Number = Maximum.Value;
+                Value = Maximum.Value;
             }
 
             var textString = newValue.ToString(CultureInfo.InvariantCulture);
 
+            PART_Slider.Value = newValue;
             PART_Text.Text = textString;
         }
         else
         {
             PART_Text.Text = string.Empty;
         }
+
         _updatingText = false;
-    }
-
-    private void SetupManualInput(bool inputtingManually)
-    {
-        PART_SliderText.Classes.Set("manual", inputtingManually);
-        PART_Text.Classes.Set("manual", inputtingManually);
-        PART_SliderText.Classes.Set("slider", !inputtingManually);
-        PART_Text.Classes.Set("slider", !inputtingManually);
-
-        if (inputtingManually)
-        {
-            PART_Text.Focus();
-        }
     }
 }

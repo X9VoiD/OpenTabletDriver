@@ -8,7 +8,7 @@ namespace OpenTabletDriver.Daemon.Contracts
 {
     public class PluginSetting
     {
-        public PluginSetting(string property, object value)
+        public PluginSetting(string property, object? value)
         {
             Property = property;
             SetValue(value);

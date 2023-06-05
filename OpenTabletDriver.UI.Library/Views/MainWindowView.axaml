@@ -84,8 +84,7 @@
                     </SplitView.Pane>
 
                     <c:NavigationHost Name="NavigationHost"
-                                      NavigationHostName="{x:Static ui:AppRoutes.MainHost}"
-                                      Padding="36, 12"/>
+                                      NavigationHostName="{x:Static ui:AppRoutes.MainHost}" />
                 </SplitView>
             </Grid>
 

@@ -43,9 +43,12 @@ public partial class UISettingsViewModel : ActivatableViewModelBase
             _settingsProvider.WhenLoadedOrSet(
                 onLoad: (provider, settings) =>
                 {
-                    Settings = settings;
-                    if (settings is not null)
-                        settings.PropertyChanged += HandleSettingsChanged;
+                    if (settings != Settings)
+                    {
+                        Settings = settings;
+                        if (settings is not null)
+                            settings.PropertyChanged += HandleSettingsChanged;
+                    }
                 },
                 onException: (provider, exception) =>
                 {
@@ -96,12 +99,10 @@ public partial class UISettingsViewModel : ActivatableViewModelBase
             oldSettings.PropertyChanged -= HandleSettingsChanged;
         }
 
-        Settings = new UISettings()
+        _settingsProvider.Settings = new UISettings()
         {
             FirstLaunch = firstLaunch
         };
-
-        Modified = false;
     }
 
     private bool IsModified() => Modified;

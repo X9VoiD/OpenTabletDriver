@@ -47,13 +47,13 @@ public partial class DaemonConnectionViewModel : ActivatableViewModelBase
                     _settings.HandleProperty(
                         nameof(UISettings.Kaomoji),
                         s => s.Kaomoji,
-                        (s, v) => DaemonService_State_Handler(_daemonService, _daemonService.State)
+                        (s, v) => Handle_DaemonService_State(_daemonService.State)
                     ).DisposeWith(d);
 
                     _daemonService.HandleProperty(
                         nameof(IDaemonService.State),
                         d => d.State,
-                        DaemonService_State_Handler
+                        (d, s) => Handle_DaemonService_State(s)
                     ).DisposeWith(d);
                 },
                 onException: (p, ex) =>
@@ -95,7 +95,7 @@ public partial class DaemonConnectionViewModel : ActivatableViewModelBase
         IoUtility.OpenLink("https://opentabletdriver.net/Wiki");
     }
 
-    private void DaemonService_State_Handler(IDaemonService daemonService, DaemonState state)
+    private void Handle_DaemonService_State(DaemonState state)
     {
         if (_settings.Kaomoji)
         {

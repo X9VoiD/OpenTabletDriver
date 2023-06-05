@@ -3,36 +3,168 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
+             xmlns:v="using:OpenTabletDriver.UI.Views"
              xmlns:c="using:OpenTabletDriver.UI.Controls"
              xmlns:ci="using:OpenTabletDriver.UI.Controls.Input"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="OpenTabletDriver.UI.Views.TabletView"
              x:DataType="vm:TabletViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             Margin="0"
+             Name="PART_Root"
+             IsVisible="{Binding IsInitialized}">
     <Grid RowDefinitions="*,Auto">
-        <ScrollViewer>
-            <StackPanel Grid.Row="0" Spacing="8" ClipToBounds="True">
-                <TextBlock Text="{Binding Name}" FontSize="24" Margin="0, 0, 0, 40"/>
-                <c:AreaDisplay DataContext="{Binding DisplayArea}" Margin="32, 0, 32, 32" Height="240" />
+        <ScrollViewer Padding="36, 0, 36, 0">
 
-                <TextBlock Text="Monitor Area" />
-                <Grid ColumnDefinitions="*,*">
-                    <ci:FloatInput DataContext="{Binding DisplayArea.Mapping}" Margin="0, 0, 4, 0" Grid.Column="0" Number="{Binding X, Mode=TwoWay}" Label="X"/>
-                    <ci:FloatInput DataContext="{Binding DisplayArea.Mapping}" Margin="4, 0, 0 ,0" Grid.Column="1" Number="{Binding Y, Mode=TwoWay}" Label="Y"/>
+            <StackPanel Grid.Row="0" Spacing="8" ClipToBounds="True">
+                <!-- Tablet Name and Output Mode -->
+                <Grid ColumnDefinitions="Auto,Auto,*" Margin="0, 12, 0, 40">
+                    <ToggleButton Grid.Column="0"/>
+                    <TextBlock Text="{Binding Name}" FontSize="24" Grid.Column="1" Margin="18, 0" />
+                    <ComboBox SelectedItem="{Binding SelectedOutputMode}"
+                              ItemsSource="{Binding OutputModes}"
+                              Grid.Column="2"
+                              HorizontalAlignment="Right"
+                              ToolTip.Tip="{StaticResource output_mode_combobox_help}" />
                 </Grid>
-                <ci:SliderInput Number="{Binding DisplayArea.Mapping.Width, Mode=TwoWay}" Slider="True" Minimum="0" Maximum="{Binding DisplayArea.MaximumBounds.Width}" Label="Width"/>
-                <ci:SliderInput Number="{Binding DisplayArea.Mapping.Height, Mode=TwoWay}" Slider="True" Minimum="0" Maximum="{Binding DisplayArea.MaximumBounds.Height}" Label="Height"/>
+
+                <!-- Absolute Mode Settings -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsAbsoluteMode}" Grid.IsSharedSizeScope="True">
+                    <!-- Display Area Configuration -->
+                    <c:AreaDisplay DataContext="{Binding DisplayArea}"
+                                Margin="32, 0, 32, 32"
+                                Height="180" />
+                    <TextBlock Text="Monitor Area" />
+                    <Grid ColumnDefinitions="*,*">
+                        <ci:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
+                                    Margin="0, 0, 4, 0"
+                                    Grid.Column="0"
+                                    Value="{Binding X}"
+                                    Label="X Offset"
+                                    Unit="px"
+                                    Precision="0" />
+                        <ci:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
+                                    Margin="4, 0, 0 ,0"
+                                    Grid.Column="1"
+                                    Value="{Binding Y}"
+                                    Label="Y Offset"
+                                    Unit="px"
+                                    Precision="0" />
+                    </Grid>
+                    <ci:SliderInput Value="{Binding DisplayArea.Mapping.Width}"
+                                    Maximum="{Binding DisplayArea.MaximumBounds.Width}"
+                                    Label="Width"
+                                    Unit="px" />
+                    <ci:SliderInput Value="{Binding DisplayArea.Mapping.Height}"
+                                    Maximum="{Binding DisplayArea.MaximumBounds.Height}"
+                                    Label="Height"
+                                    Unit="px" />
+
+                    <!-- Tablet Area Configuration -->
+                    <c:AreaDisplay DataContext="{Binding TabletArea}"
+                                x:DataType="vm:TabletAreaDisplayViewModel"
+                                Margin="32"
+                                Height="180">
+                        <c:AreaDisplay.Styles>
+                            <Style Selector="CheckBox">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="IsHitTestVisible" Value="False" />
+                            </Style>
+                        </c:AreaDisplay.Styles>
+
+                        <!-- Additional context menu items -->
+                        <c:AreaDisplay.MenuItems>
+                            <MenuItem Header="Lock current aspect ratio"
+                                    Command="{Binding ToggleStateCommand}"
+                                    CommandParameter="LockAspectRatio">
+                                <MenuItem.Icon>
+                                    <CheckBox IsChecked="{Binding LockAspectRatio, Mode=OneWay}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Clip input to mapped area"
+                                    Command="{Binding ToggleStateCommand}"
+                                    CommandParameter="ClipInput">
+                                <MenuItem.Icon>
+                                    <CheckBox IsChecked="{Binding ClipInput, Mode=OneWay}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Drop input outside mapped area"
+                                    Command="{Binding ToggleStateCommand}"
+                                    CommandParameter="DropInput">
+                                <MenuItem.Icon>
+                                    <CheckBox IsChecked="{Binding DropInput, Mode=OneWay}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </c:AreaDisplay.MenuItems>
+                    </c:AreaDisplay>
+                    <TextBlock Text="Tablet Area" />
+                    <Grid ColumnDefinitions="*,*">
+                        <ci:DoubleInput DataContext="{Binding TabletArea.Mapping}"
+                                    Margin="0, 0, 4, 0"
+                                    Grid.Column="0"
+                                    Value="{Binding X}"
+                                    Label="X Origin"
+                                    Unit="mm" />
+                        <ci:DoubleInput DataContext="{Binding TabletArea.Mapping}"
+                                    Margin="4, 0, 0 ,0"
+                                    Grid.Column="1"
+                                    Value="{Binding Y}"
+                                    Label="Y Origin"
+                                    Unit="mm" />
+                    </Grid>
+                    <ci:SliderInput Value="{Binding TabletArea.Mapping.Width}"
+                                    Minimum="0"
+                                    Maximum="{Binding TabletArea.MaximumBounds.Width}"
+                                    Label="Width"
+                                    Unit="mm" />
+                    <ci:SliderInput Value="{Binding TabletArea.Mapping.Height}"
+                                    Minimum="0"
+                                    Maximum="{Binding TabletArea.MaximumBounds.Height}"
+                                    Label="Height"
+                                    Unit="mm" />
+                    <ci:SliderInput Value="{Binding TabletArea.Mapping.Rotation}"
+                                    Minimum="0"
+                                    Maximum="360"
+                                    Label="Rotation"
+                                    Unit="°" />
+                </StackPanel>
+
+                <!-- Relative Mode Settings -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsRelativeMode}" Grid.IsSharedSizeScope="True">
+                    <Grid ColumnDefinitions="*,*">
+                        <ci:DoubleInput Value="{Binding SensitivityX}"
+                                        Margin="0, 0, 4, 0"
+                                        Grid.Column="0"
+                                        Label="X Sensitivity"
+                                        Unit="px/mm"
+                                        Precision="3" />
+                        <ci:DoubleInput Value="{Binding SensitivityY}"
+                                        Margin="4, 0, 0 ,0"
+                                        Grid.Column="1"
+                                        Label="Y Sensitivity"
+                                        Unit="px/mm"
+                                        Precision="3" />
+                    </Grid>
+                    <ci:DoubleInput Value="{Binding ResetDelay}"
+                                    Label="Reset Delay"
+                                    Unit="ms" />
+                    <ci:SliderInput Value="{Binding RelativeModeRotation}"
+                                    Minimum="0"
+                                    Maximum="360"
+                                    Label="Rotation"
+                                    Unit="°" />
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- TODO: bind -->
-        <StackPanel Classes="CommandBar" Grid.Row="1">
-            <Button Content="Apply" />
-            <SplitButton Content="Save">
+        <StackPanel Classes="CommandBar" Grid.Row="1" Margin="36, 8, 34, 15">
+            <Button Content="Apply" Command="{Binding ApplyCommand}" />
+            <SplitButton Content="Save" Command="{Binding SaveCommand}">
                 <SplitButton.Flyout>
                     <MenuFlyout Placement="Top">
-                        <MenuItem Header="Discard" />
-                        <MenuItem Header="Reset" />
+                        <MenuItem Header="Discard" Command="{Binding DiscardCommand}" />
+                        <MenuItem Header="Reset" Command="{Binding ResetCommand}"/>
                     </MenuFlyout>
                 </SplitButton.Flyout>
             </SplitButton>

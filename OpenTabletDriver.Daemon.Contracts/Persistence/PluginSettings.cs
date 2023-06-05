@@ -32,17 +32,7 @@ namespace OpenTabletDriver.Daemon.Contracts
                     Settings.Add(value);
                 }
             }
-            get
-            {
-                var result = Settings.FirstOrDefault(s => s.Property == propertyName);
-                if (result == null)
-                {
-                    var newSetting = new PluginSetting(propertyName, new object());
-                    Settings!.Add(newSetting);
-                    return newSetting;
-                }
-                return result;
-            }
+            get => GetOrDefault(propertyName, new object());
         }
 
         public PluginSettings(Type type, bool enable = true)
@@ -74,6 +64,19 @@ namespace OpenTabletDriver.Daemon.Contracts
         public override string ToString()
         {
             return base.ToString() + ": " + Path;
+        }
+
+        public PluginSetting GetOrDefault(string propertyName, object? defaultValue)
+        {
+            var result = Settings.FirstOrDefault(s => s.Property == propertyName);
+            if (result == null)
+            {
+                var newSetting = new PluginSetting(propertyName, defaultValue);
+                Settings!.Add(newSetting);
+                return newSetting;
+            }
+
+            return result;
         }
 
         private static Collection<PluginSetting> GetSettingsForType(Type targetType, object? source = null)

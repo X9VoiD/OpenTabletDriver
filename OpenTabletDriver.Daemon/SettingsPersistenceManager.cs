@@ -20,6 +20,7 @@ namespace OpenTabletDriver.Daemon
 
         public void Save(Settings settings, FileInfo file)
         {
+            Settings = settings;
             settings.Serialize(file);
             file.Refresh();
         }

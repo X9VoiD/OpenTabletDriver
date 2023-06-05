@@ -234,7 +234,19 @@ namespace OpenTabletDriver.Daemon.Reflection
             foreach (var pluginInterface in PluginInterfaces)
             {
                 if (pluginInterface.IsAssignableFrom(pluginType))
+                {
                     yield return pluginInterface;
+                    continue;
+                }
+
+                foreach (var interfaceType in pluginType.GetInterfaces())
+                {
+                    if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == pluginInterface)
+                    {
+                        yield return pluginInterface;
+                        continue;
+                    }
+                }
             }
         }
 

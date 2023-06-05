@@ -13,26 +13,35 @@ public partial class TabletsOverviewViewModel : ActivatableViewModelBase
     private readonly IDaemonService _daemonService;
     private readonly INavigator _navigator;
 
-    private TabletViewModel? _lastSelectedTablet;
-
     [ObservableProperty]
     private TabletViewModel? _selectedTablet;
 
     public ObservableCollection<TabletViewModel> Tablets { get; } = new();
 
+    public event Action<TabletViewModel>? TabletDisconnected;
+
     public TabletsOverviewViewModel(IDaemonService daemonService, INavigatorFactory navigatorFactory)
     {
         _navigator = navigatorFactory.GetOrCreate(AppRoutes.MainHost);
 
-        // Intercept navigation to TabletsOverview and redirect to last selected tablet
+        // TODO: move this to TabletsOverview to avoid referencing a View from a ViewModel
         _navigator.Navigating += (_, ev) =>
         {
-            if (ev.Kind != NavigationKind.Pop && ev.Current?.GetType() == typeof(TabletsOverview)
-                && _lastSelectedTablet != null)
+            if (ev.Current?.GetType() != typeof(TabletsOverview))
+                return;
+
+            // Redirect to last selected tablet if we're navigating back to the overview
+            // from somewhere else
+            if ((ev.Kind == NavigationKind.Push || ev.Kind == NavigationKind.PushAsRoot) && SelectedTablet != null)
             {
                 // TODO: improve cancel API
                 ev.Cancel = NavigationCancellationKind.Redirect;
-                _navigator.Push(_lastSelectedTablet);
+                _navigator.Push(SelectedTablet);
+            }
+            // Clear selection if we're navigating back to the overview from the tablet view
+            else if (ev.Kind == NavigationKind.Pop)
+            {
+                SelectedTablet = null;
             }
         };
 
@@ -66,14 +75,12 @@ public partial class TabletsOverviewViewModel : ActivatableViewModelBase
     private void RemoveTablet(ITabletService tablet)
     {
         var tabletViewModel = Tablets.First(t => t.TabletId == tablet.TabletId);
-        Tablets.Remove(tabletViewModel);
-    }
+        if (SelectedTablet == tabletViewModel)
+            TabletDisconnected?.Invoke(tabletViewModel);
 
-    public override void OnDeactivated()
-    {
-        _lastSelectedTablet = SelectedTablet;
-        SelectedTablet = null;
-        base.OnDeactivated();
+        // this should happen after invoking TabletDisconnected, Avalonia will
+        // set SelectedTablet to null automatically if the removed item is selected
+        Tablets.Remove(tabletViewModel);
     }
 
     partial void OnSelectedTabletChanged(TabletViewModel? value)
