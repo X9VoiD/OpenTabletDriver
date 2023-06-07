@@ -145,6 +145,10 @@ public partial class DaemonService : ObservableObject, IDaemonService
         _dispatcher.Post(async () =>
         {
             Instance = daemon;
+
+            await daemon.GetPlugins().ForEachAsync(plugin => PluginContexts.Add(plugin));
+            await daemon.GetToolSettings().ForEachAsync(tool => Tools.Add(tool));
+
             if (!_suppressStateChangedEvents)
                 State = DaemonState.Connected;
 
@@ -153,9 +157,6 @@ public partial class DaemonService : ObservableObject, IDaemonService
                 var tabletService = await TabletService.CreateAsync(daemon, tabletId);
                 Tablets.Add(tabletService);
             });
-
-            await daemon.GetToolSettings().ForEachAsync(tool => Tools.Add(tool));
-            await daemon.GetPlugins().ForEachAsync(plugin => PluginContexts.Add(plugin));
         });
 
         async Task createTabletService(int tabletId)
