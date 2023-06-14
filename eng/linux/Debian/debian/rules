@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+SHELL=/usr/bin/env bash
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	./eng/linux/package.sh -o "bin" -c "Release"
+
+override_dh_auto_install:
+	DESTDIR=debian/tmp/usr OTD_BUILD_DIR=bin ./eng/linux/Generic/install.sh
