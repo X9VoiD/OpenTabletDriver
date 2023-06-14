@@ -198,6 +198,11 @@ fi
 
 mkdir -p "${output}"
 
+# Will be built in its packaging scripts
+if [ -n "${packageGen}" ] && [ "${packageGen}" != "BinaryTarBall" ]; then
+  build="false"
+fi
+
 if [ "${build}" = "true" ]; then
   echo "Restoring packages..."
   dotnet restore --verbosity quiet > /dev/null
