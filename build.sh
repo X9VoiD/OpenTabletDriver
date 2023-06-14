@@ -32,4 +32,4 @@ while [ $# -gt 0 ]; do
 done
 
 # provide defaults, then pass everything else as-is
-. ./eng/linux/package.sh -o "${output}" -c "${config}" "${options[@]}"
+. ./eng/linux/package.sh -o "${output}" -c "${config}" "${options[@]}" --generate-rules false

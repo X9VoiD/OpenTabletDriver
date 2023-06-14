@@ -12,6 +12,7 @@ packageGen=""
 isPortable="false"
 singleFile="true"
 selfContained="false"
+generateRules="true"
 
 print_help() {
   echo "Usage: ${BASH_SOURCE[0]} [OPTIONS]..."
@@ -26,6 +27,7 @@ print_help() {
   echo "  --portable <bool>             Whether to build portable binaries (default: false)"
   echo "  --single-file <bool>          Whether to build single-file binaries (default: true)"
   echo "  --self-contained <bool>       Whether to build self-contained binaries, implies --single-file (default: false)"
+  echo "  --generate-rules <bool>       Whether to generate udev rules in output (default: true)"
   echo "  -h, --help                    Print this help message"
   echo
   echo "Remarks:"
@@ -110,6 +112,10 @@ while [ $# -gt 0 ]; do
       ;;
     --self-contained)
       selfContained="$2"
+      shift
+      ;;
+    --generate-rules)
+      generateRules="$2"
       shift
       ;;
     --)
@@ -207,6 +213,10 @@ if [ "${build}" = "true" ]; then
     echo -e "\nBuilding ${project}...\n"
     dotnet publish "${project}" "${options[@]}"
   done
+
+  if [ "${generateRules}" = "true" ]; then
+    generate_rules "${output}/99-opentabletdriver.rules"
+  fi
 
   echo -e "\nBuild finished! Binaries created in ${output}\n"
 fi
