@@ -82,11 +82,11 @@ generate_desktop_file() {
   mkdir -p "$(dirname "${output}")"
   cat << EOF > "${output}"
 [Desktop Entry]
-Version=${OTD_VERSION}
+Version=1.0
 Name=${OTD_NAME}
 Comment=A ${OTD_DESC}
 Exec=${OTD_GUI}
-Icon=/usr/share/pixmaps/otd.png
+Icon=otd
 Terminal=false
 Type=Application
 Categories=Settings;
