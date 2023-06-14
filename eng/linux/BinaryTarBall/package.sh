@@ -4,30 +4,21 @@ PKG_FILE="${OTD_LNAME}-${OTD_VERSION}-x64.tar.gz"
 
 output="${1}"
 
-move_to_nested "${output}" "${output}/lib/opentabletdriver"
+move_to_nested "${output}" "${output}/build"
 
 echo "Copying generic files..."
-cp -R "${GENERIC_FILES}"/* "${output}/"
-mkdir -p "${output}/etc/"
-mv "${output}/usr/lib"/* "${output}/etc/"
+env DESTDIR="${output}/usr/local" OTD_BUILD_DIR="${output}/build" "${GENERIC_FILES}/install.sh"
+rm -r "${output}/build"
 
-echo "Patching wrapper scripts to point to '/lib/opentabletdriver'..."
-mkdir -p "${output}/bin"
-for exe in "${output}/usr/bin"/*; do
-  sed -i "s|#!/usr/bin/env sh|#!/bin/sh|" "${exe}"
-  sed -i "s|/usr/lib|/lib|" "${exe}"
-  mv "${exe}" "${output}/bin/${exe##*/}"
+echo "Patching wrapper scripts to point to '/usr/local/lib/opentabletdriver'..."
+for exe in "${output}/usr/local/bin"/*; do
+  sed -i "s|/usr/lib|/usr/local/lib|" "${exe}"
 done
 
-echo "Removing unused directories..."
-rmdir "${output}/usr/bin"
-rmdir "${output}/usr/lib"
-rmdir "${output}/usr"
-
-generate_rules "${output}/etc/udev/rules.d/99-opentabletdriver.rules"
-generate_desktop_file "${output}/share/applications/opentabletdriver.desktop"
-sed -i "s|/usr/share|/share|" "${output}/share/applications/opentabletdriver.desktop"
-copy_pixmap_assets "${output}/share/pixmaps"
+mkdir -p "${output}/etc/udev/rules.d/"
+mv "${output}/usr/local/lib/udev/rules.d/99-opentabletdriver.rules" "${output}/etc/udev/rules.d/99-opentabletdriver.rules"
+rm -r "${output}/usr/local/lib/udev/"
+sed -i "s|/usr/share|/usr/local/share|" "${output}/usr/local/share/applications/opentabletdriver.desktop"
 
 echo "Creating binary tarball '${output}/${PKG_FILE}'..."
 
