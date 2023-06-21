@@ -97,7 +97,9 @@ namespace OpenTabletDriver.Daemon
                 Message?.Invoke(sender, message);
             };
 
-            Log.Write("Detect", $"Configuration overrides exist: '{_appInfo.ConfigurationDirectory}'", LogLevel.Debug);
+            if (Directory.Exists(_appInfo.ConfigurationDirectory))
+                Log.Write("Detect", $"Configuration overrides exist: '{_appInfo.ConfigurationDirectory}'", LogLevel.Debug);
+
             InitializePlatform();
             _driver.InputDeviceAdded += (sender, e) =>
             {
@@ -492,7 +494,7 @@ namespace OpenTabletDriver.Daemon
         {
             _tablets[inputDevice.Id] = (inputDevice, profile);
             var persistentName = inputDevice.PersistentName;
-            Log.Write(persistentName, $"Applying settings...");
+            Log.Write("Daemon", $"Applying settings for {persistentName}...");
             foreach (var element in inputDevice.OutputMode?.Elements ?? Enumerable.Empty<IDevicePipelineElement>())
             {
                 if (element is IDisposable disposable)
@@ -527,7 +529,7 @@ namespace OpenTabletDriver.Daemon
             // set the output mode atomically
             inputDevice.OutputMode = outputMode;
             TabletProfileChanged?.Invoke(this, new TabletProperty<Profile>(inputDevice.Id, profile));
-            Log.Write(persistentName, $"Settings applied");
+            Log.Write("Daemon", $"Settings applied");
         }
 
         private void ApplyOutputModeSettings(InputDevice dev, IOutputMode outputMode, Profile profile)

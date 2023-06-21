@@ -58,18 +58,28 @@ namespace OpenTabletDriver
                     return;
 
                 ImmutableInterlocked.Update(ref _inputDevices, devices => devices.AddRange(addedDevices));
-                InputDevice.AssignPersistentId(addedDevices);
+                InputDevice.AssignPersistentId(_inputDevices);
 
-                foreach (var device in _inputDevices)
+                foreach (var device in addedDevices)
                 {
                     device.Initialize(true);
-                    InputDeviceAdded?.Invoke(this, device);
+                    OnInputDeviceAdded(this, device);
                 }
             };
         }
 
         public event EventHandler<InputDevice>? InputDeviceAdded;
         public event EventHandler<InputDevice>? InputDeviceRemoved;
+
+        protected virtual void OnInputDeviceAdded(object? sender, InputDevice device)
+        {
+            InputDeviceAdded?.Invoke(sender, device);
+        }
+
+        protected virtual void OnInputDeviceRemoved(object? sender, InputDevice device)
+        {
+            InputDeviceRemoved?.Invoke(sender, device);
+        }
 
         public ImmutableArray<InputDevice> InputDevices => _inputDevices;
 
@@ -89,7 +99,7 @@ namespace OpenTabletDriver
             foreach (var device in _inputDevices)
             {
                 device.Initialize(true);
-                InputDeviceAdded?.Invoke(this, device);
+                OnInputDeviceAdded(this, device);
             }
 
             if (!InputDevices.Any())
@@ -131,10 +141,12 @@ namespace OpenTabletDriver
                         if (!tabletConfigurations.TryGetValue(deviceHash, out var candidateConfigs))
                             continue;
 
+                        if (candidateConfigs.Any())
+                            Log.Debug("Detect", $"Finding matching identifier for {deviceName}");
+
                         foreach (var candidateConfig in candidateConfigs)
                         {
                             ref var pairList = ref CollectionsMarshal.GetValueRefOrAddDefault(inputDeviceEndpoints, candidateConfig, out _);
-                            Log.Debug("Detect", $"Attempting to match config '{candidateConfig.Name}' to device '{deviceName}'");
 
                             // check if the device matches a digitizer identifier
                             if (TryMatch(device, candidateConfig, candidateConfig.DigitizerIdentifiers, out var digitizerEndpoint))
@@ -152,7 +164,7 @@ namespace OpenTabletDriver
 
                                 var pair = pairList[pairIndex];
                                 pair.Digitizer = digitizerEndpoint;
-                                Log.Debug("Detect", $"Found '{candidateConfig.Name}' digitizer: '{deviceName}'");
+                                Log.Debug("Detect", $"Detected as {candidateConfig.Name}'s digitizer");
                                 break;
                             }
 
@@ -172,7 +184,7 @@ namespace OpenTabletDriver
 
                                 var pair = pairList[pairIndex];
                                 pair.Auxiliary = digitizerEndpoint;
-                                Log.Debug("Detect", $"Found '{candidateConfig.Name}' auxiliary: '{deviceName}'");
+                                Log.Debug("Detect", $"Detected as {candidateConfig.Name}'s auxiliary");
                                 break;
                             }
                         }
@@ -210,11 +222,10 @@ namespace OpenTabletDriver
                     {
                         if (pair.Digitizer is null)
                         {
-                            Log.Write("Detect", $"Digitizer device not found for tablet '{config.Name}', skipping...", LogLevel.Warning);
+                            Log.Write("Detect", $"Digitizer for tablet '{config.Name}' not found, skipping...", LogLevel.Warning);
                             continue;
                         }
 
-                        Log.Write("Detect", $"Found tablet '{config.Name}'");
                         var device = new InputDevice(config, pair.Digitizer, pair.Auxiliary);
 
                         if (config.AuxiliaryDeviceIdentifiers.Any() && pair.Auxiliary is null)
@@ -228,7 +239,7 @@ namespace OpenTabletDriver
                                 return;
 
                             if (ImmutableInterlocked.Update(ref _inputDevices, (devices, device) => devices.Remove(device), device))
-                                InputDeviceRemoved?.Invoke(this, device);
+                                OnInputDeviceRemoved(this, device);
                         };
 
                         deviceBuilder.Add(device);

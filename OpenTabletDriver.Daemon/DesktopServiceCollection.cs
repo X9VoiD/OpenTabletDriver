@@ -28,7 +28,7 @@ namespace OpenTabletDriver.Daemon
                 Singleton<IDriver, Driver>(),
                 Singleton<IReportParserProvider, ReportParserProvider>(),
                 Singleton<IDeviceHubsProvider, DeviceHubsProvider>(p => new DeviceHubsProvider(p)),
-                Singleton<ICompositeDeviceHub, RootHub>(RootHub.WithProvider),
+                Singleton<ICompositeDeviceHub, CompositeDeviceHub>(CompositeDeviceHub.WithProvider),
                 Singleton<IDeviceConfigurationProvider, DesktopDeviceConfigurationProvider>(),
                 Singleton<IReportParserProvider, DesktopReportParserProvider>(),
                 // Desktop Services

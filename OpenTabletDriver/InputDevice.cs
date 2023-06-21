@@ -16,6 +16,7 @@ namespace OpenTabletDriver
     public sealed partial class InputDevice : IDisposable
     {
         private static int _id;
+        private bool _freezeState;
         private InputDeviceState _state;
 
         public InputDevice(TabletConfiguration configuration, InputDeviceEndpoint digitizer, InputDeviceEndpoint? auxiliary)
@@ -50,8 +51,10 @@ namespace OpenTabletDriver
                             Exception = exception;
                         }
 
+                        _freezeState = true;
                         // stop processing of both endpoints
                         Initialize(false);
+                        _freezeState = false;
                     }
                 };
                 endpoint.ReportParsed += HandleReport;
@@ -80,7 +83,7 @@ namespace OpenTabletDriver
         public InputDeviceState State
         {
             get => _state;
-            set
+            private set
             {
                 if (_state == InputDeviceState.Disposed && value != InputDeviceState.Disposed)
                     throw new ObjectDisposedException(nameof(InputDevice));
@@ -105,9 +108,21 @@ namespace OpenTabletDriver
 
         public void Initialize(bool process)
         {
-            Log.Write(PersistentName, $"Setting pipeline initialization state to '{process}'", LogLevel.Info);
+            var log = process
+                ? $"Initializing {PersistentName}"
+                : $"Uninitializing {PersistentName}";
+
+            Log.Write("Driver", log, LogLevel.Info);
             Digitizer.Initialize(process);
             Auxiliary?.Initialize(process);
+
+            if (_freezeState)
+                return;
+
+            if (Digitizer.State == InputDeviceState.Normal && Auxiliary?.State == InputDeviceState.Normal)
+                State = InputDeviceState.Normal;
+            else if (Digitizer.State == InputDeviceState.Uninitialized && Auxiliary?.State == InputDeviceState.Uninitialized)
+                State = InputDeviceState.Uninitialized;
         }
 
         private void HandleReport(object? sender, IDeviceReport? report)
@@ -134,7 +149,7 @@ namespace OpenTabletDriver
                     continue;
 
                 ref var id = ref CollectionsMarshal.GetValueRefOrAddDefault(persistentIdMap, device.Configuration.Name, out _);
-                if (device.PersistentId >= id)
+                if (device.PersistentId > id)
                     id = device.PersistentId;
             }
 
@@ -144,7 +159,7 @@ namespace OpenTabletDriver
                 if (device.PersistentId != -1)
                     continue;
 
-                var index = CollectionsMarshal.GetValueRefOrAddDefault(persistentIdMap, device.Configuration.Name, out _);
+                ref var index = ref CollectionsMarshal.GetValueRefOrAddDefault(persistentIdMap, device.Configuration.Name, out _);
                 device.PersistentId = ++index;
             }
         }
