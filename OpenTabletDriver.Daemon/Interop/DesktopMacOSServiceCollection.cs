@@ -20,13 +20,13 @@ namespace OpenTabletDriver.Daemon.Interop
         public DesktopMacOSServiceCollection() : base()
         {
             this.AddServices(new[] {
+                Transient<IEnvironmentHandler, MacOSEnvironmentHandler>(),
                 Transient<ITimer, MacOSTimer>(),
                 Transient<IAbsolutePointer, MacOSAbsolutePointer>(),
                 Transient<IRelativePointer, MacOSRelativePointer>(),
                 Transient<IVirtualKeyboard, MacOSVirtualKeyboard>(),
-                Transient<IKeysProvider, MacOSKeysProvider>(),
-                Transient<IVirtualScreen, MacOSDisplay>(),
-                Transient<IEnvironmentHandler, MacOSEnvironmentHandler>(),
+                Singleton<IVirtualScreen, MacOSDisplay>(),
+                Singleton<IKeysProvider, MacOSKeysProvider>(),
                 Transient<IUpdater, MacOSUpdater>()
             });
         }
