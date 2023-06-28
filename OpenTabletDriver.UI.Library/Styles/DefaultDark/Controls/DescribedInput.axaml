@@ -1,0 +1,17 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:tc="using:OpenTabletDriver.UI.TemplatedControls">
+    <Style Selector=":is(tc|DescribedInput)">
+        <Style Selector="^ Border#PART_Background">
+            <Setter Property="Background" Value="#10ffffff"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="^:pointerover Border#PART_Background">
+            <Setter Property="Background" Value="#15ffffff"/>
+        </Style>
+    </Style>
+</Styles>

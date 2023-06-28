@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
 
-namespace OpenTabletDriver.UI.ViewModels;
+namespace OpenTabletDriver.UI.ViewModels.Plugin;
 
 public partial class IntegerViewModel : PluginSettingViewModel
 {

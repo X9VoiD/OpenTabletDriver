@@ -37,23 +37,23 @@ public partial class MainWindowView : Window
         // Change focus to nothing when clicking on the background
         this.PointerPressed += (sender, e) =>
         {
-            if (!e.Handled)
-            {
-                // TODO: is there a need to implement forward?
-                if (e.GetCurrentPoint(this).Properties.IsXButton1Pressed && _navigator.CanGoBack)
-                {
-                    _navigator.Pop();
-                    // TODO: horrible name, also don't rely on to-be-internal IPseudoClasses interface
-                    ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", true);
-                    _dispatcher.Post(async () =>
-                    {
-                        await Task.Delay(100);
-                        ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", false);
-                    });
-                }
+            if (e.Handled)
+                return;
 
-                App.Current?.FocusManager?.Focus(null);
+            // TODO: is there a need to implement forward?
+            if (e.GetCurrentPoint(this).Properties.IsXButton1Pressed && _navigator.CanGoBack)
+            {
+                _navigator.Pop();
+                // TODO: horrible name, also don't rely on to-be-internal IPseudoClasses interface
+                ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", true);
+                _dispatcher.Post(async () =>
+                {
+                    await Task.Delay(100);
+                    ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", false);
+                });
             }
+
+            App.Current?.FocusManager?.Focus(null);
         };
     }
 

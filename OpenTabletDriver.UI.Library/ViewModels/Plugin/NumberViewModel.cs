@@ -1,17 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
 
-namespace OpenTabletDriver.UI.ViewModels;
+namespace OpenTabletDriver.UI.ViewModels.Plugin;
 
 public partial class NumberViewModel : PluginSettingViewModel
 {
     [ObservableProperty]
-    private float _value;
+    private double _value;
 
     public bool Slider { get; }
-    public float Min { get; }
-    public float Max { get; }
-    public float Step { get; }
+    public double Min { get; }
+    public double Max { get; }
+    public double Step { get; }
 
     public NumberViewModel(PluginSetting setting, PluginSettingMetadata metadata, Func<Profile, PluginSetting> binding)
         : base(setting, metadata, binding)
@@ -19,18 +19,18 @@ public partial class NumberViewModel : PluginSettingViewModel
         if (metadata.Attributes.ContainsKey("min"))
         {
             Slider = true;
-            Min = float.Parse(metadata.Attributes["min"]);
-            Max = float.Parse(metadata.Attributes["max"]);
-            Step = float.Parse(metadata.Attributes["step"]);
+            Min = double.Parse(metadata.Attributes["min"]);
+            Max = double.Parse(metadata.Attributes["max"]);
+            Step = double.Parse(metadata.Attributes["step"]);
         }
     }
 
     protected override void OnSettingChanged(PluginSetting newPluginSetting)
     {
-        Value = newPluginSetting.GetValue<float>();
+        Value = newPluginSetting.GetValue<double>();
     }
 
-    partial void OnValueChanged(float value)
+    partial void OnValueChanged(double value)
     {
         // Min and Max validation is handled by the view
         PluginSetting.SetValue(value);

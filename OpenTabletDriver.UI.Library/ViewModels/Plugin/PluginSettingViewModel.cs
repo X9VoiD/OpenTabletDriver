@@ -1,6 +1,6 @@
 using OpenTabletDriver.Daemon.Contracts;
 
-namespace OpenTabletDriver.UI.ViewModels;
+namespace OpenTabletDriver.UI.ViewModels.Plugin;
 
 public abstract class PluginSettingViewModel : ViewModelBase
 {

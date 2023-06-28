@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using static OpenTabletDriver.UI.TraceUtility;
-
 namespace OpenTabletDriver.UI.ViewModels;
 
 public abstract class ActivatableViewModelBase : ViewModelBase
@@ -14,8 +11,6 @@ public abstract class ActivatableViewModelBase : ViewModelBase
 
     public virtual void OnActivated()
     {
-        PrintTrace(this, "Activated");
-        Debug.Assert(!_isActivated);
         _isActivated = true;
         InvokeActivated();
         Activated?.Invoke(this, EventArgs.Empty);
@@ -23,16 +18,14 @@ public abstract class ActivatableViewModelBase : ViewModelBase
 
     public virtual void OnDeactivated()
     {
-        PrintTrace(this, "Deactivated");
-        Debug.Assert(_isActivated);
         _isActivated = false;
         DisposeObjects();
         Deactivated?.Invoke(this, EventArgs.Empty);
     }
 
-    protected void WhenActivated(Action<CompositeDisposable> whenNavigatedTo)
+    protected void WhenActivated(Action<CompositeDisposable> whenActivated)
     {
-        _whenActivatedAction = whenNavigatedTo;
+        _whenActivatedAction = whenActivated;
 
         // Dispose if there's some disposables left over
         DisposeObjects();
@@ -44,7 +37,6 @@ public abstract class ActivatableViewModelBase : ViewModelBase
     {
         if (_whenActivatedAction is not null && _isActivated)
         {
-            PrintTrace(this, "Invoking activation action");
             _whenActivatedDisposables = new CompositeDisposable();
             _whenActivatedAction(_whenActivatedDisposables);
         }
@@ -53,10 +45,6 @@ public abstract class ActivatableViewModelBase : ViewModelBase
     private void DisposeObjects()
     {
         var whenNavigatedToDisposables = Interlocked.Exchange(ref _whenActivatedDisposables, null);
-        if (whenNavigatedToDisposables is not null)
-        {
-            PrintTrace(this, "Disposing activation action");
-            whenNavigatedToDisposables.Dispose();
-        }
+        whenNavigatedToDisposables?.Dispose();
     }
 }

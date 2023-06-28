@@ -5,7 +5,7 @@
              xmlns:vm="using:OpenTabletDriver.UI.ViewModels"
              xmlns:v="using:OpenTabletDriver.UI.Views"
              xmlns:c="using:OpenTabletDriver.UI.Controls"
-             xmlns:ci="using:OpenTabletDriver.UI.Controls.Input"
+             xmlns:tc="using:OpenTabletDriver.UI.TemplatedControls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="OpenTabletDriver.UI.Views.TabletView"
              x:DataType="vm:TabletViewModel"
@@ -16,7 +16,9 @@
     <Grid RowDefinitions="*,Auto">
         <ScrollViewer Padding="36, 0, 36, 0">
 
+            <!-- Tablet view -->
             <StackPanel Grid.Row="0" Spacing="8" ClipToBounds="True">
+
                 <!-- Tablet Name and Output Mode -->
                 <Grid ColumnDefinitions="Auto,Auto,*" Margin="0, 12, 0, 40">
                     <ToggleButton Grid.Column="0"/>
@@ -32,33 +34,39 @@
                 <StackPanel Spacing="8" IsVisible="{Binding IsAbsoluteMode}" Grid.IsSharedSizeScope="True">
                     <!-- Display Area Configuration -->
                     <c:AreaDisplay DataContext="{Binding DisplayArea}"
-                                Margin="32, 0, 32, 32"
-                                Height="180" />
+                                   Margin="32, 0, 32, 32"
+                                   Height="180" />
                     <TextBlock Text="Monitor Area" />
                     <Grid ColumnDefinitions="*,*">
-                        <ci:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
+                        <tc:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
                                     Margin="0, 0, 4, 0"
                                     Grid.Column="0"
                                     Value="{Binding X}"
                                     Label="X Offset"
                                     Unit="px"
+                                    Description="{StaticResource output_mode_display_x_offset}"
                                     Precision="0" />
-                        <ci:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
+                        <tc:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
                                     Margin="4, 0, 0 ,0"
                                     Grid.Column="1"
                                     Value="{Binding Y}"
                                     Label="Y Offset"
                                     Unit="px"
+                                    Description="{StaticResource output_mode_display_y_offset}"
                                     Precision="0" />
                     </Grid>
-                    <ci:SliderInput Value="{Binding DisplayArea.Mapping.Width}"
-                                    Maximum="{Binding DisplayArea.MaximumBounds.Width}"
+                    <tc:RangedInput DataContext="{Binding DisplayArea}"
+                                    Value="{Binding Mapping.Width}"
+                                    Maximum="{Binding MaximumBounds.Width}"
                                     Label="Width"
-                                    Unit="px" />
-                    <ci:SliderInput Value="{Binding DisplayArea.Mapping.Height}"
-                                    Maximum="{Binding DisplayArea.MaximumBounds.Height}"
+                                    Unit="px"
+                                    Description="{StaticResource output_mode_display_width}" />
+                    <tc:RangedInput DataContext="{Binding DisplayArea}"
+                                    Value="{Binding Mapping.Height}"
+                                    Maximum="{Binding MaximumBounds.Height}"
                                     Label="Height"
-                                    Unit="px" />
+                                    Unit="px"
+                                    Description="{StaticResource output_mode_display_height}"/>
 
                     <!-- Tablet Area Configuration -->
                     <c:AreaDisplay DataContext="{Binding TabletArea}"
@@ -98,63 +106,71 @@
                             </MenuItem>
                         </c:AreaDisplay.MenuItems>
                     </c:AreaDisplay>
+
                     <TextBlock Text="Tablet Area" />
                     <Grid ColumnDefinitions="*,*">
-                        <ci:DoubleInput DataContext="{Binding TabletArea.Mapping}"
+                        <tc:DoubleInput DataContext="{Binding TabletArea.Mapping}"
                                     Margin="0, 0, 4, 0"
                                     Grid.Column="0"
                                     Value="{Binding X}"
                                     Label="X Origin"
-                                    Unit="mm" />
-                        <ci:DoubleInput DataContext="{Binding TabletArea.Mapping}"
+                                    Unit="mm"
+                                    Description="{StaticResource output_mode_tablet_x_origin}" />
+                        <tc:DoubleInput DataContext="{Binding TabletArea.Mapping}"
                                     Margin="4, 0, 0 ,0"
                                     Grid.Column="1"
                                     Value="{Binding Y}"
                                     Label="Y Origin"
-                                    Unit="mm" />
+                                    Unit="mm"
+                                    Description="{StaticResource output_mode_tablet_y_origin}" />
                     </Grid>
-                    <ci:SliderInput Value="{Binding TabletArea.Mapping.Width}"
+                    <tc:RangedInput Value="{Binding TabletArea.Mapping.Width}"
                                     Minimum="0"
                                     Maximum="{Binding TabletArea.MaximumBounds.Width}"
                                     Label="Width"
-                                    Unit="mm" />
-                    <ci:SliderInput Value="{Binding TabletArea.Mapping.Height}"
+                                    Unit="mm"
+                                    Description="{StaticResource output_mode_tablet_width}" />
+                    <tc:RangedInput Value="{Binding TabletArea.Mapping.Height}"
                                     Minimum="0"
                                     Maximum="{Binding TabletArea.MaximumBounds.Height}"
                                     Label="Height"
-                                    Unit="mm" />
-                    <ci:SliderInput Value="{Binding TabletArea.Mapping.Rotation}"
+                                    Unit="mm"
+                                    Description="{StaticResource output_mode_tablet_height}" />
+                    <tc:RangedInput Value="{Binding TabletArea.Mapping.Rotation}"
                                     Minimum="0"
                                     Maximum="360"
                                     Label="Rotation"
-                                    Unit="°" />
+                                    Unit="°"
+                                    Description="{StaticResource output_mode_tablet_rotation}" />
                 </StackPanel>
 
                 <!-- Relative Mode Settings -->
                 <StackPanel Spacing="8" IsVisible="{Binding IsRelativeMode}" Grid.IsSharedSizeScope="True">
                     <Grid ColumnDefinitions="*,*">
-                        <ci:DoubleInput Value="{Binding SensitivityX}"
+                        <tc:DoubleInput Value="{Binding SensitivityX}"
                                         Margin="0, 0, 4, 0"
                                         Grid.Column="0"
                                         Label="X Sensitivity"
                                         Unit="px/mm"
                                         Precision="3" />
-                        <ci:DoubleInput Value="{Binding SensitivityY}"
+                        <tc:DoubleInput Value="{Binding SensitivityY}"
                                         Margin="4, 0, 0 ,0"
                                         Grid.Column="1"
                                         Label="Y Sensitivity"
                                         Unit="px/mm"
                                         Precision="3" />
                     </Grid>
-                    <ci:DoubleInput Value="{Binding ResetDelay}"
+                    <tc:DoubleInput Value="{Binding ResetDelay}"
                                     Label="Reset Delay"
                                     Unit="ms" />
-                    <ci:SliderInput Value="{Binding RelativeModeRotation}"
+                    <tc:RangedInput Value="{Binding RelativeModeRotation}"
                                     Minimum="0"
                                     Maximum="360"
                                     Label="Rotation"
                                     Unit="°" />
                 </StackPanel>
+
+                <!-- Extra Settings -->
             </StackPanel>
         </ScrollViewer>
 

@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Services;
+using OpenTabletDriver.UI.ViewModels.Plugin;
 
 namespace OpenTabletDriver.UI.ViewModels;
 
@@ -132,10 +133,12 @@ public partial class TabletViewModel : ActivatableViewModelBase
         IsAbsoluteMode = value.IsAbsoluteMode();
         IsRelativeMode = value.IsRelativeMode();
 
+        var profile = Profile;
         var settings = value.GetCustomOutputModeSettings()
-            .Select(s => PluginSettingViewModel.CreateBindable(value, Profile, p => p.OutputMode[s.PropertyName])!)
+            .Select(s => PluginSettingViewModel.CreateBindable(value, profile, p => p.OutputMode[s.PropertyName])!)
             .Where(s => s is not null);
 
+        settings.ForEach(s => s.PropertyChanged += HandleSettingsChanged);
         OutputModeSettings.AddRange(settings!);
     }
 
