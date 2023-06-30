@@ -27,7 +27,7 @@ namespace OpenTabletDriver.Daemon.Interop
                 Transient<IAbsolutePointer, WindowsAbsolutePointer>(),
                 Transient<IRelativePointer, WindowsRelativePointer>(),
                 Transient<IVirtualKeyboard, WindowsVirtualKeyboard>(),
-                Singleton<IKeysProvider, WindowsKeysProvider>(),
+                Singleton<IKeyMapper, WindowsKeysProvider>(),
                 Singleton<IVirtualScreen, WindowsDisplay>(),
                 Transient<IUpdater, WindowsUpdater>()
             });

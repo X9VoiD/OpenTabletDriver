@@ -21,18 +21,14 @@ namespace OpenTabletDriver.Daemon.Binding
 
         private const string PLUGIN_NAME = "Multi-Key Binding";
 
-        private IList<string> _keys = Array.Empty<string>();
-        private string _keysString = string.Empty;
+        private readonly List<BindableKey> _keys = new(4);
+        private string _keysString = null!;
 
         [Setting("Keys")]
         public string Keys
         {
-            set
-            {
-                _keysString = value;
-                _keys = ParseKeys(Keys);
-            }
             get => _keysString;
+            set => ParseKeys(_keysString = value);
         }
 
         public void Press(IDeviceReport report)
@@ -47,11 +43,14 @@ namespace OpenTabletDriver.Daemon.Binding
                 _keyboard.Release(_keys);
         }
 
-        private IList<string> ParseKeys(string str)
+        private void ParseKeys(string str)
         {
-            var newKeys = str.Split('+', StringSplitOptions.TrimEntries);
-            return newKeys.All(k => _keyboard.SupportedKeys.Contains(k)) ? newKeys :
-                throw new NotSupportedException($"The keybinding combination ({str}) is not supported.");
+            _keys.Clear();
+            var newKeys = str.Split('+', StringSplitOptions.TrimEntries)
+                .Select(s => BindableKeyExtensions.TryParse(s, out var key)
+                    ? key
+                    : throw new InvalidOperationException($"Invalid key: {s}"));
+            _keys.AddRange(newKeys);
         }
 
         public override string ToString() => $"{PLUGIN_NAME}: {Keys}";

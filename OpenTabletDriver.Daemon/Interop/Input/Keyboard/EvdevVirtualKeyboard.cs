@@ -9,17 +9,17 @@ namespace OpenTabletDriver.Daemon.Interop.Input.Keyboard
 {
     public class EvdevVirtualKeyboard : IVirtualKeyboard, IDisposable
     {
-        private readonly IKeysProvider _keysProvider;
+        private readonly IKeyMapper _keyMapper;
 
-        public unsafe EvdevVirtualKeyboard(IKeysProvider keysProvider)
+        public unsafe EvdevVirtualKeyboard(IKeyMapper keyMapper)
         {
-            _keysProvider = keysProvider;
+            _keyMapper = keyMapper;
 
             Device = new EvdevDevice("OpenTabletDriver Virtual Keyboard");
 
-            var keyCodes = _keysProvider.EtoToNative.Values.Distinct()
-                .Select(k => (EventCode)Convert.ToUInt32(k))
-                .ToArray();
+            var keyCodes = _keyMapper.GetBindableKeys()
+                .Select(k => (EventCode)_keyMapper[k]);
+
             Device.EnableTypeCodes(EventType.EV_KEY, keyCodes);
 
             var result = Device.Initialize();
@@ -36,33 +36,33 @@ namespace OpenTabletDriver.Daemon.Interop.Input.Keyboard
 
         private EvdevDevice Device { get; }
 
-        public IEnumerable<string> SupportedKeys => _keysProvider.EtoToNative.Keys;
+        public IEnumerable<BindableKey> SupportedKeys => _keyMapper.GetBindableKeys();
 
-        private void KeyEvent(string key, bool isPress)
+        private void KeyEvent(BindableKey key, bool isPress)
         {
-            var keyEventCode = (EventCode)_keysProvider.EtoToNative[key];
+            var keyEventCode = (EventCode)_keyMapper[key];
 
             Device.Write(EventType.EV_KEY, keyEventCode, isPress ? 1 : 0);
             Device.Sync();
         }
 
-        public void Press(string key)
+        public void Press(BindableKey key)
         {
             KeyEvent(key, true);
         }
 
-        public void Release(string key)
+        public void Release(BindableKey key)
         {
             KeyEvent(key, false);
         }
 
-        public void Press(IEnumerable<string> keys)
+        public void Press(IEnumerable<BindableKey> keys)
         {
             foreach (var key in keys)
                 KeyEvent(key, true);
         }
 
-        public void Release(IEnumerable<string> keys)
+        public void Release(IEnumerable<BindableKey> keys)
         {
             foreach (var key in keys)
                 KeyEvent(key, false);

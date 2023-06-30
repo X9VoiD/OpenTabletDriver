@@ -1,10 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using OpenTabletDriver.UI.TemplatedControls;
 using OpenTabletDriver.UI.ViewModels.Plugin;
 
 namespace OpenTabletDriver.UI.DataTemplates;
 
-public class PluginSettingViewLocator : IDataTemplate
+public class PluginSettingControlBuilder : IDataTemplate
 {
     public bool Match(object? data)
     {
@@ -15,13 +17,166 @@ public class PluginSettingViewLocator : IDataTemplate
     {
         return data switch
         {
-            // BoolViewModel boolViewModel => new BoolSettingInput(),
-            // EnumViewModel enumViewModel => new EnumSettingInput(),
-            // IntegerViewModel integerViewModel => new IntegerSettingInput(),
-            // NumberViewModel numberViewModel => new NumberSettingInput(),
-            // StringViewModel stringViewModel => new StringSettingInput(),
+            BoolViewModel boolViewModel => BuildControl(boolViewModel),
+            EnumViewModel enumViewModel => BuildControl(enumViewModel),
+            IntegerViewModel integerViewModel => BuildControl(integerViewModel),
+            NumberViewModel numberViewModel => BuildControl(numberViewModel),
+            StringViewModel stringViewModel => BuildControl(stringViewModel),
             null => new TextBlock { Text = "eh???" },
             _ => new TextBlock { Text = "Unknown setting type" }
         };
+    }
+
+    // migrate to compiled binding
+
+    private static Control WithCommonBinds(PluginSettingViewModel vm, DescribedInput control)
+    {
+        var labelBinding = new Binding
+        {
+            Source = vm,
+            Path = nameof(PluginSettingViewModel.FriendlyName)
+        };
+
+        var descBinding = new Binding
+        {
+            Source = vm,
+            Path = nameof(PluginSettingViewModel.Description)
+        };
+
+        var toolTipBinding = new Binding
+        {
+            Source = vm,
+            Path = nameof(PluginSettingViewModel.ToolTip)
+        };
+
+        control[!DescribedInput.LabelProperty] = labelBinding;
+        control.Description = new StackPanel
+        {
+            Children =
+            {
+                new TextBlock
+                {
+                    [!TextBlock.TextProperty] = descBinding
+                },
+                new TextBlock
+                {
+                    [!TextBlock.TextProperty] = toolTipBinding
+                }
+            }
+        };
+
+        return control;
+    }
+
+    private static Control BuildControl(BoolViewModel viewModel)
+    {
+        var valueBinding = new Binding
+        {
+            Source = viewModel,
+            Path = nameof(BoolViewModel.Value),
+        };
+
+        var control = new BooleanInput
+        {
+            [!BooleanInput.ValueProperty] = valueBinding,
+        };
+
+        return WithCommonBinds(viewModel, control);
+    }
+
+    private static Control BuildControl(EnumViewModel viewModel)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static Control BuildControl(IntegerViewModel viewModel)
+    {
+        var valueBinding = new Binding
+        {
+            Source = viewModel,
+            Path = nameof(IntegerViewModel.Value),
+        };
+
+        DescribedInput input;
+
+        if (viewModel.Slider)
+        {
+            var minBinding = new Binding
+            {
+                Source = viewModel,
+                Path = nameof(IntegerViewModel.Min),
+            };
+
+            var maxBinding = new Binding
+            {
+                Source = viewModel,
+                Path = nameof(IntegerViewModel.Max),
+            };
+
+            input = new RangedInput
+            {
+                [!DoubleInput.ValueProperty] = valueBinding,
+                [!RangedInput.MinimumProperty] = minBinding,
+                [!RangedInput.MaximumProperty] = maxBinding,
+            };
+        }
+        else
+        {
+            input = new DoubleInput
+            {
+                [!DoubleInput.ValueProperty] = valueBinding,
+                Precision = 0
+            };
+        }
+
+        return WithCommonBinds(viewModel, input);
+    }
+
+    private static Control BuildControl(NumberViewModel viewModel)
+    {
+        var valueBinding = new Binding
+        {
+            Source = viewModel,
+            Path = nameof(NumberViewModel.Value),
+        };
+
+        DescribedInput input;
+
+        if (viewModel.Slider)
+        {
+            var minBinding = new Binding
+            {
+                Source = viewModel,
+                Path = nameof(NumberViewModel.Min),
+            };
+
+            var maxBinding = new Binding
+            {
+                Source = viewModel,
+                Path = nameof(NumberViewModel.Max),
+            };
+
+            input = new RangedInput
+            {
+                [!DoubleInput.ValueProperty] = valueBinding,
+                [!RangedInput.MinimumProperty] = minBinding,
+                [!RangedInput.MaximumProperty] = maxBinding,
+            };
+        }
+        else
+        {
+            input = new DoubleInput
+            {
+                [!DoubleInput.ValueProperty] = valueBinding,
+                Precision = 4
+            };
+        }
+
+        return WithCommonBinds(viewModel, input);
+    }
+
+    private static Control BuildControl(StringViewModel viewModel)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -26,7 +26,7 @@ namespace OpenTabletDriver.Daemon.Interop
                 Transient<IRelativePointer, MacOSRelativePointer>(),
                 Transient<IVirtualKeyboard, MacOSVirtualKeyboard>(),
                 Singleton<IVirtualScreen, MacOSDisplay>(),
-                Singleton<IKeysProvider, MacOSKeysProvider>(),
+                Singleton<IKeyMapper, MacOSKeysProvider>(),
                 Transient<IUpdater, MacOSUpdater>()
             });
         }

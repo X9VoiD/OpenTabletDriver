@@ -1,6 +1,0 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <StyleInclude Source="CommandBar.axaml" />
-    <StyleInclude Source="IconButton.axaml" />
-    <StyleInclude Source="NavigatablePage.axaml" />
-</Styles>

@@ -13,8 +13,8 @@ namespace OpenTabletDriver.UI.Controls;
 
 public partial class AreaDisplay : UserControl
 {
-    private static IImmutableSolidColorBrush _boundsBrush = new ImmutableSolidColorBrush(0x0AFFFFFF);
-    private static IImmutableSolidColorBrush _mappingBrush = new ImmutableSolidColorBrush(0x800078D7);
+    private static readonly IImmutableSolidColorBrush _boundsBrush = new ImmutableSolidColorBrush(0x0AFFFFFF);
+    private static readonly IImmutableSolidColorBrush _mappingBrush = new ImmutableSolidColorBrush(0x800078D7);
     private double _scale;
     private double _xOffset;
     private double _yOffset;
@@ -100,7 +100,7 @@ public partial class AreaDisplay : UserControl
         };
     }
 
-    private MenuItem[] CreateQuickMapMenuItems(AreaDisplayViewModel vm)
+    private static MenuItem[] CreateQuickMapMenuItems(AreaDisplayViewModel vm)
     {
         static MenuItem createQuickMapMenuItem(AreaDisplayViewModel vm, Bounds bounds)
         {
@@ -165,7 +165,7 @@ public partial class AreaDisplay : UserControl
         return finalSize;
     }
 
-    private Border CreateFromBounds(Bounds bounds)
+    private static Border CreateFromBounds(Bounds bounds)
     {
         var border = new Border
         {
@@ -198,6 +198,7 @@ public partial class AreaDisplay : UserControl
             var point = e.GetCurrentPoint(mapVisual);
             if (point.Properties.IsLeftButtonPressed)
             {
+                ToolTip.SetIsOpen(this, false); // hide any active tooltip
                 _captured = true;
                 _hitPoint = point.Position;
                 e.Pointer.Capture(mapVisual);
@@ -227,7 +228,7 @@ public partial class AreaDisplay : UserControl
         return mapVisual;
     }
 
-    private void SetSize(Border border, Mapping mapping, double scale)
+    private static void SetSize(Border border, Mapping mapping, double scale)
     {
         border.Width = (mapping.Width * scale) - 1;
         border.Height = (mapping.Height * scale) - 1;

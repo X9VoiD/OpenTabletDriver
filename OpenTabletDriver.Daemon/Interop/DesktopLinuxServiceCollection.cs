@@ -30,7 +30,7 @@ namespace OpenTabletDriver.Daemon.Interop
                 Transient<IRelativePointer, EvdevRelativePointer>(),
                 Transient<IPressureHandler, EvdevVirtualTablet>(),
                 Transient<IVirtualKeyboard, EvdevVirtualKeyboard>(),
-                Singleton<IKeysProvider, LinuxKeysProvider>(),
+                Singleton<IKeyMapper, LinuxKeysProvider>(),
                 GetVirtualScreen()
             });
         }

@@ -1,5 +1,14 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:OpenTabletDriver.UI.Controls">
+
+    <Style Selector="StackPanel.CommandBar">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="Spacing" Value="8" />
+        <Setter Property="Margin" Value="0,4" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
     <Style Selector="Button.Icon">
         <Style Selector="^ PathIcon">
             <Setter Property="Opacity" Value="1" />
@@ -24,4 +33,5 @@
             <Setter Property="Opacity" Value="0.9" />
         </Style>
     </Style>
+
 </Styles>

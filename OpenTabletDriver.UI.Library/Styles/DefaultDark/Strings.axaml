@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <x:String x:Key="output_mode_combobox_help">An output mode defines how the input from a tablet is presented to the OS.</x:String>
+    <x:String x:Key="output_mode_display_area_help">This represents the area of the screen that the tablet maps to. Right click for more options.</x:String>
+    <x:String x:Key="output_mode_tablet_area_help">This represents the area of the tablet that is mapped to the display area. Right click for more options.</x:String>
     <x:String x:Key="output_mode_display_x_offset">The horizontal displacement of the top-left corner of the mapped area</x:String>
     <x:String x:Key="output_mode_display_y_offset">The vertical displacement of the top-left corner of the mapped display area</x:String>
     <x:String x:Key="output_mode_display_width">The width of the mapped display area</x:String>

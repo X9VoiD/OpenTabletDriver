@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTabletDriver.Attributes;
 using OpenTabletDriver.Platform.Keyboard;
@@ -15,6 +16,8 @@ namespace OpenTabletDriver.Daemon.Binding
         private readonly InputDevice _device;
         private readonly IVirtualKeyboard _keyboard;
 
+        private BindableKey _key;
+
         public KeyBinding(InputDevice device, IVirtualKeyboard keyboard, ISettingsProvider settingsProvider)
         {
             _device = device;
@@ -24,24 +27,30 @@ namespace OpenTabletDriver.Daemon.Binding
         }
 
         [Setting("Key"), MemberValidated(nameof(GetValidKeys))]
-        public string Key { set; get; } = string.Empty;
+        public string Key
+        {
+            get => _key.ToStringFast();
+            set => _key = BindableKeyExtensions.TryParse(value, out var key)
+                        ? key
+                        : throw new InvalidOperationException($"Invalid key: {value}");
+        }
 
         public void Press(IDeviceReport report)
         {
-            if (!string.IsNullOrWhiteSpace(Key))
-                _keyboard.Press(Key);
+            _keyboard.Press(_key);
         }
 
         public void Release(IDeviceReport report)
         {
-            if (!string.IsNullOrWhiteSpace(Key))
-                _keyboard.Release(Key);
+            _keyboard.Release(_key);
         }
 
         public static IEnumerable<string> GetValidKeys(IServiceProvider serviceProvider)
         {
-            var keysProvider = serviceProvider.GetRequiredService<IKeysProvider>();
-            return keysProvider.EtoToNative.Keys;
+            var keysProvider = serviceProvider.GetRequiredService<IKeyMapper>();
+            return keysProvider.GetBindableKeys()
+                .Select(key => key.ToStringFast())
+                .ToList();
         }
 
         public override string ToString() => $"{PLUGIN_NAME}: {Key}";

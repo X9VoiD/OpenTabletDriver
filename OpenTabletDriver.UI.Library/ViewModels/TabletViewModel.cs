@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
@@ -16,7 +15,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
 {
     private readonly IDaemonService _daemonService;
     private readonly ITabletService _tabletService;
-    private readonly IDispatcher _dispatcher;
+    private readonly List<PluginDto> _bindings = new();
     private bool _modified;
     private bool _saved = true;
 
@@ -52,11 +51,26 @@ public partial class TabletViewModel : ActivatableViewModelBase
     [ObservableProperty]
     private double _resetDelay;
 
-    public Profile Profile => _tabletService.Profile;
+    // Binding Settings
+
+    [ObservableProperty]
+    private double _penTipPressureThreshold;
+
+    [ObservableProperty]
+    private BindingSettingViewModel _penTipBinding = null!;
+
+    [ObservableProperty]
+    private double _penEraserPressureThreshold;
+
+    [ObservableProperty]
+    private BindingSettingViewModel _penEraserTipBinding = null!;
+
     public int TabletId => _tabletService.TabletId;
     public string Name => _tabletService.Name;
     public ObservableCollection<PluginDto> OutputModes { get; } = new();
     public ObservableCollection<PluginSettingViewModel> OutputModeSettings { get; } = new();
+    public ObservableCollection<BindingSettingViewModel> PenButtonBindings { get; } = new();
+    public ObservableCollection<BindingSettingViewModel> TabletButtonBindings { get; } = new();
 
     public bool Modified
     {
@@ -85,7 +99,6 @@ public partial class TabletViewModel : ActivatableViewModelBase
     public TabletViewModel(ITabletService tabletService)
     {
         _daemonService = Ioc.Default.GetRequiredService<IDaemonService>();
-        _dispatcher = Ioc.Default.GetRequiredService<IDispatcher>();
         _tabletService = tabletService;
 
         // propagate daemon-broadcasted profile changes to the UI
@@ -104,7 +117,8 @@ public partial class TabletViewModel : ActivatableViewModelBase
             // no need to optimize this since it's rarely called
             var lastSelectedOutputMode = SelectedOutputMode;
 
-            ReadOutputModes();
+            SetupOutputModes();
+            SetupBindings();
 
             if (lastSelectedOutputMode is not null)
             {
@@ -118,7 +132,8 @@ public partial class TabletViewModel : ActivatableViewModelBase
 
     private async void InitializeAsync()
     {
-        ReadOutputModes();
+        SetupOutputModes();
+        SetupBindings();
         await ReadFromProfileAsync();
         IsInitialized = true;
     }
@@ -133,7 +148,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
         IsAbsoluteMode = value.IsAbsoluteMode();
         IsRelativeMode = value.IsRelativeMode();
 
-        var profile = Profile;
+        var profile = _tabletService.Profile;
         var settings = value.GetCustomOutputModeSettings()
             .Select(s => PluginSettingViewModel.CreateBindable(value, profile, p => p.OutputMode[s.PropertyName])!)
             .Where(s => s is not null);
@@ -376,7 +391,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
         }
     }
 
-    private void ReadOutputModes()
+    private void SetupOutputModes()
     {
         OutputModes.Clear();
 
@@ -385,6 +400,35 @@ public partial class TabletViewModel : ActivatableViewModelBase
             .Where(p => p.IsOutputMode());
 
         OutputModes.AddRange(outputModes);
+    }
+
+    private void SetupBindings()
+    {
+        _bindings.Clear();
+
+        var bindings = _daemonService.PluginContexts
+            .SelectMany(pCtx => pCtx.Plugins)
+            .Where(p => p.IsBinding());
+
+        _bindings.AddRange(bindings);
+
+        PenTipBinding = new BindingSettingViewModel("Pen Tip", _bindings);
+        PenEraserTipBinding = new BindingSettingViewModel("Eraser Tip", _bindings);
+
+        if (PenButtonBindings.Count == 0)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                PenButtonBindings.Add(new BindingSettingViewModel($"Pen Button {i + 1}", _bindings));
+            }
+        }
+        else
+        {
+            foreach (var binding in PenButtonBindings)
+            {
+                binding.UsableBindings = _bindings;
+            }
+        }
     }
 
     partial void OnSensitivityXChanged(double value) => HandleSettingsChanged(null, null!);
