@@ -69,7 +69,7 @@ public abstract class DescribedInput : TemplatedControl
 
     private void OnDescriptionChanged(AvaloniaPropertyChangedEventArgs args)
     {
-        _toolTip = args.NewValue is not null
+        _toolTip = !string.IsNullOrEmpty(args.NewValue as string)
             ? new ToolTip
             {
                 Content = new Panel

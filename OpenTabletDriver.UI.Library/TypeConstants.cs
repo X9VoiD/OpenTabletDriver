@@ -16,4 +16,12 @@ public static class TypeConstants
     public const string DeviceHubPlugin = "OpenTabletDriver.Devices.IDeviceHub";
     public const string FilterPlugin = "OpenTabletDriver.Output.IPipelineElement`1";
     public const string ReportParserPlugin = "OpenTabletDriver.Tablet.IReportParser`1";
+
+    public const string MouseBinding = "OpenTabletDriver.Daemon.Binding.MouseBinding";
+    public const string KeyBinding = "OpenTabletDriver.Daemon.Binding.KeyBinding";
+    public const string MultiKeyBinding = "OpenTabletDriver.Daemon.Binding.MultiKeyBinding";
+
+    public const string MouseBindingMainProperty = "Button";
+    public const string KeyBindingMainProperty = "Key";
+    public const string MultiKeyBindingMainProperty = "Keys";
 }

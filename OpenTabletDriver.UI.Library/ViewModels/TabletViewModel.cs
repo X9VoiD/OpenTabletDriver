@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
@@ -15,12 +16,16 @@ public partial class TabletViewModel : ActivatableViewModelBase
 {
     private readonly IDaemonService _daemonService;
     private readonly ITabletService _tabletService;
+    private readonly IDispatcher _dispatcher;
     private readonly List<PluginDto> _bindings = new();
     private bool _modified;
     private bool _saved = true;
 
     [ObservableProperty]
     private bool _isInitialized;
+
+    [ObservableProperty]
+    private Profile _profile;
 
     [ObservableProperty]
     private PluginDto? _selectedOutputMode;
@@ -99,17 +104,19 @@ public partial class TabletViewModel : ActivatableViewModelBase
     public TabletViewModel(ITabletService tabletService)
     {
         _daemonService = Ioc.Default.GetRequiredService<IDaemonService>();
+        _dispatcher = Ioc.Default.GetRequiredService<IDispatcher>();
         _tabletService = tabletService;
+        _profile = _tabletService.Profile;
 
         // propagate daemon-broadcasted profile changes to the UI
         // TODO: there's currently no fast way to check if this profile is the one
         // that UI just sent to daemon, so disable this for now to save CPU cycles
 
-        // _tabletService.HandleProperty(
-        //     nameof(_tabletService.Profile),
-        //     s => s.Profile,
-        //     (s, p) => _dispatcher.Post(async () => await ReadFromProfileAsync()),
-        //     invokeOnCreation: false);
+        _tabletService.HandleProperty(
+            nameof(_tabletService.Profile),
+            s => s.Profile,
+            (s, p) => Profile = p,
+            invokeOnCreation: false);
 
         // propagate plugin changes as well
         _daemonService.PluginContexts.CollectionChanged += (s, e) =>
@@ -117,8 +124,9 @@ public partial class TabletViewModel : ActivatableViewModelBase
             // no need to optimize this since it's rarely called
             var lastSelectedOutputMode = SelectedOutputMode;
 
-            SetupOutputModes();
-            SetupBindings();
+            SetupOutputModePlugins();
+            SetupBindings(Profile);
+            // SetupFilters();
 
             if (lastSelectedOutputMode is not null)
             {
@@ -132,9 +140,9 @@ public partial class TabletViewModel : ActivatableViewModelBase
 
     private async void InitializeAsync()
     {
-        SetupOutputModes();
-        SetupBindings();
-        await ReadFromProfileAsync();
+        SetupOutputModePlugins();
+        SetupBindings(Profile);
+        await InitializeProfileAsync(Profile);
         IsInitialized = true;
     }
 
@@ -148,19 +156,24 @@ public partial class TabletViewModel : ActivatableViewModelBase
         IsAbsoluteMode = value.IsAbsoluteMode();
         IsRelativeMode = value.IsRelativeMode();
 
-        var profile = _tabletService.Profile;
+        var profile = Profile;
         var settings = value.GetCustomOutputModeSettings()
-            .Select(s => PluginSettingViewModel.CreateBindable(value, profile, p => p.OutputMode[s.PropertyName])!)
+            .Select(s => PluginSettingViewModel.CreateBindable(
+                s,
+                new ProfileBinding(
+                    p => p.OutputMode[s.PropertyName],
+                    (p, v) => p.OutputMode[s.PropertyName] = v),
+                profile)!)
             .Where(s => s is not null);
 
         settings.ForEach(s => s.PropertyChanged += HandleSettingsChanged);
-        OutputModeSettings.AddRange(settings!);
+        OutputModeSettings.AddRange(settings);
     }
 
     [RelayCommand(CanExecute = nameof(Modified))]
     private async Task Apply()
     {
-        await WriteToProfileAsync();
+        await WriteProfileAsync(Profile);
         Modified = false;
     }
 
@@ -168,7 +181,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
     private async Task Save()
     {
         if (Modified)
-            await WriteToProfileAsync();
+            await WriteProfileAsync(Profile);
 
         await _daemonService.Instance!.SaveSettings();
         Modified = false;
@@ -178,7 +191,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
     [RelayCommand(CanExecute = nameof(Modified))]
     private async Task Discard()
     {
-        await ReadFromProfileAsync();
+        await InitializeProfileAsync(Profile);
         Modified = false;
         Saved = false;
     }
@@ -189,73 +202,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
         await _tabletService.ResetProfile();
     }
 
-    private async Task WriteToProfileAsync()
-    {
-        var profile = _tabletService.Profile;
-
-        // propagate DisplayArea and TabletArea changes to the profile
-        var outputMode = profile.OutputMode;
-        outputMode.Path = SelectedOutputMode!.Path;
-
-        var input = outputMode["Input"];
-
-        input.SetValue(new {
-            XPosition = TabletArea.Mapping.X,
-            YPosition = TabletArea.Mapping.Y,
-            Width = (double)TabletArea.Mapping.Width,
-            Height = (double)TabletArea.Mapping.Height,
-            Rotation = (double)TabletArea.Mapping.Rotation,
-        });
-
-        var output = outputMode["Output"];
-
-        var xOffset = Math.Abs(Math.Min(DisplayArea.MaximumBounds.X, 0));
-        var yOffset = Math.Abs(Math.Min(DisplayArea.MaximumBounds.Y, 0));
-
-        var x = xOffset + DisplayArea.Mapping.X + DisplayArea.Mapping.Width / 2.0;
-        var y = yOffset + DisplayArea.Mapping.Y + DisplayArea.Mapping.Height / 2.0;
-
-        output.SetValue(new
-        {
-            XPosition = x,
-            YPosition = y,
-            Width = (double)DisplayArea.Mapping.Width,
-            Height = (double)DisplayArea.Mapping.Height,
-        });
-
-        var lockAspectRatio = outputMode["LockAspectRatio"];
-        lockAspectRatio.SetValue(TabletArea.LockAspectRatio);
-
-        var areaClipping = outputMode["AreaClipping"];
-        areaClipping.SetValue(TabletArea.ClipInput);
-
-        var areaLimiting = outputMode["AreaLimiting"];
-        areaLimiting.SetValue(TabletArea.DropInput);
-
-        var lockToBounds = outputMode["LockToBounds"];
-        lockToBounds.SetValue(TabletArea.RestrictToMaximumBounds);
-
-        var sensitivity = outputMode["Sensitivity"];
-        sensitivity.SetValue(new
-        {
-            X = SensitivityX,
-            Y = SensitivityY,
-        });
-
-        var rotation = outputMode["Rotation"];
-        rotation.SetValue(RelativeModeRotation);
-
-        var resetDelay = outputMode["ResetDelay"];
-        resetDelay.SetValue(TimeSpan.FromMilliseconds(ResetDelay));
-
-        // no need to propagate OutputModeSettings changes to the profile,
-        // they are already bound to it.
-
-        // send the updated profile to the daemon
-        await _tabletService.ApplyProfile();
-    }
-
-    private async Task ReadFromProfileAsync()
+    private async Task InitializeProfileAsync(Profile profile)
     {
         if (DisplayArea != null)
         {
@@ -274,7 +221,6 @@ public partial class TabletViewModel : ActivatableViewModelBase
         var displayBounds = displayDtos
             .OrderBy(d => d.Index)
             .Select(d => Bounds.FromDto(d));
-        var profile = _tabletService.Profile;
         PluginSettings? outputMode = profile.OutputMode;
 
         var tabletWidth = _tabletService.Configuration.Specifications.Digitizer!.Width;
@@ -391,7 +337,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
         }
     }
 
-    private void SetupOutputModes()
+    private void SetupOutputModePlugins()
     {
         OutputModes.Clear();
 
@@ -402,7 +348,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
         OutputModes.AddRange(outputModes);
     }
 
-    private void SetupBindings()
+    private void SetupBindings(Profile profile)
     {
         _bindings.Clear();
 
@@ -412,23 +358,138 @@ public partial class TabletViewModel : ActivatableViewModelBase
 
         _bindings.AddRange(bindings);
 
-        PenTipBinding = new BindingSettingViewModel("Pen Tip", _bindings);
-        PenEraserTipBinding = new BindingSettingViewModel("Eraser Tip", _bindings);
+        PenTipBinding = new BindingSettingViewModel(
+            profile,
+            "Pen Tip",
+            "The action performed when the pen tip is pressed.",
+            _bindings,
+            p => p.Bindings.TipButton,
+            (p, v) => p.Bindings.TipButton = v);
+        PenEraserTipBinding = new BindingSettingViewModel(
+            profile,
+            "Eraser Tip",
+            "The action performed when the eraser tip is pressed.",
+            _bindings,
+            p => p.Bindings.EraserButton,
+            (p, v) => p.Bindings.EraserButton = v);
 
-        if (PenButtonBindings.Count == 0)
+        PenTipBinding.SettingsChanged += HandleSettingsChanged;
+        PenEraserTipBinding.SettingsChanged += HandleSettingsChanged;
+
+        PenButtonBindings.Clear();
+        var penButtonCount = _tabletService.Configuration.Specifications.Pen?.ButtonCount ?? 0;
+        for (int i = 0; i < penButtonCount; i++)
         {
-            for (int i = 0; i < 8; i++)
-            {
-                PenButtonBindings.Add(new BindingSettingViewModel($"Pen Button {i + 1}", _bindings));
-            }
+            int ii = i; // prevent closure capture bug
+            var desc = $"The action performed when pen button {ii + 1} is pressed.";
+            var binding = new BindingSettingViewModel(
+                profile,
+                $"Pen Button {ii + 1}",
+                desc,
+                _bindings,
+                p => p.Bindings.PenButtons.Count > ii ? p.Bindings.PenButtons[ii] : null,
+                (p, v) =>
+                {
+                    while (p.Bindings.PenButtons.Count <= ii)
+                        p.Bindings.PenButtons.Add(null);
+                    p.Bindings.PenButtons[ii] = v!;
+                }
+            );
+
+            binding.SettingsChanged += HandleSettingsChanged;
+            PenButtonBindings.Add(binding);
         }
-        else
+
+        TabletButtonBindings.Clear();
+        var auxButtonCount = _tabletService.Configuration.Specifications.AuxiliaryButtons?.ButtonCount ?? 0;
+        for (int i = 0; i < auxButtonCount; i++)
         {
-            foreach (var binding in PenButtonBindings)
-            {
-                binding.UsableBindings = _bindings;
-            }
+            int ii = i; // prevent closure capture bug
+            var desc = $"The action performed when tablet button {ii + 1} is pressed.";
+            var binding = new BindingSettingViewModel(
+                profile,
+                $"Tablet Button {ii + 1}",
+                desc,
+                _bindings,
+                p => p.Bindings.AuxButtons.Count > ii ? p.Bindings.AuxButtons[ii] : null,
+                (p, v) =>
+                {
+                    while (p.Bindings.AuxButtons.Count <= ii)
+                        p.Bindings.AuxButtons.Add(null);
+                    p.Bindings.AuxButtons[ii] = v!;
+                }
+            );
+
+            binding.SettingsChanged += HandleSettingsChanged;
+            TabletButtonBindings.Add(binding);
         }
+    }
+
+    private async Task WriteProfileAsync(Profile profile)
+    {
+        // propagate DisplayArea and TabletArea changes to the profile
+        var outputMode = profile.OutputMode;
+        outputMode.Path = SelectedOutputMode!.Path;
+
+        var input = outputMode["Input"];
+
+        input.SetValue(new {
+            XPosition = TabletArea.Mapping.X,
+            YPosition = TabletArea.Mapping.Y,
+            Width = (double)TabletArea.Mapping.Width,
+            Height = (double)TabletArea.Mapping.Height,
+            Rotation = (double)TabletArea.Mapping.Rotation,
+        });
+
+        var output = outputMode["Output"];
+
+        var xOffset = Math.Abs(Math.Min(DisplayArea.MaximumBounds.X, 0));
+        var yOffset = Math.Abs(Math.Min(DisplayArea.MaximumBounds.Y, 0));
+
+        var x = xOffset + DisplayArea.Mapping.X + DisplayArea.Mapping.Width / 2.0;
+        var y = yOffset + DisplayArea.Mapping.Y + DisplayArea.Mapping.Height / 2.0;
+
+        output.SetValue(new
+        {
+            XPosition = x,
+            YPosition = y,
+            Width = (double)DisplayArea.Mapping.Width,
+            Height = (double)DisplayArea.Mapping.Height,
+        });
+
+        var lockAspectRatio = outputMode["LockAspectRatio"];
+        lockAspectRatio.SetValue(TabletArea.LockAspectRatio);
+
+        var areaClipping = outputMode["AreaClipping"];
+        areaClipping.SetValue(TabletArea.ClipInput);
+
+        var areaLimiting = outputMode["AreaLimiting"];
+        areaLimiting.SetValue(TabletArea.DropInput);
+
+        var lockToBounds = outputMode["LockToBounds"];
+        lockToBounds.SetValue(TabletArea.RestrictToMaximumBounds);
+
+        var sensitivity = outputMode["Sensitivity"];
+        sensitivity.SetValue(new
+        {
+            X = SensitivityX,
+            Y = SensitivityY,
+        });
+
+        var rotation = outputMode["Rotation"];
+        rotation.SetValue(RelativeModeRotation);
+
+        var resetDelay = outputMode["ResetDelay"];
+        resetDelay.SetValue(TimeSpan.FromMilliseconds(ResetDelay));
+
+        OutputModeSettings.ForEach(o => o.Write(profile));
+        PenButtonBindings.ForEach(b => b.Write(profile));
+        TabletButtonBindings.ForEach(b => b.Write(profile));
+        PenTipBinding.Write(profile);
+        PenEraserTipBinding.Write(profile);
+
+        // send the updated profile to the daemon
+        await _tabletService.ApplyProfile();
     }
 
     partial void OnSensitivityXChanged(double value) => HandleSettingsChanged(null, null!);
@@ -436,7 +497,7 @@ public partial class TabletViewModel : ActivatableViewModelBase
     partial void OnResetDelayChanged(double value) => HandleSettingsChanged(null, null!);
     partial void OnRelativeModeRotationChanged(double value) => HandleSettingsChanged(null, null!);
 
-    private void HandleSettingsChanged(object? sender, PropertyChangedEventArgs e)
+    private void HandleSettingsChanged(object? sender, EventArgs e)
     {
         Modified = true;
         Saved = false;

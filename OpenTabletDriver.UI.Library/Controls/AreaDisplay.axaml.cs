@@ -2,6 +2,7 @@ using System.Collections;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -78,7 +79,7 @@ public partial class AreaDisplay : UserControl
                 {
                     BorderThickness = new Thickness(0),
                     IsHitTestVisible = false,
-                    [!CheckBox.IsCheckedProperty] = new Binding()
+                    [!ToggleButton.IsCheckedProperty] = new Binding()
                     {
                         Source = vm,
                         Path = nameof(vm.RestrictToMaximumBounds),
@@ -94,7 +95,7 @@ public partial class AreaDisplay : UserControl
             menuItems.AddRange(MenuItems.Cast<object>());
         }
 
-        this.ContextMenu = new ContextMenu
+        ContextMenu = new ContextMenu
         {
             ItemsSource = menuItems
         };
@@ -190,7 +191,7 @@ public partial class AreaDisplay : UserControl
 
         mapping.PropertyChanged += (s, e) =>
         {
-            this.InvalidateArrange();
+            InvalidateArrange();
         };
 
         mapVisual.PointerPressed += (object? s, PointerPressedEventArgs e) =>

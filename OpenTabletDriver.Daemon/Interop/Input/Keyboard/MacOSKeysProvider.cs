@@ -12,7 +12,7 @@ namespace OpenTabletDriver.Daemon.Interop.Input.Keyboard
             [BindableKey.Backspace] = CGKeyCode.kVK_Delete,
             [BindableKey.Tab] = CGKeyCode.kVK_Tab,
             // [BindableKey.Clear]
-            [BindableKey.Return] = CGKeyCode.kVK_Return,
+            [BindableKey.Enter] = CGKeyCode.kVK_Return,
             [BindableKey.Shift] = CGKeyCode.kVK_Shift,
             [BindableKey.Control] = CGKeyCode.kVK_Control,
             [BindableKey.Alt] = CGKeyCode.kVK_Option,
@@ -146,12 +146,12 @@ namespace OpenTabletDriver.Daemon.Interop.Input.Keyboard
             [BindableKey.OemComma] = CGKeyCode.kVK_ANSI_Comma,
             [BindableKey.OemMinus] = CGKeyCode.kVK_ANSI_Minus,
             [BindableKey.OemPeriod] = CGKeyCode.kVK_ANSI_Period,
-            [BindableKey.Oem2] = CGKeyCode.kVK_ANSI_Slash,
-            [BindableKey.Oem3] = CGKeyCode.kVK_ANSI_Grave,
-            [BindableKey.Oem4] = CGKeyCode.kVK_ANSI_LeftBracket,
-            [BindableKey.Oem5] = CGKeyCode.kVK_ANSI_Backslash,
-            [BindableKey.Oem6] = CGKeyCode.kVK_ANSI_RightBracket,
-            [BindableKey.Oem7] = CGKeyCode.kVK_ANSI_Quote,
+            [BindableKey.OemQuestion] = CGKeyCode.kVK_ANSI_Slash,
+            [BindableKey.OemTilde] = CGKeyCode.kVK_ANSI_Grave,
+            [BindableKey.OemOpenBracket] = CGKeyCode.kVK_ANSI_LeftBracket,
+            [BindableKey.OemPipe] = CGKeyCode.kVK_ANSI_Backslash,
+            [BindableKey.OemCloseBracket] = CGKeyCode.kVK_ANSI_RightBracket,
+            [BindableKey.OemQuotes] = CGKeyCode.kVK_ANSI_Quote,
             // [BindableKey.Oem8]
             // [BindableKey.Oem102]
         };

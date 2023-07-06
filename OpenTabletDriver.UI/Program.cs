@@ -33,8 +33,8 @@ public static class Program
         var serviceProvider = new ServiceCollection()
             .WithDefaultServices()
             .WithPlatformServices()
-            .WithNormalEnvironment(args)
-            .AddGlobalApplicationViewModels()
+            .WithUIEnvironmentFrom(args)
+            .AddApplicationViewModels()
             .AddApplicationRoutes()
             .BuildServiceProvider();
 

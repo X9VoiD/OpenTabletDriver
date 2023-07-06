@@ -17,66 +17,66 @@
              IsVisible="{Binding IsInitialized}">
     <Grid RowDefinitions="*,Auto">
         <ScrollViewer Padding="36, 0, 36, 0">
-
-            <!-- Tablet view -->
-            <StackPanel Grid.Row="0" Spacing="8" ClipToBounds="True">
-
+            <StackPanel Grid.Row="0">
                 <!-- Header -->
-                <Grid ColumnDefinitions="Auto,Auto,*" Margin="0, 12, 0, 40">
-                    <ToggleButton Grid.Column="0"/>
-                    <TextBlock Text="{Binding Name}" FontSize="24" Grid.Column="1" Margin="18, 0" />
-                    <ComboBox SelectedItem="{Binding SelectedOutputMode}"
-                              ItemsSource="{Binding OutputModes}"
-                              Grid.Column="2"
-                              HorizontalAlignment="Right"
-                              ToolTip.Tip="{StaticResource output_mode_combobox_help}" />
-                </Grid>
-                <!-- End Header -->
-
-                <c:AreaDisplay DataContext="{Binding DisplayArea}"
-                               Margin="32, 0, 32, 32"
-                               Height="180"
-                               ToolTip.Tip="{StaticResource output_mode_display_area_help}" />
-
-                <StackPanel Spacing="8" IsVisible="{Binding IsAbsoluteMode}" Grid.IsSharedSizeScope="True">
-                    <!-- Display Area Configuration -->
-                    <TextBlock Text="Monitor Area" />
-                    <Grid ColumnDefinitions="*,*">
-                        <tc:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
-                                    Margin="0, 0, 4, 0"
-                                    Grid.Column="0"
-                                    Value="{Binding X}"
-                                    Label="X Offset"
-                                    Unit="px"
-                                    Description="{StaticResource output_mode_display_x_offset}"
-                                    Precision="0" />
-                        <tc:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
-                                    Margin="4, 0, 0 ,0"
-                                    Grid.Column="1"
-                                    Value="{Binding Y}"
-                                    Label="Y Offset"
-                                    Unit="px"
-                                    Description="{StaticResource output_mode_display_y_offset}"
-                                    Precision="0" />
+                <tc:Section>
+                    <Grid ColumnDefinitions="Auto,Auto,*">
+                        <ToggleButton Grid.Column="0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="24" Margin="18, 0" />
+                        <ComboBox SelectedItem="{Binding SelectedOutputMode}"
+                                  ItemsSource="{Binding OutputModes}"
+                                  Grid.Column="2"
+                                  HorizontalAlignment="Right"
+                                  ToolTip.Tip="{StaticResource output_mode_combobox_help}" />
                     </Grid>
-                    <tc:RangedInput DataContext="{Binding DisplayArea}"
-                                    Value="{Binding Mapping.Width}"
-                                    Maximum="{Binding MaximumBounds.Width}"
-                                    Label="Width"
-                                    Unit="px"
-                                    Description="{StaticResource output_mode_display_width}" />
-                    <tc:RangedInput DataContext="{Binding DisplayArea}"
-                                    Value="{Binding Mapping.Height}"
-                                    Maximum="{Binding MaximumBounds.Height}"
-                                    Label="Height"
-                                    Unit="px"
-                                    Description="{StaticResource output_mode_display_height}"/>
-                    <!-- End Display Area Configuration -->
+                </tc:Section>
 
-                    <!-- Tablet Area Configuration -->
+                <!-- Display Area -->
+                <tc:Section Classes="Emphasized" IsVisible="{Binding IsAbsoluteMode}">
+                    <c:AreaDisplay DataContext="{Binding DisplayArea}"
+                                   Height="180"
+                                   ToolTip.Tip="{StaticResource output_mode_display_area_help}" />
+                </tc:Section>
+
+                <tc:Section Header="{StaticResource section_display_area}" IsVisible="{Binding IsAbsoluteMode}">
+                    <StackPanel Spacing="8" Grid.IsSharedSizeScope="True">
+                        <Grid ColumnDefinitions="*,*">
+                            <tc:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
+                                        Margin="0, 0, 4, 0"
+                                        Grid.Column="0"
+                                        Value="{Binding X}"
+                                        Label="X Offset"
+                                        Unit="px"
+                                        Description="{StaticResource output_mode_display_x_offset}"
+                                        Precision="0" />
+                            <tc:DoubleInput DataContext="{Binding DisplayArea.Mapping}"
+                                        Margin="4, 0, 0 ,0"
+                                        Grid.Column="1"
+                                        Value="{Binding Y}"
+                                        Label="Y Offset"
+                                        Unit="px"
+                                        Description="{StaticResource output_mode_display_y_offset}"
+                                        Precision="0" />
+                        </Grid>
+                        <tc:RangedInput DataContext="{Binding DisplayArea}"
+                                        Value="{Binding Mapping.Width}"
+                                        Maximum="{Binding MaximumBounds.Width}"
+                                        Label="Width"
+                                        Unit="px"
+                                        Description="{StaticResource output_mode_display_width}" />
+                        <tc:RangedInput DataContext="{Binding DisplayArea}"
+                                        Value="{Binding Mapping.Height}"
+                                        Maximum="{Binding MaximumBounds.Height}"
+                                        Label="Height"
+                                        Unit="px"
+                                        Description="{StaticResource output_mode_display_height}"/>
+                    </StackPanel>
+                </tc:Section>
+
+                <!-- Tablet Area -->
+                <tc:Section Classes="Emphasized" IsVisible="{Binding IsAbsoluteMode}">
                     <c:AreaDisplay DataContext="{Binding TabletArea}"
                                    x:DataType="vm:TabletAreaDisplayViewModel"
-                                   Margin="32"
                                    Height="180"
                                    ToolTip.Tip="{StaticResource output_mode_tablet_area_help}" >
                         <c:AreaDisplay.Styles>
@@ -86,8 +86,6 @@
                                 <Setter Property="IsHitTestVisible" Value="False" />
                             </Style>
                         </c:AreaDisplay.Styles>
-
-                        <!-- Additional context menu items -->
                         <c:AreaDisplay.MenuItems>
                             <MenuItem Header="Lock current aspect ratio"
                                     Command="{Binding ToggleStateCommand}"
@@ -111,90 +109,111 @@
                                 </MenuItem.Icon>
                             </MenuItem>
                         </c:AreaDisplay.MenuItems>
-                        <!-- End Additional context menu items -->
                     </c:AreaDisplay>
-
-                    <TextBlock Text="Tablet Area" />
-                    <Grid ColumnDefinitions="*,*">
-                        <tc:DoubleInput DataContext="{Binding TabletArea.Mapping}"
-                                    Margin="0, 0, 4, 0"
-                                    Grid.Column="0"
-                                    Value="{Binding X}"
-                                    Label="X Origin"
-                                    Unit="mm"
-                                    Description="{StaticResource output_mode_tablet_x_origin}" />
-                        <tc:DoubleInput DataContext="{Binding TabletArea.Mapping}"
-                                    Margin="4, 0, 0 ,0"
-                                    Grid.Column="1"
-                                    Value="{Binding Y}"
-                                    Label="Y Origin"
-                                    Unit="mm"
-                                    Description="{StaticResource output_mode_tablet_y_origin}" />
-                    </Grid>
-                    <tc:RangedInput Value="{Binding TabletArea.Mapping.Width}"
-                                    Minimum="0"
-                                    Maximum="{Binding TabletArea.MaximumBounds.Width}"
-                                    Label="Width"
-                                    Unit="mm"
-                                    Description="{StaticResource output_mode_tablet_width}" />
-                    <tc:RangedInput Value="{Binding TabletArea.Mapping.Height}"
-                                    Minimum="0"
-                                    Maximum="{Binding TabletArea.MaximumBounds.Height}"
-                                    Label="Height"
-                                    Unit="mm"
-                                    Description="{StaticResource output_mode_tablet_height}" />
-                    <tc:RangedInput Value="{Binding TabletArea.Mapping.Rotation}"
-                                    Minimum="0"
-                                    Maximum="360"
-                                    Label="Rotation"
-                                    Unit="°"
-                                    Description="{StaticResource output_mode_tablet_rotation}" />
-                    <!-- End Tablet Area Configuration -->
-                </StackPanel>
-                <!-- End Absolute Mode Settings -->
-
-                <!-- Relative Mode Settings -->
-                <StackPanel Spacing="8" IsVisible="{Binding IsRelativeMode}" Grid.IsSharedSizeScope="True">
-                    <Grid ColumnDefinitions="*,*">
-                        <tc:DoubleInput Value="{Binding SensitivityX}"
-                                        Margin="0, 0, 4, 0"
-                                        Grid.Column="0"
-                                        Label="X Sensitivity"
-                                        Unit="px/mm"
-                                        Precision="3" />
-                        <tc:DoubleInput Value="{Binding SensitivityY}"
-                                        Margin="4, 0, 0 ,0"
-                                        Grid.Column="1"
-                                        Label="Y Sensitivity"
-                                        Unit="px/mm"
-                                        Precision="3" />
-                    </Grid>
-                    <tc:DoubleInput Value="{Binding ResetDelay}"
-                                    Label="Reset Delay"
-                                    Unit="ms" />
-                    <tc:RangedInput Value="{Binding RelativeModeRotation}"
-                                    Minimum="0"
-                                    Maximum="360"
-                                    Label="Rotation"
-                                    Unit="°" />
-                </StackPanel>
-                <!-- End Relative Mode Settings -->
-
-                <!-- Extra Settings -->
-                <StackPanel IsVisible="{Binding OutputModeSettings, Converter={x:Static conv:CollectionConverters.IsNotEmpty}}" Spacing="8">
-                    <TextBlock Text="Output Mode Settings" Margin="0, 32, 0, 0" />
-                    <ItemsControl ItemsSource="{Binding OutputModeSettings}">
-                        <ItemsControl.ItemTemplate>
-                            <templates:PluginSettingControlBuilder />
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-                <!-- End Extra Settings -->
-
-                <!-- Bindings -->
-                <tc:Section Header="Bindings">
                 </tc:Section>
 
+                <tc:Section Header="{StaticResource section_tablet_area}" IsVisible="{Binding IsAbsoluteMode}">
+                    <StackPanel Spacing="8" Grid.IsSharedSizeScope="True">
+                        <Grid ColumnDefinitions="*,*">
+                            <tc:DoubleInput DataContext="{Binding TabletArea.Mapping}"
+                                            Margin="0, 0, 4, 0"
+                                            Grid.Column="0"
+                                            Value="{Binding X}"
+                                            Label="X Origin"
+                                            Unit="mm"
+                                            Description="{StaticResource output_mode_tablet_x_origin}" />
+                            <tc:DoubleInput DataContext="{Binding TabletArea.Mapping}"
+                                            Margin="4, 0, 0 ,0"
+                                            Grid.Column="1"
+                                            Value="{Binding Y}"
+                                            Label="Y Origin"
+                                            Unit="mm"
+                                            Description="{StaticResource output_mode_tablet_y_origin}" />
+                        </Grid>
+                        <tc:RangedInput Value="{Binding TabletArea.Mapping.Width}"
+                                        Minimum="0"
+                                        Maximum="{Binding TabletArea.MaximumBounds.Width}"
+                                        Label="Width"
+                                        Unit="mm"
+                                        Description="{StaticResource output_mode_tablet_width}" />
+                        <tc:RangedInput Value="{Binding TabletArea.Mapping.Height}"
+                                        Minimum="0"
+                                        Maximum="{Binding TabletArea.MaximumBounds.Height}"
+                                        Label="Height"
+                                        Unit="mm"
+                                        Description="{StaticResource output_mode_tablet_height}" />
+                        <tc:RangedInput Value="{Binding TabletArea.Mapping.Rotation}"
+                                        Minimum="0"
+                                        Maximum="360"
+                                        Label="Rotation"
+                                        Unit="°"
+                                        Description="{StaticResource output_mode_tablet_rotation}" />
+                    </StackPanel>
+                </tc:Section>
+
+                <tc:Section Header="{StaticResource section_relative_mode_settings}" IsVisible="{Binding IsRelativeMode}">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,*" Grid.IsSharedSizeScope="True">
+                            <tc:DoubleInput Value="{Binding SensitivityX}"
+                                            Margin="0, 0, 4, 0"
+                                            Grid.Column="0"
+                                            Label="X Sensitivity"
+                                            Unit="px/mm"
+                                            Precision="3" />
+                            <tc:DoubleInput Value="{Binding SensitivityY}"
+                                            Margin="4, 0, 0 ,0"
+                                            Grid.Column="1"
+                                            Label="Y Sensitivity"
+                                            Unit="px/mm"
+                                            Precision="3" />
+                        </Grid>
+                        <StackPanel Spacing="8" Grid.IsSharedSizeScope="True">
+                            <tc:DoubleInput Value="{Binding ResetDelay}"
+                                            Label="Reset Delay"
+                                            Unit="ms" />
+                            <tc:RangedInput Value="{Binding RelativeModeRotation}"
+                                            Minimum="0"
+                                            Maximum="360"
+                                            Label="Rotation"
+                                            Unit="°" />
+                        </StackPanel>
+                    </StackPanel>
+                </tc:Section>
+
+                <tc:Section Header="{StaticResource section_output_mode_settings}"
+                            IsVisible="{Binding OutputModeSettings, Converter={x:Static conv:CollectionConverters.IsNotEmpty}}">
+                    <StackPanel Spacing="8">
+                        <ItemsControl ItemsSource="{Binding OutputModeSettings}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <templates:PluginSettingControlBuilder />
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </tc:Section>
+
+                <tc:Section Header="Bindings">
+                    <StackPanel Spacing="8" HorizontalAlignment="Stretch" Grid.IsSharedSizeScope="True">
+                        <c:BindingSetting DataContext="{Binding PenTipBinding}" />
+                        <c:BindingSetting DataContext="{Binding PenEraserTipBinding}" />
+                        <ItemsControl ItemsSource="{Binding PenButtonBindings}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <c:BindingSetting />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </tc:Section>
             </StackPanel>
         </ScrollViewer>
 

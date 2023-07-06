@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using OpenTabletDriver.UI.Messages;
-using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;
 
@@ -15,7 +14,7 @@ namespace OpenTabletDriver.UI.ViewModels
     /// Represents the main view model and is responsible for
     /// managing the daemon connection and the tablet and tool view models.
     /// </summary>
-    public sealed partial class MainWindowViewModel : ViewModelBase
+    public sealed partial class MainWindowViewModel : WindowViewModelBase
     {
         private readonly IDaemonService _daemonService;
         private readonly IDispatcher _dispatcher;
@@ -48,9 +47,6 @@ namespace OpenTabletDriver.UI.ViewModels
         [ObservableProperty]
         private bool _sidePaneOpen = true;
 
-        [ObservableProperty]
-        private bool _transparencyEnabled;
-
         public string Version { get; } = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
         /// <summary>
@@ -62,6 +58,7 @@ namespace OpenTabletDriver.UI.ViewModels
             IDispatcher dispatcher,
             IUISettingsProvider uiSettingsProvider,
             IMessenger messenger)
+                : base(uiSettingsProvider)
         {
             _title = "OpenTabletDriver v" + Version;
             _daemonService = daemonService;
@@ -72,16 +69,11 @@ namespace OpenTabletDriver.UI.ViewModels
 
             _uiSettingsProvider.WhenLoadedOrSet((d, settings) =>
             {
-                settings.HandleProperty(
-                    nameof(UISettings.Transparency),
-                    s => s.Transparency,
-                    (s, v) => TransparencyEnabled = v
-                ).DisposeWith(d);
-
                 _dispatcher.Post(async () =>
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1)); // because we're too fast
                     IsSettingsLoaded = true;
+                    d.Dispose(); // fire once
                 });
             });
 

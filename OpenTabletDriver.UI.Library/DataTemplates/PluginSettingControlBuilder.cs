@@ -18,7 +18,6 @@ public class PluginSettingControlBuilder : IDataTemplate
         return data switch
         {
             BoolViewModel boolViewModel => BuildControl(boolViewModel),
-            EnumViewModel enumViewModel => BuildControl(enumViewModel),
             IntegerViewModel integerViewModel => BuildControl(integerViewModel),
             NumberViewModel numberViewModel => BuildControl(numberViewModel),
             StringViewModel stringViewModel => BuildControl(stringViewModel),
@@ -27,7 +26,7 @@ public class PluginSettingControlBuilder : IDataTemplate
         };
     }
 
-    // migrate to compiled binding
+    // TODO: migrate to compiled binding, probably convert to xaml usercontrol just to do that
 
     private static Control WithCommonBinds(PluginSettingViewModel vm, DescribedInput control)
     {
@@ -82,11 +81,6 @@ public class PluginSettingControlBuilder : IDataTemplate
         };
 
         return WithCommonBinds(viewModel, control);
-    }
-
-    private static Control BuildControl(EnumViewModel viewModel)
-    {
-        throw new NotImplementedException();
     }
 
     private static Control BuildControl(IntegerViewModel viewModel)
@@ -177,6 +171,36 @@ public class PluginSettingControlBuilder : IDataTemplate
 
     private static Control BuildControl(StringViewModel viewModel)
     {
-        throw new NotImplementedException();
+        var valueBinding = new Binding
+        {
+            Source = viewModel,
+            Path = nameof(StringViewModel.Value),
+        };
+
+        DescribedInput input;
+
+        if (viewModel.Choices?.Length > 0)
+        {
+            var choicesBinding = new Binding
+            {
+                Source = viewModel,
+                Path = nameof(StringViewModel.Choices),
+            };
+
+            input = new EnumInput
+            {
+                [!EnumInput.SelectedValueProperty] = valueBinding,
+                [!EnumInput.ValuesProperty] = choicesBinding,
+            };
+        }
+        else
+        {
+            input = new StringInput
+            {
+                [!StringInput.ValueProperty] = valueBinding,
+            };
+        }
+
+        return WithCommonBinds(viewModel, input);
     }
 }

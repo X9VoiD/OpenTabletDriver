@@ -74,7 +74,7 @@ namespace OpenTabletDriver.Daemon.Reflection
             return new PluginSettings(type, settings);
         }
 
-        public static IEnumerable<PluginSettingMetadata> GetSettingsMetadatas(this Type type)
+        public static IEnumerable<PluginSettingMetadata> GetSettingsMetadatas(this Type type, IServiceProvider serviceProvider)
         {
             foreach (var property in type.GetProperties())
             {
@@ -90,27 +90,45 @@ namespace OpenTabletDriver.Daemon.Reflection
 
                 var pluginSettingsMetadata = new PluginSettingMetadata(propertyName, friendlyName, description, longDescription, settingType);
 
-                if (settingType == SettingType.Enum)
-                {
-                    var enumNames = Enum.GetNames(property.PropertyType);
-                    pluginSettingsMetadata.Enum(enumNames);
-                }
-
                 if (property.GetCustomAttribute<MemberValidatedAttribute>() is MemberValidatedAttribute validated)
                 {
+                    // TODO: Move this check during plugin loading
+                    if (property.PropertyType != typeof(string))
+                        throw new InvalidOperationException($"{nameof(MemberValidatedAttribute)} can only be applied to string properties.");
+
                     const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Static;
                     var targetMemberName = validated.MemberName;
 
-                    if (type.GetProperty(targetMemberName, bindingFlags) is PropertyInfo validationProperty)
+                    var validatorCandidates = type.GetMember(targetMemberName, bindingFlags);
+                    if (validatorCandidates.Length == 0)
+                        throw new InvalidOperationException($"Static target member '{targetMemberName}' does not exist.");
+
+                    var validator = validatorCandidates[0];
+
+                    var validValues = validator.MemberType switch
                     {
-                        var validValues = (validationProperty.GetValue(null) as IEnumerable<object>)?.Select(o => o.ToString()!).ToArray();
-                        pluginSettingsMetadata.Enum(validValues ?? Array.Empty<string>());
-                    }
-                    else if (type.GetField(targetMemberName, bindingFlags) is FieldInfo validationField)
+                        MemberTypes.Field => (validator as FieldInfo)?.GetValue(null) as IEnumerable<string>,
+                        MemberTypes.Property => (validator as PropertyInfo)?.GetValue(null) as IEnumerable<string>,
+                        MemberTypes.Method => invokeMethod((validator as MethodInfo)!, serviceProvider),
+                        _ => throw new InvalidOperationException($"Static target member '{targetMemberName}' is not a field, property or method.")
+                    };
+
+                    pluginSettingsMetadata.Enum(validValues?.ToArray() ?? Array.Empty<string>());
+
+                    static IEnumerable<string>? invokeMethod(MethodInfo validator, IServiceProvider serviceProvider)
                     {
-                        var validValues = (validationField.GetValue(null) as IEnumerable<object>)?.Select(o => o.ToString()!).ToArray();
-                        pluginSettingsMetadata.Enum(validValues ?? Array.Empty<string>());
+                        var parameters = validator.GetParameters();
+                        if (parameters.Length == 0)
+                            return validator.Invoke(null, null) as IEnumerable<string>;
+                        if (parameters.Length == 1 && parameters[0].ParameterType == typeof(IServiceProvider))
+                            return validator.Invoke(null, new object[] { serviceProvider }) as IEnumerable<string>;
+
+                        throw new InvalidOperationException($"Static target method '{validator.Name}' has invalid parameters.");
                     }
+                }
+                else if (property.PropertyType.IsEnum)
+                {
+                    pluginSettingsMetadata.Enum(Enum.GetNames(property.PropertyType));
                 }
 
                 if (property.GetCustomAttribute<RangeSettingAttribute>() is RangeSettingAttribute range)
@@ -214,8 +232,6 @@ namespace OpenTabletDriver.Daemon.Reflection
 
             if (propertyType == typeof(bool))
                 return SettingType.Boolean;
-            if (propertyType.IsEnum)
-                return SettingType.Enum;
             if (propertyType == typeof(int) || propertyType == typeof(uint))
                 return SettingType.Integer;
             if (propertyType == typeof(float) || propertyType == typeof(double))

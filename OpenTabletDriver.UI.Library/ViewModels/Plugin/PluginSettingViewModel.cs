@@ -1,49 +1,48 @@
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.UI.Models;
 
 namespace OpenTabletDriver.UI.ViewModels.Plugin;
 
 public abstract class PluginSettingViewModel : ViewModelBase
 {
-    private readonly Func<Profile, PluginSetting> _binding;
-    protected PluginSetting PluginSetting { get; private set; }
-    protected PluginSettingMetadata Metadata { get; }
+    protected ProfileBinding ProfileBinding { get; private set; }
+
+    public PluginSettingMetadata Metadata { get; }
 
     public string FriendlyName => Metadata.FriendlyName;
     public string? Description => Metadata.ShortDescription;
     public string? ToolTip => Metadata.LongDescription;
 
-    protected PluginSettingViewModel(PluginSetting setting, PluginSettingMetadata metadata, Func<Profile, PluginSetting> binding)
+    public event EventHandler? SettingsChanged;
+
+    protected PluginSettingViewModel(PluginSettingMetadata metadata, ProfileBinding profileBinding)
     {
-        _binding = binding;
-        PluginSetting = setting;
+        ProfileBinding = profileBinding;
         Metadata = metadata;
     }
 
-    public void ChangeContext(Profile profile)
+    public abstract void Read(Profile profile);
+    public abstract void Write(Profile profile);
+
+    protected void OnSettingChanged(object sender, EventArgs e)
     {
-        var oldPluginSetting = PluginSetting;
-        PluginSetting = _binding(profile);
-        OnSettingChanged(PluginSetting);
+        SettingsChanged?.Invoke(sender, e);
     }
 
-    protected abstract void OnSettingChanged(PluginSetting newPluginSetting);
-
-    public static PluginSettingViewModel? CreateBindable(PluginDto pluginDto, Profile profile, Func<Profile, PluginSetting> binding)
+    public static PluginSettingViewModel? CreateBindable(PluginSettingMetadata metadata, ProfileBinding binding, Profile? profile = null)
     {
-        var pluginSetting = binding(profile);
-        var sourceProperty = pluginSetting.Property;
-        var metadata = pluginDto.SettingsMetadata.FirstOrDefault(x => x.PropertyName == sourceProperty);
-        if (metadata == null)
-            return null;
-
-        return metadata.Type switch
+        PluginSettingViewModel? vm = metadata.Type switch
         {
-            SettingType.Boolean => new BoolViewModel(pluginSetting, metadata, binding),
-            SettingType.Enum => new EnumViewModel(pluginSetting, metadata, binding),
-            SettingType.Integer => new IntegerViewModel(pluginSetting, metadata, binding),
-            SettingType.Number => new NumberViewModel(pluginSetting, metadata, binding),
-            SettingType.String => new StringViewModel(pluginSetting, metadata, binding),
+            SettingType.Boolean => new BoolViewModel(metadata, binding),
+            SettingType.Integer => new IntegerViewModel(metadata, binding),
+            SettingType.Number => new NumberViewModel(metadata, binding),
+            SettingType.String => new StringViewModel(metadata, binding),
             _ => null
         };
+
+        if (vm is not null && profile is not null)
+            vm.Read(profile);
+
+        return vm;
     }
 }

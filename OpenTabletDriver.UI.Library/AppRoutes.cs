@@ -22,11 +22,12 @@ public static class AppRoutes
     public const string DiagnosticsRoute = "Diagnostics";
     public const string SettingsRoute = "Settings";
 
-    public static IServiceCollection AddGlobalApplicationViewModels(this IServiceCollection services)
+    public static IServiceCollection AddApplicationViewModels(this IServiceCollection services)
     {
         return services
             .AddTransient<MainWindowViewModel>()
-            .AddTransient<NavigationPaneViewModel>();
+            .AddTransient<NavigationPaneViewModel>()
+            .AddTransient<BindingMenuViewModel>();
     }
 
     public static IServiceCollection AddApplicationRoutes(this IServiceCollection services)

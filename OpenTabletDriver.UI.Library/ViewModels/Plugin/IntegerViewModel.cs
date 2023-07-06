@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.UI.Models;
 
 namespace OpenTabletDriver.UI.ViewModels.Plugin;
 
@@ -13,8 +14,8 @@ public partial class IntegerViewModel : PluginSettingViewModel
     public int Max { get; }
     public int Step { get; }
 
-    public IntegerViewModel(PluginSetting setting, PluginSettingMetadata metadata, Func<Profile, PluginSetting> binding)
-        : base(setting, metadata, binding)
+    public IntegerViewModel(PluginSettingMetadata metadata, ProfileBinding binding)
+        : base(metadata, binding)
     {
         if (metadata.Attributes.ContainsKey("min"))
         {
@@ -25,14 +26,18 @@ public partial class IntegerViewModel : PluginSettingViewModel
         }
     }
 
-    protected override void OnSettingChanged(PluginSetting newPluginSetting)
+    public override void Read(Profile profile)
     {
-        Value = newPluginSetting.GetValue<int>();
+        Value = ProfileBinding.GetValue<int>(profile);
+    }
+
+    public override void Write(Profile profile)
+    {
+        ProfileBinding.SetValue(profile, Value);
     }
 
     partial void OnValueChanged(int value)
     {
-        // Min and Max validation is handled by the view
-        PluginSetting.SetValue(value);
+        OnSettingChanged(this, EventArgs.Empty);
     }
 }

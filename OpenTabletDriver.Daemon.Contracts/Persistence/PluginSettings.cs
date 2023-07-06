@@ -32,7 +32,7 @@ namespace OpenTabletDriver.Daemon.Contracts
                     Settings.Add(value);
                 }
             }
-            get => GetOrDefault(propertyName, new object());
+            get => GetOrDefault(propertyName, null);
         }
 
         public PluginSettings(Type type, bool enable = true)

@@ -650,7 +650,7 @@ namespace OpenTabletDriver.Daemon
             var path = pluginType.FullName!;
             var interfaces = _pluginManager.GetImplementedInterfaces(pluginType).Select(t => t.FullName!).ToImmutableArray();
             var name = pluginType.GetFriendlyName() ?? path;
-            var settingsMetadatas = pluginType.GetSettingsMetadatas().ToImmutableArray();
+            var settingsMetadatas = pluginType.GetSettingsMetadatas(_serviceProvider).ToImmutableArray();
             var attributes = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
 
             return new PluginDto(path, interfaces, name, settingsMetadatas, attributes);

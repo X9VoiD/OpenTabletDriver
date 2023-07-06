@@ -31,9 +31,9 @@ public static class ServiceExtensions
             .AddSingleton<IAutoStartService, NullAutoStartService>();
     }
 
-    public static IServiceCollection WithNormalEnvironment(this IServiceCollection services, string[] args)
+    public static IServiceCollection WithUIEnvironmentFrom(this IServiceCollection services, string[] args)
     {
-        return services.AddSingleton<UIEnvironment>(UIEnvironment.Create(args));
+        return services.AddSingleton(UIEnvironment.Create(args));
     }
 
     public static IServiceCollection WithPlatformServices(this IServiceCollection services)

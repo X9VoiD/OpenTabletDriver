@@ -53,7 +53,6 @@ namespace OpenTabletDriver.Daemon.Contracts
     {
         Unknown,
         Boolean,
-        Enum,
         Integer,
         Number,
         String,

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.UI.Models;
 
 namespace OpenTabletDriver.UI.ViewModels.Plugin;
 
@@ -8,18 +9,29 @@ public partial class StringViewModel : PluginSettingViewModel
     [ObservableProperty]
     private string? _value;
 
-    public StringViewModel(PluginSetting setting, PluginSettingMetadata metadata, Func<Profile, PluginSetting> binding)
-        : base(setting, metadata, binding)
+    public string[]? Choices { get; }
+
+    public StringViewModel(PluginSettingMetadata metadata, ProfileBinding binding)
+        : base(metadata, binding)
     {
+        if (metadata.Attributes.TryGetValue("choices", out var choices))
+        {
+            Choices = choices.Split(';');
+        }
     }
 
-    protected override void OnSettingChanged(PluginSetting newPluginSetting)
+    public override void Read(Profile profile)
     {
-        Value = newPluginSetting.GetValue<string>();
+        Value = ProfileBinding.GetValue<string>(profile);
+    }
+
+    public override void Write(Profile profile)
+    {
+        ProfileBinding.SetValue(profile, Value);
     }
 
     partial void OnValueChanged(string? value)
     {
-        PluginSetting.SetValue(value);
+        OnSettingChanged(this, EventArgs.Empty);
     }
 }

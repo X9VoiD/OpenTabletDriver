@@ -61,6 +61,21 @@ public static class PluginUtility
         return plugin.PluginInterfaces.Contains(TypeConstants.ReportParserPlugin);
     }
 
+    public static bool IsMouseBinding(this PluginDto plugin)
+    {
+        return plugin.Path == TypeConstants.MouseBinding;
+    }
+
+    public static bool IsKeyBinding(this PluginDto plugin)
+    {
+        return plugin.Path == TypeConstants.KeyBinding;
+    }
+
+    public static bool IsMultiKeyBinding(this PluginDto plugin)
+    {
+        return plugin.Path == TypeConstants.MultiKeyBinding;
+    }
+
     public static IEnumerable<PluginSettingMetadata> GetCustomOutputModeSettings(this PluginDto plugin)
     {
         if (plugin.IsAbsoluteMode())

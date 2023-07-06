@@ -4,7 +4,9 @@
     <StyleInclude Source="BooleanInput.axaml" />
     <StyleInclude Source="DescribedInput.axaml" />
     <StyleInclude Source="DoubleInput.axaml" />
+    <StyleInclude Source="EnumInput.axaml" />
     <StyleInclude Source="ListBox.axaml" />
     <StyleInclude Source="RangedInput.axaml" />
     <StyleInclude Source="Section.axaml" />
+    <StyleInclude Source="StringInput.axaml" />
 </Styles>

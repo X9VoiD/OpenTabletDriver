@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:c="using:OpenTabletDriver.UI.Controls">
+        xmlns:c="using:OpenTabletDriver.UI.Controls"
+        xmlns:tc="using:OpenTabletDriver.UI.TemplatedControls">
 
     <Style Selector="StackPanel.CommandBar">
         <Setter Property="Orientation" Value="Horizontal" />
@@ -31,6 +32,13 @@
         <Style Selector="^:pressed PathIcon">
             <Setter Property="RenderTransform" Value="scale(0.9)" />
             <Setter Property="Opacity" Value="0.9" />
+        </Style>
+    </Style>
+
+    <Style Selector="tc|Section.Emphasized">
+        <Setter Property="Margin" Value="32, 32, 32, 0" />
+        <Style Selector="^:nth-child(1)">
+            <Setter Property="Margin" Value="32, 12, 32, 8" />
         </Style>
     </Style>
 

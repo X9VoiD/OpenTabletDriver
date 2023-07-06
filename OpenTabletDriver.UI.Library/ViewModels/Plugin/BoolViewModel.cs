@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.UI.Models;
 
 namespace OpenTabletDriver.UI.ViewModels.Plugin;
 
@@ -8,18 +9,23 @@ public partial class BoolViewModel : PluginSettingViewModel
     [ObservableProperty]
     private bool _value;
 
-    public BoolViewModel(PluginSetting setting, PluginSettingMetadata metadata, Func<Profile, PluginSetting> binding)
-        : base(setting, metadata, binding)
+    public BoolViewModel(PluginSettingMetadata metadata, ProfileBinding profileBinding)
+        : base(metadata, profileBinding)
     {
     }
 
-    protected override void OnSettingChanged(PluginSetting newPluginSetting)
+    public override void Read(Profile profile)
     {
-        Value = newPluginSetting.GetValue<bool>();
+        Value = ProfileBinding.GetValue<bool>(profile);
+    }
+
+    public override void Write(Profile profile)
+    {
+        ProfileBinding.SetValue(profile, Value);
     }
 
     partial void OnValueChanged(bool value)
     {
-        PluginSetting.SetValue(value);
+        OnSettingChanged(this, EventArgs.Empty);
     }
 }

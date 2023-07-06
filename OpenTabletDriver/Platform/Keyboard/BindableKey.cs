@@ -6,11 +6,12 @@ namespace OpenTabletDriver.Platform.Keyboard
     [EnumExtensions]
     public enum BindableKey
     {
+        None = 0,
         Cancel = 0x03, // Control-break processing
         Backspace = 0x08, // BACKSPACE key
         Tab = 0x09, // TAB key
         Clear = 0x0C, // CLEAR key
-        Return = 0x0D, // ENTER key
+        Enter = 0x0D, // ENTER key
         Shift = 0x10, // SHIFT key
         Control = 0x11, // CTRL key
         Alt = 0x12, // ALT key
@@ -144,13 +145,13 @@ namespace OpenTabletDriver.Platform.Keyboard
         OemComma = 0xBC, // For any country/region, the ',' key
         OemMinus = 0xBD, // For any country/region, the '-' key
         OemPeriod = 0xBE, // For any country/region, the '.' key
-        Oem2 = 0xBF, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '/?' key
-        Oem3 = 0xC0, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '`~' key
-        Oem4 = 0xDB, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '[{' key
-        Oem5 = 0xDC, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '\|' key
-        Oem6 = 0xDD, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ']}' key
-        Oem7 = 0xDE, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the 'single-quote/double-quote' key
+        OemQuestion = 0xBF, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '/?' key
+        OemTilde = 0xC0, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '`~' key
+        OemOpenBracket = 0xDB, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '[{' key
+        OemPipe = 0xDC, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the '\|' key
+        OemCloseBracket = 0xDD, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the ']}' key
+        OemQuotes = 0xDE, // Used for miscellaneous characters; it can vary by keyboard. For the US standard keyboard, the 'single-quote/double-quote' key
         Oem8 = 0xDF, // Used for miscellaneous characters; it can vary by keyboard.
-        Oem102 = 0xE2, // Either the angle bracket key or the backslash key on the RT 102-key keyboard
+        OemBackslash = 0xE2, // Either the angle bracket key or the backslash key on the RT 102-key keyboard
     }
 }

@@ -12,7 +12,7 @@ namespace OpenTabletDriver.Daemon.Interop.Input.Keyboard
             [BindableKey.Backspace] = EventCode.KEY_BACKSPACE,
             [BindableKey.Tab] = EventCode.KEY_TAB,
             [BindableKey.Clear] = EventCode.KEY_CLEAR,
-            [BindableKey.Return] = EventCode.KEY_ENTER,
+            [BindableKey.Enter] = EventCode.KEY_ENTER,
             [BindableKey.Shift] = EventCode.KEY_LEFTSHIFT,
             [BindableKey.Control] = EventCode.KEY_LEFTCTRL,
             [BindableKey.Alt] = EventCode.KEY_LEFTALT,
@@ -146,14 +146,14 @@ namespace OpenTabletDriver.Daemon.Interop.Input.Keyboard
             [BindableKey.OemComma] = EventCode.KEY_COMMA,
             [BindableKey.OemMinus] = EventCode.KEY_MINUS,
             [BindableKey.OemPeriod] = EventCode.KEY_DOT,
-            [BindableKey.Oem2] = EventCode.KEY_SLASH,
-            [BindableKey.Oem3] = EventCode.KEY_GRAVE,
-            [BindableKey.Oem4] = EventCode.KEY_LEFTBRACE,
-            [BindableKey.Oem5] = EventCode.KEY_BACKSLASH,
-            [BindableKey.Oem6] = EventCode.KEY_RIGHTBRACE,
-            [BindableKey.Oem7] = EventCode.KEY_APOSTROPHE,
+            [BindableKey.OemQuestion] = EventCode.KEY_SLASH,
+            [BindableKey.OemTilde] = EventCode.KEY_GRAVE,
+            [BindableKey.OemOpenBracket] = EventCode.KEY_LEFTBRACE,
+            [BindableKey.OemPipe] = EventCode.KEY_BACKSLASH,
+            [BindableKey.OemCloseBracket] = EventCode.KEY_RIGHTBRACE,
+            [BindableKey.OemQuotes] = EventCode.KEY_APOSTROPHE,
             // [BindableKey.Oem8]
-            [BindableKey.Oem102] = EventCode.KEY_102ND,
+            [BindableKey.OemBackslash] = EventCode.KEY_102ND,
         };
 
         public object this[BindableKey key] => _platformBindings[key];
