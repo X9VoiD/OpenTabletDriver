@@ -37,7 +37,7 @@ public partial class UISettingsViewModel : ActivatableViewModelBase
         _settingsProvider = settingsProvider;
         _autoStartService = autoStartService;
 
-        this.WhenActivated(d =>
+        WhenActivated(d =>
         {
             var modified = Modified; // Preserve modified state
             _settingsProvider.WhenLoadedOrSet(
@@ -61,8 +61,12 @@ public partial class UISettingsViewModel : ActivatableViewModelBase
             ).DisposeWith(d);
 
             AutoStart = _autoStartService.AutoStart;
+
             // Maybe convert to a drop-down to select auto-start backend?
-            AutoStartLabel = "Auto-start with " + _autoStartService.BackendName;
+            AutoStartLabel = !string.IsNullOrEmpty(_autoStartService.BackendName)
+                ? "Auto-start with " + _autoStartService.BackendName
+                : null;
+
             Modified = modified;
         });
     }

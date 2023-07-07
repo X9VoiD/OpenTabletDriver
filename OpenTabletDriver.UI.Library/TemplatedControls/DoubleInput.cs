@@ -66,8 +66,6 @@ public class DoubleInput : DescribedInput
     {
         // these handlers update the other property
         ValueProperty.Changed.AddClassHandler<DoubleInput>((o, e) => o.OnValueChanged(e));
-
-        var a = new ItemsControl();
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

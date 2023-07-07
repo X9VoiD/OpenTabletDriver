@@ -11,10 +11,6 @@
              IsVisible="{Binding Settings, Converter={x:Static ObjectConverters.IsNotNull}}">
     <Grid RowDefinitions="Auto,*,Auto">
         <StackPanel Spacing="8" Grid.Row="0" Grid.IsSharedSizeScope="True" >
-            <tc:RangedInput Label="Random Stuff"
-                            Value="{Binding Settings.RandomStuff}"
-                            Minimum="0"
-                            Maximum="200"/>
             <tc:BooleanInput Label="Kaomoji"
                              Value="{Binding Settings.Kaomoji}" />
             <tc:BooleanInput Label="Transparency"
