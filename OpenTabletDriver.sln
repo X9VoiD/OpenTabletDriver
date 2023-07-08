@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTabletDriver.Analyzers.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTabletDriver.Daemon.Contracts", "OpenTabletDriver.Daemon.Contracts\OpenTabletDriver.Daemon.Contracts.csproj", "{2C5561B7-AAB9-436B-A7E0-A4A15E8565A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTabletDriver.Daemon.Executable", "OpenTabletDriver.Daemon.Executable\OpenTabletDriver.Daemon.Executable.csproj", "{E88815EE-7016-44DF-9F24-8805F4C5FDEB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTabletDriver.Daemon.Library", "OpenTabletDriver.Daemon.Library\OpenTabletDriver.Daemon.Library.csproj", "{E88815EE-7016-44DF-9F24-8805F4C5FDEB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTabletDriver.UI", "OpenTabletDriver.UI\OpenTabletDriver.UI.csproj", "{50FF1983-6D96-4C66-A8B9-69077F722170}"
 EndProject
