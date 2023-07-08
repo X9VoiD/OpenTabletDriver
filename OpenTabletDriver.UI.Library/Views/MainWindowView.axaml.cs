@@ -29,14 +29,14 @@ public partial class MainWindowView : Window
 
     private void HookInputEvents()
     {
-        // Change focus to nothing when clicking on the background
-        PointerReleased += (sender, e) =>
+        PointerPressed += (sender, e) =>
         {
             if (e.Handled)
                 return;
 
+            e.Handled = true;
             // TODO: is there a need to implement forward?
-            if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == Avalonia.Input.PointerUpdateKind.XButton1Released
+            if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == Avalonia.Input.PointerUpdateKind.XButton1Pressed
                 && _navigator.CanGoBack)
             {
                 _navigator.Pop();

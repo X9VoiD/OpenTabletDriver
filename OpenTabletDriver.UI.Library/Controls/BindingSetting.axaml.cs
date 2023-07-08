@@ -74,7 +74,8 @@ public partial class BindingSetting : UserControl
         _capturing = true;
 
         PART_BindingButton.RemoveHandler(PointerReleasedEvent, OnReleased);
-        PART_BindingButton.AddHandler(PointerReleasedEvent, CapturePointerKeyDown, RoutingStrategies.Tunnel);
+        PART_BindingButton.AddHandler(PointerPressedEvent, SilenceEvent, RoutingStrategies.Tunnel);
+        PART_BindingButton.AddHandler(PointerReleasedEvent, CapturePointerKeyDownReleased, RoutingStrategies.Tunnel);
         PART_BindingButton.AddHandler(KeyDownEvent, CaptureKeyDown, RoutingStrategies.Tunnel);
         PART_BindingButton.AddHandler(KeyUpEvent, CaptureKeyUp, RoutingStrategies.Tunnel);
 
@@ -82,7 +83,12 @@ public partial class BindingSetting : UserControl
         vm.BindingDescription = "Press a key...";
     }
 
-    private void CapturePointerKeyDown(object? sender, PointerReleasedEventArgs e)
+    private void SilenceEvent(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void CapturePointerKeyDownReleased(object? sender, PointerReleasedEventArgs e)
     {
         e.Handled = true;
         var key = e.GetCurrentPoint(sender as Visual).Properties.PointerUpdateKind switch
@@ -123,7 +129,8 @@ public partial class BindingSetting : UserControl
 
     private void StopCapture()
     {
-        PART_BindingButton.RemoveHandler(PointerReleasedEvent, CapturePointerKeyDown);
+        PART_BindingButton.RemoveHandler(PointerPressedEvent, SilenceEvent);
+        PART_BindingButton.RemoveHandler(PointerReleasedEvent, CapturePointerKeyDownReleased);
         PART_BindingButton.RemoveHandler(KeyDownEvent, CaptureKeyDown);
         PART_BindingButton.RemoveHandler(KeyUpEvent, CaptureKeyUp);
         PART_BindingButton.AddHandler(PointerReleasedEvent, OnReleased, RoutingStrategies.Tunnel);
