@@ -39,11 +39,11 @@ mkdir -p ./bin
 echo -e "\nBuilding Daemon...\n"
 dotnet publish OpenTabletDriver.Daemon ${options[@]} $@ || exit 1
 
-echo -e "\nBuilding Console...\n"
-dotnet publish OpenTabletDriver.Console ${options[@]} $@ || exit 2
+# echo -e "\nBuilding Console...\n"
+# dotnet publish OpenTabletDriver.Console ${options[@]} $@ || exit 2
 
-echo -e "\nBuilding GTK UX...\n"
-dotnet publish OpenTabletDriver.UX.Gtk ${options[@]} $@ || exit 3
+echo -e "\nBuilding UI...\n"
+dotnet publish OpenTabletDriver.UI ${options[@]} $@ || exit 3
 
 echo -e "\nBuild finished successfully. Binaries created in ./bin\n"
 
