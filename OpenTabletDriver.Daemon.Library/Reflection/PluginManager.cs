@@ -22,7 +22,7 @@ namespace OpenTabletDriver.Daemon.Reflection
     {
         private static readonly ImmutableArray<Assembly> _coreAssemblies = ImmutableArray.Create(
             Assembly.Load("OpenTabletDriver"),
-            Assembly.Load("OpenTabletDriver.Daemon"),
+            Assembly.Load("OpenTabletDriver.Daemon.Library"),
             Assembly.Load("OpenTabletDriver.Configurations")
         );
 

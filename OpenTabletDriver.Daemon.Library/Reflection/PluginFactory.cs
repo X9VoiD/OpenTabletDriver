@@ -51,7 +51,7 @@ namespace OpenTabletDriver.Daemon.Reflection
             }
             else
             {
-                Log.Write("Plugin", $"No constructor found for '{path}'", LogLevel.Warning);
+                Log.Write("Plugin", $"Plugin type '{path}' not found", LogLevel.Warning);
             }
 
             return null;
