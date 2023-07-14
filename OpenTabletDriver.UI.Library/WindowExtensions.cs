@@ -10,16 +10,11 @@ public static class WindowExtensions
 {
     public static IDisposable BootstrapTransparency(this Window window, WindowViewModelBase vm, IDispatcher dispatcher)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Build >= 22000)
+        window.TransparencyLevelHint = new[]
         {
-            // Windows 11 Mica blur
-            window.TransparencyLevelHint = WindowTransparencyLevel.Mica;
-        }
-        else
-        {
-            // Force acrylic blur for everything else
-            window.TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
-        }
+            WindowTransparencyLevel.Mica,
+            WindowTransparencyLevel.AcrylicBlur
+        };
 
         var windowBg = window.GetControl<Rectangle>("WindowBg");
         var acrylicBorder = window.GetControl<ExperimentalAcrylicBorder>("AcrylicBorder");

@@ -1,5 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using OpenTabletDriver.UI.Navigation;
@@ -49,7 +48,7 @@ public partial class MainWindowView : Window
                 });
             }
 
-            Application.Current?.FocusManager?.Focus(null);
+            FocusManager?.ClearFocus();
         };
     }
 }

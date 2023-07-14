@@ -5,7 +5,7 @@ using OpenTabletDriver.UI.ViewModels;
 
 namespace OpenTabletDriver.UI.Controls;
 
-public abstract class ActivatableUserControl : UserControl, IStyleable
+public abstract class ActivatableUserControl : UserControl
 {
     private Action<CompositeDisposable>? _whenActivatedAction;
     private CompositeDisposable? _whenActivatedDisposables;
@@ -75,5 +75,5 @@ public abstract class ActivatableUserControl : UserControl, IStyleable
         whenNavigatedToDisposables?.Dispose();
     }
 
-    Type IStyleable.StyleKey => typeof(ActivatableUserControl);
+    protected override Type StyleKeyOverride => typeof(ActivatableUserControl);
 }

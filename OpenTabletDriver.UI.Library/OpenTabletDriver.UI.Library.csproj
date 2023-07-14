@@ -5,7 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <AvaloniaVersion>11.0.0-preview6</AvaloniaVersion>
+    <AvaloniaVersion>11.0.999-cibuild0037696-beta</AvaloniaVersion>
+    <AvaloniaExtensionsVersion>11.0.0</AvaloniaExtensionsVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Warnings">
@@ -18,7 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
     <None Remove=".gitignore" />
   </ItemGroup>
@@ -35,7 +35,7 @@
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.Svg.Skia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Svg.Skia" Version="$(AvaloniaExtensionsVersion)" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />

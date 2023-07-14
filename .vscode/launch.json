@@ -6,8 +6,8 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "Build Daemon",
-            "cwd": "${workspaceFolder}/OpenTabletDriver.Daemon.Executable/bin/Debug/net7.0",
-            "program": "${workspaceFolder}/OpenTabletDriver.Daemon.Executable/bin/Debug/net7.0/OpenTabletDriver.Daemon.Executable.dll",
+            "cwd": "${workspaceFolder}/OpenTabletDriver.Daemon/bin/Debug/net7.0",
+            "program": "${workspaceFolder}/OpenTabletDriver.Daemon/bin/Debug/net7.0/OpenTabletDriver.Daemon.dll",
             "args": [
               "--config",
               "${workspaceFolder}/bin/Configurations"
@@ -31,7 +31,7 @@
             "type": "coreclr",
             "request": "launch",
             "cwd": "${workspaceFolder}/bin",
-            "program": "${workspaceFolder}/bin/OpenTabletDriver.Daemon.Executable.dll",
+            "program": "${workspaceFolder}/bin/OpenTabletDriver.Daemon.dll",
             "args": [],
             "console": "internalConsole",
             "stopAtEntry": false

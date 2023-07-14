@@ -64,7 +64,9 @@ public partial class BindingSetting : UserControl
     private void OnPointerExited(object? sender, PointerEventArgs e)
     {
         if (e.Handled) return;
-        Application.Current?.FocusManager?.Focus(null);
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        topLevel?.FocusManager?.ClearFocus();
     }
 
     private void StartCapture()

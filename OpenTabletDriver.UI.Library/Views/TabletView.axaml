@@ -58,15 +58,13 @@
                                         Description="{StaticResource output_mode_display_y_offset}"
                                         Precision="0" />
                         </Grid>
-                        <tc:RangedInput DataContext="{Binding DisplayArea}"
-                                        Value="{Binding Mapping.Width}"
-                                        Maximum="{Binding MaximumBounds.Width}"
+                        <tc:RangedInput Maximum="{Binding DisplayArea.MaximumBounds.Width}"
+                                        Value="{Binding DisplayArea.Mapping.Width}"
                                         Label="Width"
                                         Unit="px"
                                         Description="{StaticResource output_mode_display_width}" />
-                        <tc:RangedInput DataContext="{Binding DisplayArea}"
-                                        Value="{Binding Mapping.Height}"
-                                        Maximum="{Binding MaximumBounds.Height}"
+                        <tc:RangedInput Maximum="{Binding DisplayArea.MaximumBounds.Height}"
+                                        Value="{Binding DisplayArea.Mapping.Height}"
                                         Label="Height"
                                         Unit="px"
                                         Description="{StaticResource output_mode_display_height}"/>
@@ -130,21 +128,18 @@
                                             Unit="mm"
                                             Description="{StaticResource output_mode_tablet_y_origin}" />
                         </Grid>
-                        <tc:RangedInput Value="{Binding TabletArea.Mapping.Width}"
-                                        Minimum="0"
-                                        Maximum="{Binding TabletArea.MaximumBounds.Width}"
+                        <tc:RangedInput Maximum="{Binding TabletArea.MaximumBounds.Width}"
+                                        Value="{Binding TabletArea.Mapping.Width}"
                                         Label="Width"
                                         Unit="mm"
                                         Description="{StaticResource output_mode_tablet_width}" />
-                        <tc:RangedInput Value="{Binding TabletArea.Mapping.Height}"
-                                        Minimum="0"
-                                        Maximum="{Binding TabletArea.MaximumBounds.Height}"
+                        <tc:RangedInput Maximum="{Binding TabletArea.MaximumBounds.Height}"
+                                        Value="{Binding TabletArea.Mapping.Height}"
                                         Label="Height"
                                         Unit="mm"
                                         Description="{StaticResource output_mode_tablet_height}" />
-                        <tc:RangedInput Value="{Binding TabletArea.Mapping.Rotation}"
-                                        Minimum="0"
-                                        Maximum="360"
+                        <tc:RangedInput Maximum="360"
+                                        Value="{Binding TabletArea.Mapping.Rotation}"
                                         Label="Rotation"
                                         Unit="°"
                                         Description="{StaticResource output_mode_tablet_rotation}" />
@@ -171,9 +166,9 @@
                             <tc:DoubleInput Value="{Binding ResetDelay}"
                                             Label="Reset Delay"
                                             Unit="ms" />
-                            <tc:RangedInput Value="{Binding RelativeModeRotation}"
+                            <tc:RangedInput Maximum="360"
                                             Minimum="0"
-                                            Maximum="360"
+                                            Value="{Binding RelativeModeRotation}"
                                             Label="Rotation"
                                             Unit="°" />
                         </StackPanel>

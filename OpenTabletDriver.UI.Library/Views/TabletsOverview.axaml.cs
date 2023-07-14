@@ -1,7 +1,5 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.Mvvm.Messaging;
 using OpenTabletDriver.UI.Controls;
-using OpenTabletDriver.UI.Messages;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.ViewModels;
 

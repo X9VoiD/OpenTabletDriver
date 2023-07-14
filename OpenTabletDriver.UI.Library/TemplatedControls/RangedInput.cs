@@ -35,16 +35,13 @@ public class RangedInput : DoubleInput
             if (Minimum.HasValue && newValue < Minimum.Value)
             {
                 newValue = Minimum.Value;
-                Value = Minimum.Value;
             }
             else if (Maximum.HasValue && newValue > Maximum.Value)
             {
                 newValue = Maximum.Value;
-                Value = Maximum.Value;
             }
 
             var textString = newValue.ToString(CultureInfo.InvariantCulture);
-
             Value = newValue;
             Text = textString;
         }

@@ -20,13 +20,13 @@
                                    VerticalAlignment="Center"
                                    Margin="0, 0, 8, 0" />
                         <Slider Name="PART_Slider"
-                                Value="{TemplateBinding Value, Mode=TwoWay}"
                                 Grid.Column="2"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
                                 Margin="0, -8, 24, -8"
                                 Minimum="{TemplateBinding Minimum}"
-                                Maximum="{TemplateBinding Maximum}" />
+                                Maximum="{TemplateBinding Maximum}"
+                                Value="{TemplateBinding Value, Mode=TwoWay}" />
                         <TextBox Name="PART_Input"
                                  Text="{TemplateBinding Text}"
                                  Grid.Column="3"
