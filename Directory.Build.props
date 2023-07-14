@@ -11,10 +11,4 @@
     <Authors>InfinityGhost</Authors>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <RestoreSources>
-      https://nuget-feed-all.avaloniaui.net/v3/index.json
-    </RestoreSources>
-  </PropertyGroup>
 </Project>

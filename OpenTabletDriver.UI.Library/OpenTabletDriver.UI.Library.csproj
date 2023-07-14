@@ -18,6 +18,13 @@
     </NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <RestoreSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget-feed-all.avaloniaui.net/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <None Remove=".gitignore" />
