@@ -13,5 +13,5 @@ public record NavigationRoute(
     string? Host,
     string? Name,
     Type ObjectType,
-    Type? ViewType
+    Type ViewType
 );

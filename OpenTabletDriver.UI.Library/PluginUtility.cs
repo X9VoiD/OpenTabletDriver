@@ -2,6 +2,7 @@ using OpenTabletDriver.Daemon.Contracts;
 
 namespace OpenTabletDriver.UI;
 
+// TODO: this is a mess D:
 public static class PluginUtility
 {
     private static readonly HashSet<string> _absModeSettings = new()

@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace OpenTabletDriver.UI.Navigation;
 
 public class NavigatorFactory : INavigatorFactory

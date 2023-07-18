@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using OpenTabletDriver.UI.Controls;
 using OpenTabletDriver.UI.Messages;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.Services;

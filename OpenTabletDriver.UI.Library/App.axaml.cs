@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -13,6 +12,7 @@ public class App : Application
 {
     private IEnumerable<IStartupJob>? _startupJobs;
 
+    // TODO: designer support
     public App(IServiceProvider provider, IEnumerable<IStartupJob> startupJobs)
     {
         Ioc.Default.ConfigureServices(provider); // allow use of Ioc.Default for DI
@@ -22,11 +22,6 @@ public class App : Application
         {
             ExceptionDispatchInfo.Throw(e.Exception); // forcibly crash
         };
-    }
-
-    public App()
-    {
-        Debug.Fail("Should never be called by user-code");
     }
 
     public override void Initialize()

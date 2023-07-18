@@ -12,7 +12,15 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+              "echo": true,
+              "reveal": "never",
+              "focus": false,
+              "panel": "shared",
+              "showReuseMessage": true,
+              "clear": false
+            },
         },
         {
             "label": "Build UI",
@@ -26,6 +34,14 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile",
+            "presentation": {
+              "echo": true,
+              "reveal": "never",
+              "focus": false,
+              "panel": "shared",
+              "showReuseMessage": true,
+              "clear": false
+            },
         },
         {
             "label": "Build Persistent Binaries",
@@ -38,7 +54,15 @@
             "linux": {
                 "command": "./build.sh"
             },
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+              "echo": true,
+              "reveal": "never",
+              "focus": false,
+              "panel": "shared",
+              "showReuseMessage": true,
+              "clear": false
+            },
         },
     ]
 }

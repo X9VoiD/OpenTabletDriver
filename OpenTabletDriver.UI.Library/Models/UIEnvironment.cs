@@ -37,6 +37,6 @@ public class UIEnvironment
             ? alternativeAppDataPath
             : defaultAppDataPath;
 
-        return new UIEnvironment(args, defaultAppDataPath);
+        return new UIEnvironment(args, appData);
     }
 }

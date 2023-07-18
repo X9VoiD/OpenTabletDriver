@@ -92,7 +92,7 @@ public class Navigator : INavigator
         {
             NavigationKind.Pop => _navStack.ElementAt(1), // curr will be the page before the top of the stack
             NavigationKind.PopToRoot => _navStack.Last(), // curr will be the root page
-            _ => next != null ? next : throw new ArgumentNullException(nameof(next))
+            _ => next ?? throw new ArgumentNullException(nameof(next))
         };
 
         var eventArg = new CancellableNavigationEventData(kind, prev, curr);
@@ -136,15 +136,15 @@ public class Navigator : INavigator
 
     private Control CreateViewOrMapNotFound(object dataContext, NavigationRoute? route)
     {
-        if (route?.ViewType is null)
+        if (route is null)
             return MapNotFound(null, dataContext.GetType().Name);
 
         return CreateView(dataContext, route);
     }
 
-    private Control CreateView(object dataContext, NavigationRoute route)
+    private static Control CreateView(object dataContext, NavigationRoute route)
     {
-        var view = (Control)Activator.CreateInstance(route.ViewType!)!;
+        var view = (Control)Activator.CreateInstance(route.ViewType)!;
         view.DataContext = dataContext;
         return view;
     }

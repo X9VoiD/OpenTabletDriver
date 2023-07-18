@@ -60,7 +60,7 @@ internal static class StringUtility
 
         if (value.EndsWith("."))
         {
-            sb.Append("0");
+            sb.Append('0');
         }
 
         return sb.ToString();

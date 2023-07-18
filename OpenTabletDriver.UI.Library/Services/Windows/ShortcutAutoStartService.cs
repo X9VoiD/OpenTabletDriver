@@ -40,7 +40,7 @@ public class ShortcutAutoStartService : IAutoStartService
         return false;
     }
 
-    private string GetShortcutPath()
+    private static string GetShortcutPath()
     {
         var startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
         return Path.Combine(startupPath, "OpenTabletDriver.lnk");

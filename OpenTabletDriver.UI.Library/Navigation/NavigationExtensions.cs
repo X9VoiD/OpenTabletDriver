@@ -19,20 +19,10 @@ public static class NavigationExtensions
         return services.AddRoute(null, navHostName, typeof(TObject), typeof(TView), ServiceLifetime.Transient);
     }
 
-    public static IServiceCollection AddTransientRoute<TObject>(this IServiceCollection services, string route)
-    {
-        return services.AddRoute(route, null, typeof(TObject), null, ServiceLifetime.Transient);
-    }
-
     public static IServiceCollection AddTransientRoute<TObject, TView>(this IServiceCollection services, string route)
         where TView : Control
     {
         return services.AddRoute(route, null, typeof(TObject), typeof(TView), ServiceLifetime.Transient);
-    }
-
-    public static IServiceCollection AddTransientRoute<TObject>(this IServiceCollection services, string navHostName, string route)
-    {
-        return services.AddRoute(route, navHostName, typeof(TObject), null, ServiceLifetime.Transient);
     }
 
     public static IServiceCollection AddTransientRoute<TObject, TView>(this IServiceCollection services, string navHostName, string route)
@@ -41,20 +31,10 @@ public static class NavigationExtensions
         return services.AddRoute(route, navHostName, typeof(TObject), typeof(TView), ServiceLifetime.Transient);
     }
 
-    public static IServiceCollection AddSingletonRoute<TObject>(this IServiceCollection services, string route)
-    {
-        return services.AddRoute(route, null, typeof(TObject), null, ServiceLifetime.Singleton);
-    }
-
     public static IServiceCollection AddSingletonRoute<TObject, TView>(this IServiceCollection services, string route)
         where TView : Control
     {
         return services.AddRoute(route, null, typeof(TObject), typeof(TView), ServiceLifetime.Singleton);
-    }
-
-    public static IServiceCollection AddSingletonRoute<TObject>(this IServiceCollection services, string navHostName, string route)
-    {
-        return services.AddRoute(route, navHostName, typeof(TObject), null, ServiceLifetime.Singleton);
     }
 
     public static IServiceCollection AddSingletonRoute<TObject, TView>(this IServiceCollection services, string navHostName, string route)
@@ -68,15 +48,17 @@ public static class NavigationExtensions
         string? route,
         string? navHostName,
         Type objectType,
-        Type? viewType,
+        Type viewType,
         ServiceLifetime lifetime)
     {
 #if DEBUG
-        if (viewType is not null && !viewType.IsAssignableTo(typeof(ActivatableUserControl)))
+        if (!viewType.IsAssignableTo(typeof(ActivatableUserControl)))
             Debug.WriteLine($"Warning: {viewType} is not an {nameof(ActivatableUserControl)}");
 #endif
-        if (route is not null) // only add object type as service if route is not null, see NavigationRoute.cs
+        if (route is not null && !services.Any(x => x.ServiceType == objectType)) // only add object type as service if route is not null, see NavigationRoute.cs
+        {
             services.Add(ServiceDescriptor.Describe(objectType, objectType, lifetime));
+        }
         services.AddSingleton(new NavigationRoute(navHostName, route, objectType, viewType));
         return services;
     }

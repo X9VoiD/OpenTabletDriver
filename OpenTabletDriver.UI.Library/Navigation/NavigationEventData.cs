@@ -1,5 +1,3 @@
-using Avalonia.Media;
-
 namespace OpenTabletDriver.UI.Navigation;
 
 public class NavigationEventData : EventArgs

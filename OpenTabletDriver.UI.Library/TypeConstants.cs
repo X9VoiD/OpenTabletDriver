@@ -1,6 +1,7 @@
 namespace OpenTabletDriver.UI;
 
 // always check this file when changing public API of OTD.Daemon!
+// TODO: cry at night
 public static class TypeConstants
 {
     // we're doing it this way because we can't directly reference OpenTabletDriver

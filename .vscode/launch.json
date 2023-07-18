@@ -13,7 +13,7 @@
               "${workspaceFolder}/bin/Configurations"
             ],
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
         },
         {
             "name": "UI",

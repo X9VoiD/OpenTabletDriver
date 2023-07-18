@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Security.Cryptography;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.UI.Models;
@@ -289,7 +288,6 @@ public partial class DaemonConnectionViewModel : ActivatableViewModelBase
             "Did you try giving the computer a motivational speech like a coach? (•̀ᴗ•́)و ̑̑",
         };
 
-        var rng = RandomNumberGenerator.Create();
         var index = Random.Shared.Next(options.Length);
 
         return options[index];

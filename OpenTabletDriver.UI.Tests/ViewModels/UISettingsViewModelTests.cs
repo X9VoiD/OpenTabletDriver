@@ -7,7 +7,7 @@ using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Services;
 using OpenTabletDriver.UI.ViewModels;
 
-namespace OpenTabletDriver.UI.Tests;
+namespace OpenTabletDriver.UI.Tests.ViewModels;
 
 public partial class UISettingsViewModelTests
 {
@@ -45,7 +45,7 @@ public partial class UISettingsViewModelTests
     private partial class UISettingsProviderMock : ObservableObject, IUISettingsProvider
     {
         [ObservableProperty]
-        private UISettings? _settings = new UISettings();
+        private UISettings? _settings = new();
 
         public UISettingsLoadException? LoadException { get; }
 

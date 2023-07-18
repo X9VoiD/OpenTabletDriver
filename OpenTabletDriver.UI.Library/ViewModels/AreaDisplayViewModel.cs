@@ -170,7 +170,7 @@ public partial class AreaDisplayViewModel : ObservableObject
         }
     }
 
-    private Rect ToRect(Mapping mapping)
+    private static Rect ToRect(Mapping mapping)
     {
         return new Rect(mapping.UntranslatedX, mapping.UntranslatedY, mapping.Width, mapping.Height);
     }
