@@ -17,7 +17,7 @@
     <Style Selector="ListBox">
       <Setter Property="Background" Value="Transparent" />
     </Style>
-    <Style Selector="ListBox#NavigationList ListBoxItem" x:DataType="vm:NavigationItem">
+    <Style Selector="ListBox#VIEW_NavigationList ListBoxItem" x:DataType="vm:NavigationItem">
       <Setter
           Property="IsEnabled"
           Value="{Binding IsEnabled}" />
