@@ -38,13 +38,12 @@ public partial class DaemonConnectionView : ActivatableUserControl
     {
         if (e.Action == NotifyCollectionChangedAction.Add)
         {
-            Scroller.ScrollToEnd();
+            VIEW_Scroller.ScrollToEnd();
         }
     }
 
     private static void HandleClientSizeChanged(DaemonConnectionView view, SizeChangedEventArgs args)
     {
-        view.Scroller.ScrollToEnd();
+        view.VIEW_Scroller.ScrollToEnd();
     }
 }
-

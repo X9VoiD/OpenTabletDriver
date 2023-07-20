@@ -6,6 +6,8 @@ using OpenTabletDriver.UI.Navigation;
 
 namespace OpenTabletDriver.UI.Controls;
 
+// TODO: Convert to templated control
+
 /// <summary>
 /// Displays <see cref="ContentControl.Content"/> with different possible
 /// transitions for different navigation types.
@@ -88,7 +90,7 @@ public partial class NavigationHost : UserControl
 
     private void HandleNavigated(object? sender, NavigationEventData e)
     {
-        PART_TransitioningContentControl.PageTransition = e.Kind switch
+        VIEW_TransitioningContentControl.PageTransition = e.Kind switch
         {
             NavigationKind.Push => NextTransition,
             NavigationKind.Pop => BackTransition ?? NextTransition,
@@ -97,6 +99,6 @@ public partial class NavigationHost : UserControl
             _ => throw new InvalidOperationException("Invalid navigation kind.")
         };
 
-        PART_TransitioningContentControl.Content = e.Current;
+        VIEW_TransitioningContentControl.Content = e.Current;
     }
 }

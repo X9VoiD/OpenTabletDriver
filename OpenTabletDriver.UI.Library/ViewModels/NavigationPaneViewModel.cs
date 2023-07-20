@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using OpenTabletDriver.UI.Messages;
@@ -9,7 +10,6 @@ namespace OpenTabletDriver.UI.ViewModels;
 
 public partial class NavigationPaneViewModel : ViewModelBase
 {
-    private readonly IDaemonService _daemonService;
     private readonly INavigator _navigator;
 
     [ObservableProperty]
@@ -20,9 +20,8 @@ public partial class NavigationPaneViewModel : ViewModelBase
 
     public ObservableCollection<NavigationItem> Navigations { get; } = new();
 
-    public NavigationPaneViewModel(IDaemonService daemonService, INavigatorFactory navigatorFactory, IMessenger messenger)
+    public NavigationPaneViewModel(IDaemonService daemonService, INavigatorFactory navigatorFactory, IMessenger messenger, IDispatcher dispatcher)
     {
-        _daemonService = daemonService;
         _navigator = navigatorFactory.GetOrCreate(AppRoutes.MainHost);
 
         daemonService.HandleProperty(
@@ -59,7 +58,13 @@ public partial class NavigationPaneViewModel : ViewModelBase
                 return vm.Navigations.FirstOrDefault(n => n.Route == route);
             }
 
-            vm.SelectedNavigation = req.Value switch
+            if (req.Value is NavigationItemSelection.Settings)
+            {
+                vm.SettingsOpened = true;
+                return;
+            }
+
+            var navigationItem = req.Value switch
             {
                 NavigationItemSelection.Daemon => find(vm, AppRoutes.DaemonConnectionRoute),
                 NavigationItemSelection.Tablet => find(vm, AppRoutes.TabletsOverviewRoute),
@@ -68,6 +73,8 @@ public partial class NavigationPaneViewModel : ViewModelBase
                 NavigationItemSelection.Diagnostics => find(vm, AppRoutes.DiagnosticsRoute),
                 _ => null
             };
+
+            vm.SelectedNavigation = navigationItem;
         });
     }
 

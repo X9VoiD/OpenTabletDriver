@@ -19,7 +19,7 @@ public partial class NavigationPaneView : UserControl
     {
         // Since the settings button is not actually part of the navigation pane,
         // we will need to manually handle the click event.
-        SettingsButton.PointerPressed += (object? s, PointerPressedEventArgs e) =>
+        VIEW_SettingsButton.PointerPressed += (object? s, PointerPressedEventArgs e) =>
             vm.SettingsOpened = e.GetCurrentPoint(s as Visual).Properties.IsLeftButtonPressed;
     }
 }

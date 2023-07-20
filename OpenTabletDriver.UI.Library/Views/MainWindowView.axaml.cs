@@ -1,6 +1,9 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.Mvvm.Messaging;
+using OpenTabletDriver.UI.Messages;
 using OpenTabletDriver.UI.Navigation;
 using OpenTabletDriver.UI.ViewModels;
 
@@ -17,6 +20,7 @@ public partial class MainWindowView : Window
         DataContext = Ioc.Default.GetRequiredService<MainWindowViewModel>();
         _navigator = Ioc.Default.GetRequiredService<INavigatorFactory>().GetOrCreate(AppRoutes.MainHost);
         _dispatcher = Ioc.Default.GetRequiredService<IDispatcher>();
+        var messenger = Ioc.Default.GetRequiredService<IMessenger>();
 
         HookInputEvents();
         this.BootstrapTransparency((MainWindowViewModel)DataContext!, _dispatcher);
@@ -24,6 +28,16 @@ public partial class MainWindowView : Window
         // ensure we have window-level focus on startup
         Activate();
         Focus();
+
+        VIEW_SplitView.PaneOpened += (sender, e) =>
+        {
+            messenger.Send(new UILayoutChangedMessage(UILayoutChange.SidebarOpen));
+        };
+
+        VIEW_SplitView.PaneClosed += (sender, e) =>
+        {
+            messenger.Send(new UILayoutChangedMessage(UILayoutChange.SidebarHidden));
+        };
     }
 
     private void HookInputEvents()
@@ -34,21 +48,58 @@ public partial class MainWindowView : Window
                 return;
 
             e.Handled = true;
-            // TODO: is there a need to implement forward?
+            // is there a need to implement forward?
             if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == Avalonia.Input.PointerUpdateKind.XButton1Pressed
                 && _navigator.CanGoBack)
             {
                 _navigator.Pop();
-                // TODO: horrible name, also don't rely on to-be-internal IPseudoClasses interface
-                ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", true);
-                _dispatcher.Post(async () =>
+                // TODO: don't rely on to-be-internal IPseudoClasses interface
+                ((IPseudoClasses)VIEW_BackButton.Classes).Set(":pressed", true);
+                _dispatcher.ScheduleOnce(() =>
                 {
-                    await Task.Delay(100);
-                    ((IPseudoClasses)BackButtonButton.Classes).Set(":pressed", false);
-                });
+                    ((IPseudoClasses)VIEW_BackButton.Classes).Set(":pressed", false);
+                }, 100);
             }
 
             FocusManager?.ClearFocus();
         };
+
+        KeyDown += (sender, e) =>
+        {
+            if (e.Handled)
+                return;
+
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+            {
+                e.Handled = true;
+                if (!TryGetResource("VIEW_Resource_MenuFlyout", null, out var menuFlyoutObj))
+                    return;
+                if (menuFlyoutObj is not MenuFlyout menuFlyout)
+                    return;
+
+                if (!menuFlyout.IsOpen)
+                {
+                    var target = VIEW_MenuButton.IsVisible ? VIEW_MenuButton : VIEW_BackButton;
+                    menuFlyout.ShowAt(target);
+                }
+            }
+        };
+    }
+
+    protected override void OnResized(WindowResizedEventArgs args)
+    {
+        var openPaneLength = VIEW_SplitView.OpenPaneLength;
+        var currOpenPane = VIEW_SplitView.IsPaneOpen;
+        var newOpenPane = args.ClientSize.Width > openPaneLength * 3.25;
+        // var wideUI = args.ClientSize.Width >= 900;
+
+        if (currOpenPane != newOpenPane)
+        {
+            VIEW_SplitView.IsPaneOpen = newOpenPane;
+            VIEW_NavigationHost.Classes.Set("SidePaneHidden", !newOpenPane);
+            VIEW_MenuButton.IsVisible = !newOpenPane;
+        }
+
+        base.OnResized(args);
     }
 }

@@ -53,11 +53,11 @@ public partial class AreaDisplay : UserControl
             foreach (var bounds in vm.Bounds)
             {
                 var border = CreateFromBounds(bounds);
-                AreaCanvas.Children.Add(border);
+                VIEW_AreaCanvas.Children.Add(border);
             }
 
             var mappingBorder = CreateFromMap(vm.Mapping);
-            AreaCanvas.Children.Add(mappingBorder);
+            VIEW_AreaCanvas.Children.Add(mappingBorder);
         }
 
         base.OnDataContextChanged(e);
@@ -136,7 +136,7 @@ public partial class AreaDisplay : UserControl
 
         if (DataContext is AreaDisplayViewModel vm)
         {
-            var padding = AreaBorder.Padding;
+            var padding = VIEW_AreaBorder.Padding;
             var maxCanvasSize = finalSize.Deflate(padding);
 
             var scaledWidth = maxCanvasSize.Height / vm.MaximumBounds.Height * vm.MaximumBounds.Width;
@@ -144,18 +144,18 @@ public partial class AreaDisplay : UserControl
 
             if (scaledWidth > maxCanvasSize.Width)
             {
-                AreaCanvas.Width = maxCanvasSize.Width;
-                AreaCanvas.Height = scaledHeight;
+                VIEW_AreaCanvas.Width = maxCanvasSize.Width;
+                VIEW_AreaCanvas.Height = scaledHeight;
             }
             else
             {
-                AreaCanvas.Width = scaledWidth;
-                AreaCanvas.Height = maxCanvasSize.Height;
+                VIEW_AreaCanvas.Width = scaledWidth;
+                VIEW_AreaCanvas.Height = maxCanvasSize.Height;
             }
 
-            _scale = AreaCanvas.Bounds.Width / vm.MaximumBounds.Width;
+            _scale = VIEW_AreaCanvas.Bounds.Width / vm.MaximumBounds.Width;
 
-            foreach (var border in AreaCanvas.Children.OfType<Border>())
+            foreach (var border in VIEW_AreaCanvas.Children.OfType<Border>())
             {
                 var mapping = (Mapping)border.Tag!;
                 SetSize(border, mapping, _scale);
@@ -219,7 +219,7 @@ public partial class AreaDisplay : UserControl
         {
             if (_captured)
             {
-                var point = e.GetPosition(AreaCanvas) - _hitPoint;
+                var point = e.GetPosition(VIEW_AreaCanvas) - _hitPoint;
                 var mapping = (Mapping)mapVisual.Tag!;
                 mapping.UntranslatedX = (point.X / _scale) - _xOffset;
                 mapping.UntranslatedY = (point.Y / _scale) - _yOffset;

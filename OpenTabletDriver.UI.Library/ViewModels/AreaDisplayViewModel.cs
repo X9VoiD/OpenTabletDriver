@@ -12,7 +12,7 @@ public partial class AreaDisplayViewModel : ObservableObject
 {
     private bool _restricting;
     private bool _processRestrictions = true;
-    private Rect _maximumMappableBounds;
+    private readonly Rect _maximumMappableBounds;
 
     [ObservableProperty]
     private bool _restrictToMaximumBounds;

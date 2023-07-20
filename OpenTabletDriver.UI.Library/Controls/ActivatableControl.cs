@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Styling;
 using OpenTabletDriver.UI.ViewModels;
 
 namespace OpenTabletDriver.UI.Controls;

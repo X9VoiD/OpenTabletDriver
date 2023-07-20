@@ -15,8 +15,8 @@ public static class WindowExtensions
             WindowTransparencyLevel.AcrylicBlur
         };
 
-        var windowBg = window.GetControl<Rectangle>("WindowBg");
-        var acrylicBorder = window.GetControl<ExperimentalAcrylicBorder>("AcrylicBorder");
+        var windowBg = window.GetControl<Rectangle>("VIEW_WindowBg");
+        var acrylicBorder = window.GetControl<ExperimentalAcrylicBorder>("VIEW_AcrylicBorder");
 
         bool windowTransparency = false; // this variable will be captured by the delegates below
 
