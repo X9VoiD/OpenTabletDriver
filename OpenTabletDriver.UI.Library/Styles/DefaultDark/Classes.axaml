@@ -104,6 +104,37 @@
     <Style Selector="^:nth-child(1)">
       <Setter Property="Margin" Value="{DynamicResource OTD_SectionEmphasizedMargin1st}" />
     </Style>
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition
+                Width="*"
+                MinWidth="0"
+                MaxWidth="{DynamicResource OTD_SectionEmphasizedAutoMarginWidth}" />
+            <ColumnDefinition Width="10*" />
+            <ColumnDefinition
+                Width="*"
+                MinWidth="0"
+                MaxWidth="{DynamicResource OTD_SectionEmphasizedAutoMarginWidth}"/>
+          </Grid.ColumnDefinitions>
+
+          <ContentPresenter
+              Name="PART_ContentPresenter"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              Content="{TemplateBinding Content}"
+              Padding="{TemplateBinding Padding}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              Grid.Column="1" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
   </Style>
 
 </Styles>
