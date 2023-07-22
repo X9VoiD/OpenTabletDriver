@@ -120,7 +120,7 @@
             Grid.Row="1"
             IsPaneOpen="True"
             DisplayMode="Inline"
-            OpenPaneLength="240"
+            OpenPaneLength="200"
             PaneBackground="Transparent">
           <SplitView.Pane>
             <c:NavigationPaneView Margin="12, 20, 0, 12" />
