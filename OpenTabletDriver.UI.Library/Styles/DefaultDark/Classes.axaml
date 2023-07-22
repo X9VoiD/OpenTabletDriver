@@ -95,11 +95,6 @@
   </Style>
 
   <Style Selector="tc|Section.Emphasized">
-    <Setter Property="Transitions">
-      <Transitions>
-        <ThicknessTransition Property="Margin" Duration="0:0:0.1" />
-      </Transitions>
-    </Setter>
     <Setter Property="Margin" Value="{DynamicResource OTD_SectionEmphasizedMargin}" />
     <Style Selector="^:nth-child(1)">
       <Setter Property="Margin" Value="{DynamicResource OTD_SectionEmphasizedMargin1st}" />

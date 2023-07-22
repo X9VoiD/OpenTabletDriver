@@ -132,8 +132,6 @@ public partial class AreaDisplay : UserControl
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        base.ArrangeOverride(finalSize);
-
         if (DataContext is AreaDisplayViewModel vm)
         {
             var padding = VIEW_AreaBorder.Padding;
@@ -163,7 +161,13 @@ public partial class AreaDisplay : UserControl
             }
         }
 
-        return finalSize;
+        return base.ArrangeOverride(finalSize);
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        // layout-wise idk how this fixes bounds overflow but it does
+        return base.MeasureOverride(availableSize.Deflate(VIEW_AreaBorder.Padding));
     }
 
     private static Border CreateFromBounds(Bounds bounds)
