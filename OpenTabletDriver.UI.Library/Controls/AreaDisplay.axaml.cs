@@ -50,6 +50,7 @@ public partial class AreaDisplay : UserControl
 
             CreateContextMenu(vm);
 
+            VIEW_AreaCanvas.Children.Clear();
             foreach (var bounds in vm.Bounds)
             {
                 var border = CreateFromBounds(bounds);

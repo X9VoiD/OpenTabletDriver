@@ -24,7 +24,7 @@
             SharedSizeGroup="Input_LabelColumn" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition
-            Width="2*"
+            Width="10*"
             MinWidth="80"
             MaxWidth="200"/>
       </Grid.ColumnDefinitions>

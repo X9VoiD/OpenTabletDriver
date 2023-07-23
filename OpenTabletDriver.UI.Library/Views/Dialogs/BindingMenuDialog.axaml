@@ -69,7 +69,7 @@
             SelectedItem="{Binding Setting.SelectedBinding}"
             ItemsSource="{Binding Setting.UsableBindings}"
             HorizontalAlignment="Right"
-            ToolTip.Tip="{StaticResource binding_type_help}" />
+            ToolTip.Tip="{StaticResource binding_type_desc}" />
         <ScrollViewer
             Grid.Column="0"
             Grid.Row="1"

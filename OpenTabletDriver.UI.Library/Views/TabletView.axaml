@@ -35,7 +35,7 @@
                 ItemsSource="{Binding OutputModes}"
                 Grid.Column="2"
                 HorizontalAlignment="Right"
-                ToolTip.Tip="{StaticResource output_mode_combobox_help}" />
+                ToolTip.Tip="{StaticResource output_mode_combobox_desc}" />
           </Grid>
         </tc:Section>
 
@@ -46,7 +46,7 @@
           <c:AreaDisplay
               DataContext="{Binding DisplayArea}"
               Height="180"
-              ToolTip.Tip="{StaticResource output_mode_display_area_help}" />
+              ToolTip.Tip="{StaticResource output_mode_display_area_desc}" />
         </tc:Section>
 
         <tc:Section
@@ -55,38 +55,40 @@
           <StackPanel
               Spacing="4"
               Grid.IsSharedSizeScope="True">
-            <Grid ColumnDefinitions="*,*">
+            <Grid
+                ColumnDefinitions="*,*"
+                Margin="-2">
               <tc:DoubleInput
                   DataContext="{Binding DisplayArea.Mapping}"
-                  Margin="0, 0, 2, 0"
+                  Margin="2"
                   Grid.Column="0"
                   Value="{Binding X}"
-                  Label="X Offset"
+                  Label="{StaticResource output_mode_display_x_offset}"
                   Unit="px"
-                  Description="{StaticResource output_mode_display_x_offset}"
+                  Description="{StaticResource output_mode_display_x_offset_desc}"
                   Precision="0" />
               <tc:DoubleInput
                   DataContext="{Binding DisplayArea.Mapping}"
-                  Margin="2, 0, 0 ,0"
+                  Margin="2"
                   Grid.Column="1"
                   Value="{Binding Y}"
-                  Label="Y Offset"
+                  Label="{StaticResource output_mode_display_y_offset}"
                   Unit="px"
-                  Description="{StaticResource output_mode_display_y_offset}"
+                  Description="{StaticResource output_mode_display_y_offset_desc}"
                   Precision="0" />
             </Grid>
             <tc:RangedInput
                 Maximum="{Binding DisplayArea.MaximumBounds.Width}"
                 Value="{Binding DisplayArea.Mapping.Width}"
-                Label="Width"
+                Label="{StaticResource output_mode_display_width}"
                 Unit="px"
-                Description="{StaticResource output_mode_display_width}" />
+                Description="{StaticResource output_mode_display_width_desc}" />
             <tc:RangedInput
                 Maximum="{Binding DisplayArea.MaximumBounds.Height}"
                 Value="{Binding DisplayArea.Mapping.Height}"
-                Label="Height"
+                Label="{StaticResource output_mode_display_height}"
                 Unit="px"
-                Description="{StaticResource output_mode_display_height}" />
+                Description="{StaticResource output_mode_display_height_desc}" />
           </StackPanel>
         </tc:Section>
 
@@ -98,7 +100,7 @@
               DataContext="{Binding TabletArea}"
               x:DataType="vm:TabletAreaDisplayViewModel"
               Height="180"
-              ToolTip.Tip="{StaticResource output_mode_tablet_area_help}">
+              ToolTip.Tip="{StaticResource output_mode_tablet_area_desc}">
             <c:AreaDisplay.Styles>
               <Style Selector="CheckBox">
                 <Setter
@@ -114,7 +116,7 @@
             </c:AreaDisplay.Styles>
             <c:AreaDisplay.MenuItems>
               <MenuItem
-                  Header="Lock current aspect ratio"
+                  Header="{StaticResource tablet_menu_match_display_aspect_ratio}"
                   Command="{Binding ToggleStateCommand}"
                   CommandParameter="LockAspectRatio">
                 <MenuItem.Icon>
@@ -122,7 +124,7 @@
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
-                  Header="Clip input to mapped area"
+                  Header="{StaticResource tablet_menu_clip_input_to_mapped_area}"
                   Command="{Binding ToggleStateCommand}"
                   CommandParameter="ClipInput">
                 <MenuItem.Icon>
@@ -130,7 +132,7 @@
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
-                  Header="Drop input outside mapped area"
+                  Header="{StaticResource tablet_menu_drop_input_outside_mapped_area}"
                   Command="{Binding ToggleStateCommand}"
                   CommandParameter="DropInput">
                 <MenuItem.Icon>
@@ -153,36 +155,36 @@
                   Margin="0, 0, 2, 0"
                   Grid.Column="0"
                   Value="{Binding X}"
-                  Label="X Origin"
+                  Label="{StaticResource output_mode_tablet_x_origin}"
                   Unit="mm"
-                  Description="{StaticResource output_mode_tablet_x_origin}" />
+                  Description="{StaticResource output_mode_tablet_x_origin_desc}" />
               <tc:DoubleInput
                   DataContext="{Binding TabletArea.Mapping}"
                   Margin="2, 0, 0 ,0"
                   Grid.Column="1"
                   Value="{Binding Y}"
-                  Label="Y Origin"
+                  Label="{StaticResource output_mode_tablet_y_origin}"
                   Unit="mm"
-                  Description="{StaticResource output_mode_tablet_y_origin}" />
+                  Description="{StaticResource output_mode_tablet_y_origin_desc}" />
             </Grid>
             <tc:RangedInput
                 Maximum="{Binding TabletArea.MaximumBounds.Width}"
                 Value="{Binding TabletArea.Mapping.Width}"
-                Label="Width"
+                Label="{StaticResource output_mode_tablet_width}"
                 Unit="mm"
-                Description="{StaticResource output_mode_tablet_width}" />
+                Description="{StaticResource output_mode_tablet_width_desc}" />
             <tc:RangedInput
                 Maximum="{Binding TabletArea.MaximumBounds.Height}"
                 Value="{Binding TabletArea.Mapping.Height}"
-                Label="Height"
+                Label="{StaticResource output_mode_tablet_height}"
                 Unit="mm"
-                Description="{StaticResource output_mode_tablet_height}" />
+                Description="{StaticResource output_mode_tablet_height_desc}" />
             <tc:RangedInput
                 Maximum="360"
                 Value="{Binding TabletArea.Mapping.Rotation}"
-                Label="Rotation"
+                Label="{StaticResource output_mode_tablet_rotation}"
                 Unit="°"
-                Description="{StaticResource output_mode_tablet_rotation}" />
+                Description="{StaticResource output_mode_tablet_rotation_desc}" />
           </StackPanel>
         </tc:Section>
 
@@ -197,31 +199,31 @@
                   Value="{Binding SensitivityX}"
                   Margin="0, 0, 2, 0"
                   Grid.Column="0"
-                  Label="X Sensitivity"
+                  Label="{StaticResource output_mode_rel_x_sensitivity}"
                   Unit="px/mm"
+                  Description="{StaticResource output_mode_rel_x_sensitivity_desc}"
                   Precision="3" />
               <tc:DoubleInput
                   Value="{Binding SensitivityY}"
                   Margin="2, 0, 0 ,0"
                   Grid.Column="1"
-                  Label="Y Sensitivity"
+                  Label="{StaticResource output_mode_rel_y_sensitivity}"
                   Unit="px/mm"
+                  Description="{StaticResource output_mode_rel_y_sensitivity_desc}"
                   Precision="3" />
             </Grid>
-            <StackPanel
-                Spacing="4"
-                Grid.IsSharedSizeScope="True">
-              <tc:DoubleInput
-                  Value="{Binding ResetDelay}"
-                  Label="Reset Delay"
-                  Unit="ms" />
-              <tc:RangedInput
-                  Maximum="360"
-                  Minimum="0"
-                  Value="{Binding RelativeModeRotation}"
-                  Label="Rotation"
-                  Unit="°" />
-            </StackPanel>
+            <tc:DoubleInput
+                Value="{Binding ResetDelay}"
+                Label="{StaticResource output_mode_rel_reset_delay}"
+                Description="{StaticResource output_mode_rel_reset_delay_desc}"
+                Unit="ms" />
+            <tc:RangedInput
+                Maximum="360"
+                Minimum="0"
+                Value="{Binding RelativeModeRotation}"
+                Label="{StaticResource output_mode_rel_rotation}"
+                Description="{StaticResource output_mode_rel_rotation_desc}"
+                Unit="°" />
           </StackPanel>
         </tc:Section>
 
@@ -242,13 +244,45 @@
           </StackPanel>
         </tc:Section>
 
-        <tc:Section Header="Bindings">
+        <tc:Section Header="{StaticResource section_pen_bindings}">
           <StackPanel
               Spacing="4"
               HorizontalAlignment="Stretch"
               Grid.IsSharedSizeScope="True">
-            <c:BindingSetting DataContext="{Binding PenTipBinding}" />
-            <c:BindingSetting DataContext="{Binding PenEraserTipBinding}" />
+            <Grid
+                ColumnDefinitions="*,*"
+                RowDefinitions="Auto,Auto"
+                Margin="-2">
+              <Grid.Styles>
+                <Style Selector="c|BindingSetting, tc|RangedInput">
+                  <Setter Property="Margin" Value="2" />
+                </Style>
+              </Grid.Styles>
+              <c:BindingSetting
+                  DataContext="{Binding PenTipBinding}"
+                  Grid.Column="0"
+                  Grid.Row="0" />
+              <c:BindingSetting
+                  DataContext="{Binding PenEraserTipBinding}"
+                  Grid.Column="1"
+                  Grid.Row="0" />
+              <tc:RangedInput
+                  Maximum="100"
+                  Value="{Binding PenTipPressureThreshold}"
+                  Label="{StaticResource bindings_pen_tip_activation_threshold}"
+                  Unit="%"
+                  Description="{StaticResource bindings_pen_tip_activation_threshold_desc}"
+                  Grid.Column="0"
+                  Grid.Row="1" />
+              <tc:RangedInput
+                  Maximum="100"
+                  Value="{Binding PenEraserPressureThreshold}"
+                  Label="{StaticResource bindings_pen_eraser_activation_threshold}"
+                  Unit="%"
+                  Description="{StaticResource bindings_pen_eraser_activation_threshold_desc}"
+                  Grid.Column="1"
+                  Grid.Row="1" />
+            </Grid>
             <ItemsControl ItemsSource="{Binding PenButtonBindings}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -283,18 +317,18 @@
         Grid.Row="1"
         Margin="36, 8, 34, 15">
       <Button
-          Content="Apply"
+          Content="{StaticResource command_bar_apply}"
           Command="{Binding ApplyCommand}" />
       <SplitButton
-          Content="Save"
+          Content="{StaticResource command_bar_save}"
           Command="{Binding SaveCommand}">
         <SplitButton.Flyout>
           <MenuFlyout Placement="Top">
             <MenuItem
-                Header="Discard"
+                Header="{StaticResource command_bar_discard}"
                 Command="{Binding DiscardCommand}" />
             <MenuItem
-                Header="Reset"
+                Header="{StaticResource command_bar_reset}"
                 Command="{Binding ResetCommand}" />
           </MenuFlyout>
         </SplitButton.Flyout>

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -20,10 +19,13 @@ public partial class TabletViewModel : ActivatableViewModelBase
     private readonly List<PluginDto> _bindings = new();
     private bool _modified;
     private bool _saved = true;
+    private DateTime _lastApply;
+    private const int ApplyThresholdMs = 120;
 
     [ObservableProperty]
     private bool _isInitialized;
 
+    // TODO: remove
     [ObservableProperty]
     private Profile _profile;
 
@@ -146,30 +148,6 @@ public partial class TabletViewModel : ActivatableViewModelBase
         IsInitialized = true;
     }
 
-    partial void OnSelectedOutputModeChanged(PluginDto? value)
-    {
-        OutputModeSettings.Clear();
-
-        if (value is null)
-            return;
-
-        IsAbsoluteMode = value.IsAbsoluteMode();
-        IsRelativeMode = value.IsRelativeMode();
-
-        var profile = Profile;
-        var settings = value.GetCustomOutputModeSettings()
-            .Select(s => PluginSettingViewModel.CreateBindable(
-                s,
-                new ProfileBinding(
-                    p => p.OutputMode[s.PropertyName],
-                    (p, v) => p.OutputMode[s.PropertyName] = v),
-                profile)!)
-            .Where(s => s is not null);
-
-        settings.ForEach(s => s.PropertyChanged += HandleSettingsChanged);
-        OutputModeSettings.AddRange(settings);
-    }
-
     [RelayCommand(CanExecute = nameof(Modified))]
     private async Task Apply()
     {
@@ -267,6 +245,9 @@ public partial class TabletViewModel : ActivatableViewModelBase
         SensitivityY = (double)sensitivity["Y"]!;
         RelativeModeRotation = (double)outputMode["Rotation"].Value!;
         ResetDelay = ((TimeSpan)outputMode["ResetDelay"].Value!).TotalMilliseconds;
+
+        PenTipPressureThreshold = profile.Bindings.TipActivationThreshold;
+        PenEraserPressureThreshold = profile.Bindings.EraserActivationThreshold;
 
         var pluginDto = _daemonService.FindPlugin(outputMode.Path); // should never be null, has to be handled daemon-side
         Debug.Assert(pluginDto is not null);
@@ -482,16 +463,63 @@ public partial class TabletViewModel : ActivatableViewModelBase
         var resetDelay = outputMode["ResetDelay"];
         resetDelay.SetValue(TimeSpan.FromMilliseconds(ResetDelay));
 
+        profile.Bindings.TipActivationThreshold = (float)Math.Round(PenTipPressureThreshold, 2);
+        profile.Bindings.EraserActivationThreshold = (float)Math.Round(PenEraserPressureThreshold, 2);
+
         OutputModeSettings.ForEach(o => o.Write(profile));
         PenButtonBindings.ForEach(b => b.Write(profile));
         TabletButtonBindings.ForEach(b => b.Write(profile));
         PenTipBinding.Write(profile);
         PenEraserTipBinding.Write(profile);
 
+        // record the time of apply to ignore profile updates most likely caused
+        // by us for a short period of time
+        _lastApply = DateTime.Now;
+
         // send the updated profile to the daemon
         await _tabletService.ApplyProfile();
     }
 
+    partial void OnProfileChanged(Profile value)
+    {
+        // if profile changes but the last apply was recent, ignore the change.
+        // this is most likely caused by us, so we don't want to feed the
+        // same profile settings again to UI viewmodels.
+        var timeNow = DateTime.Now;
+        var applyDiff = timeNow - _lastApply;
+        if (applyDiff.TotalMilliseconds < ApplyThresholdMs)
+        {
+            Debug.WriteLine($"Skipping profile update, last apply was {applyDiff.TotalMilliseconds}ms ago and is likely us.");
+            return;
+        }
+
+        Debug.WriteLine("Updating profile");
+        _dispatcher.ProbablySynchronousPost(() => InitializeAsync());
+    }
+
+    partial void OnSelectedOutputModeChanged(PluginDto? value)
+    {
+        OutputModeSettings.Clear();
+
+        if (value is null)
+            return;
+
+        IsAbsoluteMode = value.IsAbsoluteMode();
+        IsRelativeMode = value.IsRelativeMode();
+
+        var profile = Profile;
+        var settings = value.GetCustomOutputModeSettings()
+            .Select(s => PluginSettingViewModel.CreateBindable(
+                s,
+                new ProfileBinding(
+                    p => p.OutputMode[s.PropertyName],
+                    (p, v) => p.OutputMode[s.PropertyName] = v),
+                profile)!)
+            .Where(s => s is not null);
+
+        settings.ForEach(s => s.PropertyChanged += HandleSettingsChanged);
+        OutputModeSettings.AddRange(settings);
+    }
     partial void OnSensitivityXChanged(double value) => HandleSettingsChanged(null, null!);
     partial void OnSensitivityYChanged(double value) => HandleSettingsChanged(null, null!);
     partial void OnResetDelayChanged(double value) => HandleSettingsChanged(null, null!);
