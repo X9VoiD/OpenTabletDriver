@@ -116,7 +116,7 @@ namespace OpenTabletDriver.Daemon.Binding
             return _serviceProvider.CreateInstance<T>(newArgs.ToArray());
         }
 
-        private Dictionary<int, BindingState?> CreateBindingStates(Collection<PluginSettings> collection, params object?[] args)
+        private Dictionary<int, BindingState?> CreateBindingStates(Collection<PluginSettings?> collection, params object?[] args)
         {
             var dict = new Dictionary<int, BindingState?>();
 

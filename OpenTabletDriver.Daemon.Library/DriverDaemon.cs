@@ -700,9 +700,9 @@ namespace OpenTabletDriver.Daemon
                         Button = nameof(MouseButton.Left)
                     }
                 ),
-                PenButtons = new Collection<PluginSettings>(),
-                AuxButtons = new Collection<PluginSettings>(),
-                MouseButtons = new Collection<PluginSettings>()
+                PenButtons = new Collection<PluginSettings?>(),
+                AuxButtons = new Collection<PluginSettings?>(),
+                MouseButtons = new Collection<PluginSettings?>()
             };
             return bindingSettings;
         }

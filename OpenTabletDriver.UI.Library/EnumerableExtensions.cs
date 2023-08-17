@@ -1,5 +1,7 @@
 namespace OpenTabletDriver.UI;
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+
 public static class EnumerableExtensions
 {
     public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
