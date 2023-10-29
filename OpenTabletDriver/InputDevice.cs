@@ -109,8 +109,8 @@ namespace OpenTabletDriver
         public void Initialize(bool process)
         {
             var log = process
-                ? $"Initializing {PersistentName}"
-                : $"Uninitializing {PersistentName}";
+                ? $"Initializing {PersistentName}..."
+                : $"Uninitializing {PersistentName}...";
 
             Log.Write("Driver", log, LogLevel.Info);
             Digitizer.Initialize(process);

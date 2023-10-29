@@ -18,5 +18,6 @@ namespace OpenTabletDriver.Daemon.Contracts.Json.Converters.Implementations
 
         public IDeviceEndpointStream Open() => throw NotSupported();
         public string GetDeviceString(byte index) => throw NotSupported();
+        public bool IsSibling(IDeviceEndpoint other) => throw NotSupported();
     }
 }

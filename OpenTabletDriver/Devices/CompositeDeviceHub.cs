@@ -107,7 +107,7 @@ namespace OpenTabletDriver.Devices
 
         private void HandleHubDeviceNotification(object? sender, DevicesChangedEventArgs eventArgs)
         {
-            Log.Debug(sender?.GetType().Name ?? nameof(CompositeDeviceHub), $"Changes: {eventArgs.Changes.Count()}, Add: {eventArgs.Additions.Count()}, Removals: {eventArgs.Removals.Count()}");
+            Log.Debug(sender?.GetType().Name ?? nameof(CompositeDeviceHub), $"Additions: {eventArgs.Additions.Count()}, Removals: {eventArgs.Removals.Count()}");
             EnqueueHubChange();
         }
 

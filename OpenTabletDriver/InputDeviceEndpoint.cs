@@ -82,7 +82,6 @@ namespace OpenTabletDriver
             if (reportStream is null)
                 return;
 
-            Log.Debug("Device", $"Initializing device '{Endpoint.GetDetailedName()}'");
             Log.Debug("Device", $"Using report parser type '{Identifier.ReportParser}'");
 
             foreach (byte index in Identifier.InitializationStrings ?? Enumerable.Empty<byte>())
