@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <AvaloniaVersion>11.0.999-cibuild0037696-beta</AvaloniaVersion>
+    <AvaloniaVersion>11.0.4</AvaloniaVersion>
     <AvaloniaExtensionsVersion>11.0.0</AvaloniaExtensionsVersion>
   </PropertyGroup>
 
@@ -16,13 +16,6 @@
       VSTHRD200,  <!-- Ignore Async suffix -->
       VSTHRD105,   <!-- Ignore Default Task Scheduler -->
     </NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <RestoreSources>
-      https://api.nuget.org/v3/index.json;
-      https://nuget-feed-all.avaloniaui.net/v3/index.json;
-    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@
     xmlns:tc="using:OpenTabletDriver.UI.TemplatedControls">
 
   <Style Selector="Border.Container">
-    <Setter Property="Background" Value="#10ffffff"/>
+    <Setter Property="Background" Value="#0effffff"/>
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Height" Value="44" />
     <Setter Property="Padding" Value="12, 4" />
@@ -16,7 +16,7 @@
     </Setter>
 
     <Style Selector="^:pointerover">
-      <Setter Property="Background" Value="#15ffffff"/>
+      <Setter Property="Background" Value="#12ffffff"/>
     </Style>
 
     <Style Selector="^ > Grid">

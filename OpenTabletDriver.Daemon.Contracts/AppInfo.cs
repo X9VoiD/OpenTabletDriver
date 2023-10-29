@@ -96,6 +96,6 @@ namespace OpenTabletDriver.Daemon.Contracts
         private string GetDefaultBackupDirectory() => Path.Join(AppDataDirectory, "Backup");
         private string GetDefaultTrashDirectory() => Path.Join(AppDataDirectory, "Trash");
 
-        private static string EnvironmentVariable(string envVar) => FileUtilities.InjectEnvironmentVariables(System.Environment.GetEnvironmentVariable(envVar));
+        private static string EnvironmentVariable(string envVar) => FileUtilities.InjectEnvironmentVariables(Environment.GetEnvironmentVariable(envVar));
     }
 }

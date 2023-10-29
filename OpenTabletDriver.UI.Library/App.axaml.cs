@@ -1,5 +1,6 @@
 using System.Runtime.ExceptionServices;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
@@ -12,7 +13,6 @@ public class App : Application
 {
     private IEnumerable<IStartupJob>? _startupJobs;
 
-    // TODO: designer support
     public App(IServiceProvider provider, IEnumerable<IStartupJob> startupJobs)
     {
         Ioc.Default.ConfigureServices(provider); // allow use of Ioc.Default for DI
@@ -22,6 +22,13 @@ public class App : Application
         {
             ExceptionDispatchInfo.Throw(e.Exception); // forcibly crash
         };
+    }
+
+    // TODO: designer support
+    public App()
+    {
+        if (!Design.IsDesignMode)
+            throw new InvalidOperationException("This constructor is for designer use only");
     }
 
     public override void Initialize()
@@ -55,17 +62,9 @@ public class App : Application
 
     private static void RemoveAvaloniaValidationPlugin()
     {
-        var pluginToRemove = Type.GetType("Avalonia.Data.Core.Plugins.DataAnnotationsValidationPlugin, Avalonia.Base", true);
         var dataValidators = BindingPlugins.DataValidators;
-
-        for (var i = 0; i < dataValidators.Count; i++)
-        {
-            var pluginType = dataValidators[i].GetType();
-            if (!pluginType.IsAssignableTo(pluginToRemove))
-                continue;
-
-            dataValidators.RemoveAt(i);
-            return;
-        }
+        for (int i = 0; i < dataValidators.Count; i++)
+            if (dataValidators[i] is DataAnnotationsValidationPlugin)
+                dataValidators.RemoveAt(i--);
     }
 }

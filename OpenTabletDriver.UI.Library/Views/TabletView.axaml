@@ -248,7 +248,7 @@
           <StackPanel
               Spacing="4"
               HorizontalAlignment="Stretch"
-              Grid.IsSharedSizeScope="True">
+              Grid.IsSharedSizeScope="False">
             <Grid
                 ColumnDefinitions="*,*"
                 RowDefinitions="Auto,Auto"

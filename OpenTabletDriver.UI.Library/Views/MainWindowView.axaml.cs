@@ -90,7 +90,7 @@ public partial class MainWindowView : Window
     {
         var openPaneLength = VIEW_SplitView.OpenPaneLength;
         var currOpenPane = VIEW_SplitView.IsPaneOpen;
-        var newOpenPane = args.ClientSize.Width > openPaneLength * 3.25;
+        var newOpenPane = args.ClientSize.Width > openPaneLength + MinWidth + 48;
         // var wideUI = args.ClientSize.Width >= 900;
 
         if (currOpenPane != newOpenPane)

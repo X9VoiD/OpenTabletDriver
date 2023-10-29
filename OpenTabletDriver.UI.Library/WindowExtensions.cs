@@ -7,6 +7,9 @@ namespace OpenTabletDriver.UI;
 
 public static class WindowExtensions
 {
+    private const double WINDOW_BG_SHOW = 1.0;
+    private const double WINDOW_BG_HIDE = 0.0;
+
     public static IDisposable BootstrapTransparency(this Window window, WindowViewModelBase vm, IDispatcher dispatcher)
     {
         window.TransparencyLevelHint = new[]
@@ -20,8 +23,8 @@ public static class WindowExtensions
 
         bool windowTransparency = false; // this variable will be captured by the delegates below
 
-        window.Activated += (_, _) => { if (windowTransparency) windowBg.Opacity = 0.65; };
-        window.Deactivated += (_, _) => { if (windowTransparency) windowBg.Opacity = 1.0; };
+        window.Activated += (_, _) => { if (windowTransparency) windowBg.Opacity = WINDOW_BG_HIDE; };
+        window.Deactivated += (_, _) => { if (windowTransparency) windowBg.Opacity = WINDOW_BG_SHOW; };
 
         return vm.HandleProperty(
             nameof(vm.TransparencyEnabled),
@@ -45,7 +48,7 @@ public static class WindowExtensions
             {
                 windowTransparency = true;
                 acrylicBorder.IsVisible = true;
-                windowBg.Opacity = 0.65;
+                windowBg.Opacity = WINDOW_BG_HIDE;
             }
             else
             {
@@ -57,7 +60,7 @@ public static class WindowExtensions
         void disableWindowTransparency()
         {
             windowTransparency = false;
-            windowBg.Opacity = 1.0;
+            windowBg.Opacity = WINDOW_BG_SHOW;
         }
     }
 }

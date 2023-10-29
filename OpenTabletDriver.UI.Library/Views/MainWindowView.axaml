@@ -19,7 +19,7 @@
     Background="Transparent"
     ExtendClientAreaChromeHints="PreferSystemChrome"
     ExtendClientAreaToDecorationsHint="True"
-    MinWidth="520"
+    MinWidth="560"
     MinHeight="200">
   <Window.Resources>
     <MenuFlyout
@@ -48,6 +48,7 @@
           CommandParameter="{x:Static msg:NavigationItemSelection.Settings}" />
     </MenuFlyout>
   </Window.Resources>
+
   <Panel>
 
     <!-- Noisy stuff -->
@@ -59,9 +60,9 @@
       <ExperimentalAcrylicBorder.Material>
         <ExperimentalAcrylicMaterial
             BackgroundSource="Digger"
-            TintColor="{DynamicResource OTD_BackgroundColor}"
-            TintOpacity="1"
-            MaterialOpacity="0"
+            TintColor="Black"
+            TintOpacity="0.5"
+            MaterialOpacity="0.05"
             FallbackColor="{DynamicResource OTD_BackgroundColor}" />
       </ExperimentalAcrylicBorder.Material>
     </ExperimentalAcrylicBorder>
