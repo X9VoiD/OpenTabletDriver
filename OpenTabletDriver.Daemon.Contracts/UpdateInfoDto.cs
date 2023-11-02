@@ -2,9 +2,9 @@ using System;
 
 namespace OpenTabletDriver.Daemon.Contracts
 {
-    public sealed class SerializedUpdateInfo
+    public sealed class UpdateInfoDto
     {
-        public SerializedUpdateInfo(Version version)
+        public UpdateInfoDto(Version version)
         {
             Version = version;
         }

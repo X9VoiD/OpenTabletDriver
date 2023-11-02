@@ -22,6 +22,6 @@ namespace OpenTabletDriver.Daemon.Updater
             return _update;
         }
 
-        public SerializedUpdateInfo ToSerializedUpdateInfo() => new(Version);
+        public UpdateInfoDto ToSerializedUpdateInfo() => new(Version);
     }
 }

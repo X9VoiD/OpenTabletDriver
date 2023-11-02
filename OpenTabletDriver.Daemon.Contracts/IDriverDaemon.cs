@@ -59,7 +59,7 @@ namespace OpenTabletDriver.Daemon.Contracts
         Task WriteMessage(LogMessage message);
         Task<IEnumerable<LogMessage>> GetCurrentLog();
 
-        Task<SerializedUpdateInfo?> CheckForUpdates();
+        Task<UpdateInfoDto?> CheckForUpdates();
         Task InstallUpdate();
     }
 }

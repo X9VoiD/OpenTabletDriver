@@ -433,7 +433,7 @@ namespace OpenTabletDriver.Daemon
             return Task.FromResult((IEnumerable<LogMessage>)_logMessages);
         }
 
-        public async Task<SerializedUpdateInfo?> CheckForUpdates()
+        public async Task<UpdateInfoDto?> CheckForUpdates()
         {
             if (_updater == null)
                 return null;
