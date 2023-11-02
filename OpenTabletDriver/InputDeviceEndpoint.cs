@@ -177,7 +177,6 @@ namespace OpenTabletDriver
             }
             catch (IOException ioEx) when (ioEx.Message is "I/O disconnected." or "Operation failed after some time.")
             {
-                Log.Write("Device", "Device disconnected.");
                 State = InputDeviceState.Disconnected;
                 data = null;
                 return false;

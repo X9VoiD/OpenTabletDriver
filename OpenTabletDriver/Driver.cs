@@ -231,133 +231,15 @@ namespace OpenTabletDriver
 
                         if (ImmutableInterlocked.Update(ref _inputDevices, (devices, device) => devices.Remove(device), inputDevice))
                             OnInputDeviceRemoved(this, inputDevice);
+
+                        if (e == InputDeviceState.Disconnected)
+                            Log.Write("Detect", $"{inputDevice.PersistentName} disconnected", LogLevel.Info);
                     };
 
                     inputDevices.Add(inputDevice);
                 }
 
                 return inputDevices.ToImmutableArray();
-
-                // // loop over all devices
-                // foreach (var device in endpointsToScan)
-                // {
-                //     try
-                //     {
-                //         var deviceHash = (device.VendorID, device.ProductID);
-                //         var deviceName = device.FriendlyName == null
-                //             ? device.DevicePath
-                //             : $"{device.FriendlyName} ({device.DevicePath})";
-
-                //         // loop over configurations that has an identifier that matches the device's VID/PID
-                //         if (!tabletConfigurations.TryGetValue(deviceHash, out var candidateConfigs))
-                //             continue;
-
-                //         if (candidateConfigs.Any())
-                //             Log.Debug("Detect", $"Finding matching identifier for {deviceName}");
-
-                //         foreach (var candidateConfig in candidateConfigs)
-                //         {
-                //             ref var pairList = ref CollectionsMarshal.GetValueRefOrAddDefault(inputDeviceEndpoints, candidateConfig, out _);
-
-                //             // check if the device matches a digitizer identifier
-                //             if (TryMatch(device, candidateConfig, candidateConfig.DigitizerIdentifiers, out var digitizerEndpoint))
-                //             {
-                //                 // find the first pair that has no digitizer endpoint
-                //                 // if none is found, create a new pair
-                //                 pairList ??= new List<InputDeviceEndpointPair>();
-                //                 var pairIndex = pairList.FindIndex(p => p.Digitizer is null);
-
-                //                 if (pairIndex == -1)
-                //                 {
-                //                     pairList.Add(new InputDeviceEndpointPair());
-                //                     pairIndex = pairList.Count - 1;
-                //                 }
-
-                //                 var pair = pairList[pairIndex];
-                //                 pair.Digitizer = digitizerEndpoint;
-                //                 Log.Debug("Detect", $"Detected as {candidateConfig.Name}'s digitizer");
-                //                 break;
-                //             }
-
-                //             // check if the device matches an auxiliary identifier
-                //             if (TryMatch(device, candidateConfig, candidateConfig.AuxiliaryDeviceIdentifiers, out var auxEndpoint))
-                //             {
-                //                 // find the first pair that has no auxiliary endpoint
-                //                 // if none is found, create a new pair
-                //                 pairList ??= new List<InputDeviceEndpointPair>();
-                //                 var pairIndex = pairList.FindIndex(p => p.Auxiliary is null);
-
-                //                 if (pairIndex == -1)
-                //                 {
-                //                     pairList.Add(new InputDeviceEndpointPair());
-                //                     pairIndex = pairList.Count - 1;
-                //                 }
-
-                //                 var pair = pairList[pairIndex];
-                //                 pair.Auxiliary = digitizerEndpoint;
-                //                 Log.Debug("Detect", $"Detected as {candidateConfig.Name}'s auxiliary");
-                //                 break;
-                //             }
-                //         }
-                //     }
-                //     catch (IOException iex) when (iex.Message.Contains("Unable to open HID class device")
-                //         && SystemInterop.CurrentPlatform == SystemPlatform.Linux)
-                //     {
-                //         Log.Write(
-                //             "Driver",
-                //             "The current user does not have the permissions to open the device stream. " +
-                //             "Follow the instructions from https://opentabletdriver.net/Wiki/FAQ/Linux#fail-device-streams to resolve this issue.",
-                //             LogLevel.Error
-                //         );
-                //     }
-                //     catch (ArgumentOutOfRangeException aex) when (aex.Message.Contains("Value range is [0, 15]")
-                //         && SystemInterop.CurrentPlatform == SystemPlatform.Linux)
-                //     {
-                //         Log.Write(
-                //             "Driver",
-                //             "Device is currently in use by another kernel module. " +
-                //             "Follow the instructions from https://opentabletdriver.net/Wiki/FAQ/Linux#argumentoutofrangeexception to resolve this issue.",
-                //             LogLevel.Error
-                //         );
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         Log.Exception(ex);
-                //     }
-                // }
-
-                // var deviceBuilder = ImmutableArray.CreateBuilder<InputDevice>(inputDeviceEndpoints.Count);
-                // foreach (var (config, pairList) in inputDeviceEndpoints.Where(p => p.Value is not null))
-                // {
-                //     foreach (var pair in pairList)
-                //     {
-                //         if (pair.Digitizer is null)
-                //         {
-                //             Log.Write("Detect", $"Digitizer for tablet '{config.Name}' not found, skipping...", LogLevel.Warning);
-                //             continue;
-                //         }
-
-                //         var device = new InputDevice(config, pair.Digitizer, pair.Auxiliary);
-
-                //         if (config.AuxiliaryDeviceIdentifiers.Any() && pair.Auxiliary is null)
-                //         {
-                //             Log.Write("Detect", $"Auxiliary device not found for tablet '{config.Name}', express keys may not function properly", LogLevel.Warning);
-                //         }
-
-                //         device.StateChanged += (sender, e) =>
-                //         {
-                //             if (e < InputDeviceState.Disconnected)
-                //                 return;
-
-                //             if (ImmutableInterlocked.Update(ref _inputDevices, (devices, device) => devices.Remove(device), device))
-                //                 OnInputDeviceRemoved(this, device);
-                //         };
-
-                //         deviceBuilder.Add(device);
-                //     }
-                // }
-
-                // return deviceBuilder.ToImmutable();
             }
         }
 
