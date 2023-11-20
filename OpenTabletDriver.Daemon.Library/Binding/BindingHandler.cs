@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Attributes;
 using OpenTabletDriver.Output;
 using OpenTabletDriver.Platform.Pointer;
 using OpenTabletDriver.Tablet;
 
 namespace OpenTabletDriver.Daemon.Binding
 {
-    public class BindingHandler : IPipelineElement<IDeviceReport>
+    [PluginIgnore]
+    public class BindingHandler : IDevicePipelineElement
     {
         private readonly InputDevice _device;
         private readonly IServiceProvider _serviceProvider;
@@ -19,10 +21,6 @@ namespace OpenTabletDriver.Daemon.Binding
         {
             _serviceProvider = serviceProvider;
             _device = device;
-
-            // Force consume all reports from the last element
-            var lastElement = outputMode.Elements?.LastOrDefault() ?? (IPipelineElement<IDeviceReport>)outputMode;
-            lastElement.Emit += Consume;
 
             Tip = CreateBindingState<ThresholdBindingState>(settings.TipButton, device, mouseButtonHandler);
 
@@ -51,16 +49,23 @@ namespace OpenTabletDriver.Daemon.Binding
         private BindingState? MouseScrollDown { get; }
         private BindingState? MouseScrollUp { get; }
 
+        public PipelinePosition Position => PipelinePosition.PostTransform;
+
         public event Action<IDeviceReport>? Emit;
 
         public void Consume(IDeviceReport report)
         {
+            HandleBinding(_device.OutputMode!.Tablet, report);
             Emit?.Invoke(report);
-            HandleBinding(_device, report);
         }
 
         private void HandleBinding(InputDevice device, IDeviceReport report)
         {
+            if (report is OutOfRangeReport oor)
+            {
+                ResetPenBindings(oor);
+                return;
+            }
             if (report is IEraserReport eraserReport)
                 _isEraser = eraserReport.Eraser;
             if (report is ITabletReport tabletReport)
@@ -69,6 +74,21 @@ namespace OpenTabletDriver.Daemon.Binding
                 HandleAuxiliaryReport(auxReport);
             if (report is IMouseReport mouseReport)
                 HandleMouseReport(mouseReport);
+        }
+
+        private void ResetPenBindings(OutOfRangeReport oor)
+        {
+            foreach (var binding in PenButtons.Values)
+            {
+                binding?.Invoke(oor, false);
+            }
+
+            if (_isEraser)
+                Eraser?.Invoke(oor, 0);
+            else
+                Tip?.Invoke(oor, 0);
+
+            _isEraser = false;
         }
 
         private void HandleTabletReport(PenSpecifications pen, ITabletReport report)

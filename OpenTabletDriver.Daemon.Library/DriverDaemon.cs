@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,6 +50,7 @@ namespace OpenTabletDriver.Daemon
 
         private ImmutableArray<PluginContextDto> _plugins = ImmutableArray<PluginContextDto>.Empty;
         private UpdateInfo? _updateInfo;
+        private Settings? _lastValidSettings;
         private bool _debugging;
         private bool _isScanningDevices;
 
@@ -97,9 +99,6 @@ namespace OpenTabletDriver.Daemon
                 Message?.Invoke(sender, message);
             };
 
-            if (Directory.Exists(_appInfo.ConfigurationDirectory))
-                Log.Write("Detect", $"Configuration overrides exist: '{_appInfo.ConfigurationDirectory}'", LogLevel.Debug);
-
             InitializePlatform();
             _driver.InputDeviceAdded += (sender, e) =>
             {
@@ -146,11 +145,26 @@ namespace OpenTabletDriver.Daemon
 
             foreach (var driverInfo in DriverInfo.GetDriverInfos())
             {
-                Log.Write("Detect", $"Another tablet driver found: {driverInfo.Name}", LogLevel.Warning);
-                if (driverInfo.IsBlockingDriver)
-                    Log.Write("Detect", $"Detection for {driverInfo.Name} tablets might be impaired", LogLevel.Warning);
-                else if (driverInfo.IsSendingInput)
-                    Log.Write("Detect", $"Detected input coming from {driverInfo.Name} driver", LogLevel.Error);
+                var os = SystemInterop.CurrentPlatform switch
+                {
+                    SystemPlatform.Windows => "Windows",
+                    SystemPlatform.Linux => "Linux",
+                    SystemPlatform.MacOS => "MacOS",
+                    _ => null
+                };
+                var wikiUrl = $"https://opentabletdriver.net/Wiki/FAQ/{os}";
+
+                var message = new StringBuilder();
+                message.Append($"'{driverInfo.Name}' driver is detected.");
+
+                if (driverInfo.Status.HasFlag(DriverStatus.Blocking))
+                    message.Append(" It will block detection of tablets.");
+                if (driverInfo.Status.HasFlag(DriverStatus.Flaky))
+                    message.Append(" It will cause flaky support to tablets.");
+                if (os != null)
+                    message.Append($" If any problems arise, visit '{wikiUrl}'.");
+
+                Log.WriteNotify("Detect", message.ToString(), LogLevel.Warning);
             }
 
             var appdataDir = new DirectoryInfo(_appInfo.AppDataDirectory);
@@ -508,7 +522,6 @@ namespace OpenTabletDriver.Daemon
                 var outputModeName = _pluginFactory.GetName(profile.OutputMode);
                 Log.Write("Settings", $"Output mode: {outputModeName}", LogLevel.Debug);
 
-                ApplyOutputModeSettings(inputDevice, outputMode, profile);
                 var mouseButtonHandler = (outputMode as IMouseButtonSource)?.MouseButtonHandler;
 
                 var deps = new object?[]
@@ -521,9 +534,7 @@ namespace OpenTabletDriver.Daemon
 
                 var bindingHandler = _serviceProvider.CreateInstance<BindingHandler>(deps);
 
-                var lastElement = outputMode.Elements?.LastOrDefault() ??
-                                    outputMode as IPipelineElement<IDeviceReport>;
-                lastElement.Emit += bindingHandler.Consume;
+                ApplyOutputModeSettings(inputDevice, outputMode, profile, bindingHandler);
             }
 
             // set the output mode atomically
@@ -532,7 +543,7 @@ namespace OpenTabletDriver.Daemon
             Log.Write("Daemon", $"Settings applied");
         }
 
-        private void ApplyOutputModeSettings(InputDevice dev, IOutputMode outputMode, Profile profile)
+        private void ApplyOutputModeSettings(InputDevice dev, IOutputMode outputMode, Profile profile, BindingHandler bindingHandler)
         {
             string group = dev.Configuration.Name;
 
@@ -542,10 +553,10 @@ namespace OpenTabletDriver.Daemon
                 where filter != null
                 select filter;
 
-            outputMode.Elements = elements.ToList();
+            outputMode.Elements = elements.Append(bindingHandler).ToList();
 
-            if (outputMode.Elements.Any())
-                Log.Write(group, $"Filters: {string.Join(", ", outputMode.Elements)}");
+            if (outputMode.Elements.Count > 1)
+                Log.Write(group, $"Filters: {string.Join(", ", outputMode.Elements.Where(e => e != bindingHandler))}");
         }
 
         private void ApplyToolSettings(IEnumerable<PluginSettings> toolSettings)
@@ -585,8 +596,7 @@ namespace OpenTabletDriver.Daemon
                 case SystemPlatform.Windows:
                     System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
 
-                    var windows8 = new Version(6, 2, 9200, 0);
-                    if (Environment.OSVersion.Version >= windows8)
+                    if (Environment.OSVersion.Version.Build >= 22000) // Windows 11
                     {
                         unsafe
                         {
@@ -599,7 +609,7 @@ namespace OpenTabletDriver.Daemon
                                 (IntPtr)Unsafe.AsPointer(ref state),
                                 Unsafe.SizeOf<Windows.PowerThrottlingState>()))
                             {
-                                Log.Write("Platform", "Failed to allow timer resolution, asynchronous filters may have lower resolution when OTD is minimized.", LogLevel.Error);
+                                Log.Write("Platform", "Failed to allow management of timer resolution, asynchronous filters may have lower timing resolution when OTD is minimized.", LogLevel.Error);
                             }
                         }
                     }

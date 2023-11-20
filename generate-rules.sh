@@ -1,26 +1,47 @@
 #!/usr/bin/env bash
+# dependencies: git, jq, tr (coreutils), awk (gawk), sed (gnused)
 
-SRC_ROOT=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
-[ ! -d "${SRC_ROOT}" ] && exit 100;
+for c in git jq tr awk sed; do
+  command -v $c > /dev/null
+  if [[ $? > 0 ]]; then
+    echo "Error: Command $c not found in \$PATH."
+    exit 1
+  fi
+done
 
-PROJECT="${SRC_ROOT}/OpenTabletDriver.Tools.udev"
-FRAMEWORK="net7.0"
+tohex() {
+  printf $1 | awk '{ printf("%04x", $1) }'
+}
 
-TABLET_CONFIGURATIONS="${SRC_ROOT}/OpenTabletDriver.Configurations/Configurations"
-RULES_FILE="${SRC_ROOT}/bin/99-opentabletdriver.rules"
+shopt -s globstar
+set -eu
 
-if [ "$#" -gt 0 ]; then
-  # Pass arguments to utility instead of using defaults
-  dotnet_args=($@)
-else
-  [ ! -d "${TABLET_CONFIGURATIONS}" ] && exit 101;
-  dotnet_args=("-v" "${TABLET_CONFIGURATIONS}" "${RULES_FILE}")
-fi
+OTD_CONFIGURATIONS="${OTD_CONFIGURATIONS:="$(git rev-parse --show-toplevel)/OpenTabletDriver.Configurations/Configurations"}"
 
-echo "Generating udev rules..."
+script='[
+  .[] | { Name:.Name, libinput:(.Attributes.libinputoverride // "0") } + (.DigitizerIdentifiers[] | { VendorID:.VendorID, ProductID:.ProductID })
+] | unique | sort_by(.VendorID,.ProductID) | group_by(.VendorID, .ProductID) |
+  map({ Names: (map(.Name) | join(",")), libinput: (map(.libinput) | max), VendorID: .[0].VendorID, ProductID: .[0].ProductID})
+| .[] | "\(.Names):\(.VendorID):\(.ProductID):\(.libinput)"'
 
-dotnet run --project "${PROJECT}" -f "${FRAMEWORK}" -- ${dotnet_args[@]}
+configs_arr=$(jq -s "$script" $OTD_CONFIGURATIONS/**/**.json | tr -d '"')
 
-echo "\nRule file generated. Please move the generated rule file './bin/99-opentabletdriver.rules' to /etc/udev/rules.d, then run"
-echo "sudo udevadm control --reload-rules"
-echo "or simply reboot your PC."
+echo \# OpenTabletDriver udev rules \(https://github.com/OpenTabletDriver/OpenTabletDriver\)
+echo KERNEL==\"uinput\", SUBSYSTEM==\"misc\", OPTIONS+=\"static_node=uinput\", TAG+=\"uaccess\", TAG+=\"udev-acl\"
+echo KERNEL==\"js[0-9]*\", SUBSYSTEM==\"input\", ATTRS{name}==\"OpenTabletDriver Virtual Tablet\", RUN+=\"/usr/bin/env rm %E{DEVNAME}\"
+
+IFS=':'
+while read s; do
+  read -r names vid pid libinput <<< $s
+
+  vid=$(tohex $vid)
+  pid=$(tohex $pid)
+
+  echo \# $(echo $names | sed 's/,/\n# /g')
+  echo KERNEL==\"hidraw*\", ATTRS{idVendor}==\"$vid\", ATTRS{idProduct}==\"$pid\", TAG+=\"uaccess\", TAG+=\"udev-acl\"
+  echo SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"$vid\", ATTRS{idProduct}==\"$pid\", TAG+=\"uaccess\", TAG+=\"udev-acl\"
+
+  if [[ $libinput > 0 ]]; then
+    echo SUBSYSTEM==\"input\", ATTRS{idVendor}==\"$vid\", ATTRS{idProduct}==\"$pid\", ENV{LIBINPUT_IGNORE_DEVICE}=\"$libinput\"
+  fi
+done <<< $configs_arr
