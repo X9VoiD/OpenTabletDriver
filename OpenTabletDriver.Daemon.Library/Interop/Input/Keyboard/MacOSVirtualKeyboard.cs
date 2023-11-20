@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using OpenTabletDriver.Native.MacOS;
-using OpenTabletDriver.Native.MacOS.Generic;
 using OpenTabletDriver.Native.MacOS.Input;
 using OpenTabletDriver.Platform.Keyboard;
 

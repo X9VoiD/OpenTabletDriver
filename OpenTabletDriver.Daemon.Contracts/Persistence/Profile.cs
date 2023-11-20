@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace OpenTabletDriver.Daemon.Contracts
+namespace OpenTabletDriver.Daemon.Contracts.Persistence
 {
     public class Profile
     {

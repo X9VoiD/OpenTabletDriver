@@ -4,7 +4,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace OpenTabletDriver.Daemon.Contracts
+namespace OpenTabletDriver.Daemon.Contracts.Persistence
 {
     public class PluginSetting
     {

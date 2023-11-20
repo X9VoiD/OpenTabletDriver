@@ -1,4 +1,4 @@
-using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 using OpenTabletDriver.Daemon.Reflection;
 using OpenTabletDriver.Platform.Pointer;
 using OpenTabletDriver.Tablet;

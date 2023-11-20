@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenTabletDriver.Daemon;
-using OpenTabletDriver.Daemon.Interop.AppInfo;
 using OpenTabletDriver.Daemon.Interop.Timer;
 using OpenTabletDriver.Daemon.Reflection;
 

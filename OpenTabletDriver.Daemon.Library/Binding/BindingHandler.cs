@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using OpenTabletDriver.Daemon.Contracts;
 using OpenTabletDriver.Attributes;
 using OpenTabletDriver.Output;
 using OpenTabletDriver.Platform.Pointer;
 using OpenTabletDriver.Tablet;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 
 namespace OpenTabletDriver.Daemon.Binding
 {

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using OpenTabletDriver.Attributes;
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 using OpenTabletDriver.Logging;
 
 namespace OpenTabletDriver.Daemon.Reflection

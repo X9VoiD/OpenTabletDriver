@@ -1,4 +1,4 @@
-namespace OpenTabletDriver.Daemon.Contracts
+namespace OpenTabletDriver.Daemon.Contracts.Persistence
 {
     public class Preset
     {

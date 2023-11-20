@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 using Newtonsoft.Json;
 using OpenTabletDriver.Attributes;
 
-namespace OpenTabletDriver.Daemon.Contracts
+namespace OpenTabletDriver.Daemon.Contracts.Persistence
 {
     [UsedImplicitly(ImplicitUseTargetFlags.Members)]
     public class PluginSettings

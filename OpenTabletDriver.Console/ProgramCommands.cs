@@ -5,11 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using OpenTabletDriver.Console.Attributes;
-using OpenTabletDriver.Daemon;
-using OpenTabletDriver.Daemon.Contracts;
-using OpenTabletDriver.Daemon.Reflection;
 using OpenTabletDriver.Output;
 using static System.Console;
 

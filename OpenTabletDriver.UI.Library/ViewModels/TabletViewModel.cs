@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 using OpenTabletDriver.UI.Models;
 using OpenTabletDriver.UI.Services;
 using OpenTabletDriver.UI.ViewModels.Plugin;

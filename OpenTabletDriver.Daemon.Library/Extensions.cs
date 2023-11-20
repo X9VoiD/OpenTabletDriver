@@ -1,6 +1,6 @@
 using System.Reflection;
 using OpenTabletDriver.Attributes;
-using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 using OpenTabletDriver.Daemon.Reflection;
 
 namespace OpenTabletDriver.Daemon

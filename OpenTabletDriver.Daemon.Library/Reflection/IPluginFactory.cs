@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 
 namespace OpenTabletDriver.Daemon.Reflection
 {

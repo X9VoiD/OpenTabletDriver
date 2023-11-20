@@ -4,9 +4,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
-using OpenTabletDriver.Daemon.Contracts;
 
-namespace OpenTabletDriver.Desktop
+namespace OpenTabletDriver.Daemon.Contracts.Persistence
 {
     public class Settings
     {

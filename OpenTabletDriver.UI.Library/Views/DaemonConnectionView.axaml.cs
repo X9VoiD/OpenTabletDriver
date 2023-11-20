@@ -1,7 +1,6 @@
 ﻿using System.Collections.Specialized;
 using Avalonia.Controls;
 using Avalonia.Input;
-using CommunityToolkit.Mvvm.Input;
 using OpenTabletDriver.UI.Controls;
 using OpenTabletDriver.UI.ViewModels;
 

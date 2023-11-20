@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace OpenTabletDriver.UI.Models;
 
 public class UIEnvironment

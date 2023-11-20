@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using WindowsShortcutFactory;
 
 namespace OpenTabletDriver.UI.Services.Windows;

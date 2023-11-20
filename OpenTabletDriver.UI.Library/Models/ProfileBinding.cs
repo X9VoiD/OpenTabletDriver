@@ -1,4 +1,4 @@
-using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 
 namespace OpenTabletDriver.UI.Models;
 

@@ -1,5 +1,5 @@
 using System.IO;
-using OpenTabletDriver.Daemon.Contracts;
+using OpenTabletDriver.Daemon.Contracts.Persistence;
 
 namespace OpenTabletDriver.Daemon
 {
