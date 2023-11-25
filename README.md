@@ -68,10 +68,7 @@ Run `./eng/macos/package.sh --package true`.
 
 # Features
 
-- Fully platform-native GUI
-  - Windows: `Windows Presentation Foundation`
-  - Linux: `GTK+3`
-  - MacOS: `MonoMac`
+- Fully cross-platform GUI using [Avalonia UI](https://avaloniaui.net/)
 - Fully fledged console tool
   - Quickly acquire, change, load, or save settings
   - Scripting support (json output)
